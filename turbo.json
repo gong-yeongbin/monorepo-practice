@@ -1,12 +1,10 @@
 {
   "$schema": "https://turborepo.com/schema.json",
-  "ui": "tui",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*", "src/**", "tsconfig*.json"],
-      "outputs": ["dist/**"],
-      "env": ["DATABASE_URL"]
+      "inputs": ["$TURBO_DEFAULT$", ".env", "src/**", "tsconfig*.json"],
+      "outputs": ["dist/**"]
     },
     "lint": {
       "dependsOn": ["^lint"]
@@ -17,7 +15,8 @@
     "dev": {
       "cache": false,
       "persistent": true
-    },"db:generate": {
+    },
+    "db:generate": {
       "cache": false
     },
     "db:migrate": {
