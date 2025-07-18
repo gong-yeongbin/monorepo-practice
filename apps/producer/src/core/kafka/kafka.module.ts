@@ -4,6 +4,7 @@ import { KafkaService } from './kafka.service';
 
 @Global()
 @Module({
+	// imports: [ClientsModule.registerAsync({})],
 	providers: [{ provide: KafkaService, useClass: KafkaAdapter }],
 	exports: [KafkaService],
 })

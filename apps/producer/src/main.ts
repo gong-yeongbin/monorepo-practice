@@ -8,7 +8,7 @@ async function bootstrap() {
 	const configService = app.get<ConfigService>(ConfigService);
 
 	const port = configService.get<number>('PORT');
-	const brokers = configService.get<string>('KAFKA_BROKER', '').split(',');
+	const brokers = configService.get<string>('KAFKA', '').split(',');
 
 	app.connectMicroservice<MicroserviceOptions>({
 		transport: Transport.KAFKA,

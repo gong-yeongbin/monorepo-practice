@@ -17,7 +17,7 @@ services:
   broker:
     image: confluentinc/cp-kafka:7.8.0
     hostname: broker
-    container_name: broker
+    container_name: monorepo-broker
     ports:
       - "9092:9092"
       - "9093:9093"
@@ -38,6 +38,12 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+
+  valkey:
+    image: valkey/valkey:latest
+    container_name: monorepo-valkey
+    ports:
+      - "6379:6379"
 
 volumes:
   mysql_data:

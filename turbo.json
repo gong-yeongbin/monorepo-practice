@@ -16,14 +16,14 @@
       "cache": false,
       "persistent": true
     },
-    "db:generate": {
+    "prisma:generate": {
       "cache": false
     },
-    "db:migrate": {
+    "prisma:migrate": {
       "cache": false,
       "persistent": true
     },
-    "db:deploy": {
+    "prisma:deploy": {
       "cache": false
     }
   }
