@@ -6,7 +6,9 @@
     "dev": "tsup ./index.ts --watch",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --skip-generate",
-    "prisma:deploy": "prisma migrate deploy"
+    "prisma:deploy": "prisma migrate deploy",
+    "prisma:dev": "dotenvx run --env-file=.env.development -- prisma migrate dev deploy generate",
+    "prisma:prod": "dotenvx run --env-file=.env.production -- prisma migrate deploy"
   },
   "devDependencies": {
     "prisma": "^6.11.1",
