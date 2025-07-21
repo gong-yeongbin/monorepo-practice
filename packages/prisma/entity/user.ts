@@ -1,4 +1,4 @@
-import { user } from "../../generated/prisma";
+import { user } from "../generated/prisma";
 
 export class User implements user {
   id: number;
