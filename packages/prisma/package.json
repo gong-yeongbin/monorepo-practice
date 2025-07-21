@@ -3,7 +3,6 @@
   "version": "0.0.0",
   "scripts": {
     "build": "tsup ./index.ts",
-    "dev": "tsup ./index.ts --watch",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --skip-generate",
     "prisma:deploy": "prisma migrate deploy",

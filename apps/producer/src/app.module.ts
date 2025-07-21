@@ -7,7 +7,12 @@ import { ValkeyModule } from './core/valkey/valkey.module';
 import { PrismaModule } from './core/prisma/prisma.module';
 
 @Module({
-	imports: [ConfigModule.forRoot(), ValkeyModule, PrismaModule, ProducerModule],
+	imports: [
+		ConfigModule.forRoot({ envFilePath: [`${process.cwd()}/.env.development`, `${process.cwd()}/.env.production`, `${process.cwd()}/.env`] }),
+		ValkeyModule,
+		PrismaModule,
+		ProducerModule,
+	],
 	controllers: [AppController],
 	providers: [AppService],
 })

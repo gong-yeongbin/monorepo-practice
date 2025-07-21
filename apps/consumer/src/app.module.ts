@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
-	imports: [ConfigModule.forRoot()],
+	imports: [ConfigModule.forRoot({ envFilePath: [`${process.cwd()}/.env.development`, `${process.cwd()}/.env.production`, `${process.cwd()}/.env`] })],
 	controllers: [AppController],
 	providers: [AppService],
 })
