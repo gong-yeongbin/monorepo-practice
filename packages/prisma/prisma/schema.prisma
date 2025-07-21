@@ -14,8 +14,10 @@ datasource db {
   url      = env("MYSQL")
 }
 
-model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+model user {
+  id       Int    @id @default(autoincrement())
+  user_id  String @unique
+  password String @db.VarChar(20)
+  salt     String @db.VarChar(50)
+  role     String @db.Char(10)
 }
