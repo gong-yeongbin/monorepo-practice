@@ -3,7 +3,7 @@ import { UserRole } from '../shared/enum';
 
 export class CreateUserDto {
 	@IsString()
-	user_id: string;
+	userId: string;
 
 	@IsString()
 	password: string;

@@ -9,5 +9,6 @@ import { PrismaModule } from '../../core/prisma/prisma.module';
 	imports: [PrismaModule],
 	controllers: [UserController],
 	providers: [CreateUserUseCase, { provide: UserRepository, useClass: PrismaUserRepository }],
+	exports: [{ provide: UserRepository, useClass: PrismaUserRepository }],
 })
 export class UserModule {}
