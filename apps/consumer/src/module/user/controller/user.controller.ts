@@ -1,7 +1,7 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { CreateUserDto } from '../dto';
 import { CreateUserUseCase } from '../use-case';
 import { AccessTokenValidatorGuard } from '../../../common/guard';
+import { CreateUserDto } from '../dto/request';
 
 @Controller('user')
 export class UserController {
@@ -10,6 +10,6 @@ export class UserController {
 	@UseGuards(AccessTokenValidatorGuard)
 	@Post()
 	async create(@Body() body: CreateUserDto) {
-		await this.createUserUseCase.execute(body);
+		return await this.createUserUseCase.execute(body);
 	}
 }
