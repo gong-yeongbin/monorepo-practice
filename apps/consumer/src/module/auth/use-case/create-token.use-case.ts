@@ -15,8 +15,7 @@ export class CreateTokenUseCase {
 		const expiresIn = this.configService.get<string>('JWT_EXPIRES');
 
 		const payload = { sub: user.user_id, role: user.role };
-		return {
-			access_token: await this.jwtService.signAsync(payload, { secret, expiresIn }),
-		};
+
+		return await this.jwtService.signAsync(payload, { secret, expiresIn });
 	}
 }
