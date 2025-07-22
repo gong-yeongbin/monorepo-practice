@@ -21,6 +21,6 @@ export class AuthController {
 	@Post('sign-in')
 	async signIn(@User() user: UserDto, @Res() response: Response) {
 		const access_token = await this.createTokenUseCase.execute(user);
-		return response.cookie('access_token', access_token, { secure: true, httpOnly: true, maxAge: this.jwtExpires * 1000 }).send();
+		return response.cookie('access_token', access_token, { secure: true, httpOnly: true, maxAge: this.jwtExpires }).send();
 	}
 }
