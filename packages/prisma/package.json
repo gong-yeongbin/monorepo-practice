@@ -3,10 +3,11 @@
   "version": "0.0.0",
   "scripts": {
     "build": "tsup ./index.ts",
-    "prisma:dev": "dotenvx run --env-file=.env.development -- prisma migrate dev deploy generate",
-    "prisma:prod": "dotenvx run --env-file=.env.production -- prisma migrate deploy",
-    "prisma:deploy": "prisma migrate deploy",
-    "prisma:generate": "prisma generate"
+    "migrate:dev": "dotenvx run --env-file=.env.development -- prisma migrate dev",
+    "deploy:dev": "dotenvx run --env-file=.env.development -- prisma migrate dev deploy",
+    "migrate:prod": "dotenvx run --env-file=.env.production -- prisma migrate",
+    "deploy:prod": "dotenvx run --env-file=.env.production -- prisma migrate deploy",
+    "generate": "prisma generate"
   },
   "devDependencies": {
     "prisma": "^6.11.1",

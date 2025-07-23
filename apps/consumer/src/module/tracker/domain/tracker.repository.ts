@@ -1,4 +1,4 @@
-import { Tracker } from './tracker.entity';
+import { Tracker } from '@repo/prisma/entity';
 import { TrackerDto } from '../shared/dto';
 
 export abstract class TrackerRepository {
