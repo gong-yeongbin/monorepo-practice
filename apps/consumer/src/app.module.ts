@@ -6,6 +6,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from './module/user/user.module';
 import { AuthModule } from './module/auth/auth.module';
 import { TrackerModule } from './module/tracker/tracker.module';
+import { MediaModule } from './module/media/media.module';
 
 @Module({
 	imports: [
@@ -14,6 +15,7 @@ import { TrackerModule } from './module/tracker/tracker.module';
 		AuthModule,
 		UserModule,
 		TrackerModule,
+		MediaModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
