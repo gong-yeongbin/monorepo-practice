@@ -8,13 +8,13 @@ export class CreateTrackerDto {
 
 	@IsString()
 	@Transform(({ value }) => value.trim())
-	tracking_url: string;
+	trackingUrl: string;
 
 	@IsString()
 	@Transform(({ value }) => value.trim())
-	install_postback_url: string;
+	installPostbackUrl: string;
 
 	@IsString()
 	@Transform(({ value }) => value.trim())
-	event_postback_url: string;
+	eventPostbackUrl: string;
 }

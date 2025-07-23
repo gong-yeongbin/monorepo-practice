@@ -10,23 +10,23 @@ export class CreateTrackerUseCase {
 	constructor(private readonly trackerRepository: TrackerRepository) {}
 
 	async execute(request: CreateTrackerDto) {
-		const { name, tracking_url, install_postback_url, event_postback_url } = request;
+		const { name, trackingUrl, installPostbackUrl, eventPostbackUrl } = request;
 
 		const tracker = await this.trackerRepository.findByName(name);
 		if (tracker) throw new ConflictException();
 
-		const trackerDto = plainToInstance(TrackerDto, { name, tracking_url, install_postback_url, event_postback_url });
-		const data = await this.trackerRepository.create(trackerDto);
-		const response = plainToInstance(ResponseCreateTrackerDto, {
-			id: data.id,
-			name: data.name,
-			tracking_url: data.tracking_url,
-			install_postback_url: data.install_postback_url,
-			event_postback_url: data.event_postback_url,
+		const trackerDto = plainToInstance(TrackerDto, { name, tracking_url: trackingUrl, install_postback_url: installPostbackUrl, event_postback_url: eventPostbackUrl });
+		const response = await this.trackerRepository.create(trackerDto);
+		const responseCreateTrackerDto = plainToInstance(ResponseCreateTrackerDto, {
+			id: response.id,
+			name: response.name,
+			trackingUrl: response.tracking_url,
+			installPostbackUrl: response.install_postback_url,
+			eventPostbackUrl: response.event_postback_url,
 		});
 
 		return {
-			data: response,
+			data: responseCreateTrackerDto,
 		};
 	}
 }
