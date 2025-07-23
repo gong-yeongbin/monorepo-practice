@@ -29,3 +29,10 @@ model tracker {
   install_postback_url String @db.Text
   event_postback_url   String @db.Text
 }
+
+model media {
+  id                   Int    @id @default(autoincrement())
+  name                 String @unique
+  install_postback_url String @db.Text
+  event_postback_url   String @db.Text
+}
