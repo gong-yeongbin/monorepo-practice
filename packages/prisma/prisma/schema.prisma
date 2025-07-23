@@ -21,3 +21,11 @@ model user {
   salt     String @db.VarChar(50)
   role     String @db.Char(10)
 }
+
+model tracker {
+  id                   Int    @id @default(autoincrement())
+  name                 String @unique
+  tracking_url         String @db.Text
+  install_postback_url String @db.Text
+  event_postback_url   String @db.Text
+}
