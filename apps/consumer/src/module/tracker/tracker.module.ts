@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { TrackerController } from './controller/tracker.controller';
 import { TrackerRepository } from './domain';
 import { PrismaTrackerRepository } from './infrastructure';
-import { CreateTrackerUseCase } from './use-case';
+import { CreateTrackerUseCase, UpdateTrackerUseCase } from './use-case';
 
 @Module({
 	controllers: [TrackerController],
-	providers: [CreateTrackerUseCase, { provide: TrackerRepository, useClass: PrismaTrackerRepository }],
+	providers: [CreateTrackerUseCase, UpdateTrackerUseCase, { provide: TrackerRepository, useClass: PrismaTrackerRepository }],
 })
 export class TrackerModule {}

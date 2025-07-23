@@ -12,7 +12,7 @@ export class CreateTrackerUseCase {
 	async execute(createTrackerDto: CreateTrackerDto) {
 		const { name, tracking_url, install_postback_url, event_postback_url } = createTrackerDto;
 
-		const tracker = await this.trackerRepository.find(name);
+		const tracker = await this.trackerRepository.findByName(name);
 		if (tracker) throw new ConflictException();
 
 		const trackerDto = plainToInstance(TrackerDto, { name, tracking_url, install_postback_url, event_postback_url });
