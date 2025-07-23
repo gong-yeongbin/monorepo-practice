@@ -9,8 +9,8 @@ import { TrackerRepository } from '../domain';
 export class UpdateTrackerUseCase {
 	constructor(private readonly trackerRepository: TrackerRepository) {}
 
-	async execute(id: number, updateTrackerDto: UpdateTrackerDto) {
-		const { name, trackingUrl, installPostbackUrl, eventPostbackUrl } = updateTrackerDto;
+	async execute(id: number, request: UpdateTrackerDto) {
+		const { name, trackingUrl, installPostbackUrl, eventPostbackUrl } = request;
 
 		const tracker = await this.trackerRepository.findById(id);
 		if (!tracker) throw new NotFoundException();

@@ -9,8 +9,8 @@ import { TrackerRepository } from '../domain';
 export class CreateTrackerUseCase {
 	constructor(private readonly trackerRepository: TrackerRepository) {}
 
-	async execute(createTrackerDto: CreateTrackerDto) {
-		const { name, tracking_url, install_postback_url, event_postback_url } = createTrackerDto;
+	async execute(request: CreateTrackerDto) {
+		const { name, tracking_url, install_postback_url, event_postback_url } = request;
 
 		const tracker = await this.trackerRepository.findByName(name);
 		if (tracker) throw new ConflictException();
