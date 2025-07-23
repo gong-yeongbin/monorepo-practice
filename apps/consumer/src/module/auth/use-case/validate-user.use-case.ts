@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UserRepository } from '../../user/domain/user-repository';
+import { UserRepository } from '../../user/domain';
 
 @Injectable()
 export class ValidateUserUseCase {

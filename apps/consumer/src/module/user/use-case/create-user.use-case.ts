@@ -1,9 +1,9 @@
 import { ConflictException, Injectable } from '@nestjs/common';
-import { UserRepository } from '../domain/user-repository';
 import { UserDto } from '../shared/dto';
 import { plainToInstance } from 'class-transformer';
 import { CreateUserDto } from '../dto/request';
 import { ResponseUserDto } from '../dto/response';
+import { UserRepository } from '../domain';
 
 @Injectable()
 export class CreateUserUseCase {

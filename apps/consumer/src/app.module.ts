@@ -2,9 +2,10 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from './module/user/user.module';
 import { AuthModule } from './module/auth/auth.module';
-import { JwtModule } from '@nestjs/jwt';
+import { TrackerModule } from './module/tracker/tracker.module';
 
 @Module({
 	imports: [
@@ -12,6 +13,7 @@ import { JwtModule } from '@nestjs/jwt';
 		JwtModule.register({ global: true }),
 		AuthModule,
 		UserModule,
+		TrackerModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
