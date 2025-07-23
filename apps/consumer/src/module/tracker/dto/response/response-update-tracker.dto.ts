@@ -1,4 +1,4 @@
-export class ResponseCreateTrackerDto {
+export class ResponseUpdateTrackerDto {
 	id: number;
 	name: string;
 	trackingUrl: string;

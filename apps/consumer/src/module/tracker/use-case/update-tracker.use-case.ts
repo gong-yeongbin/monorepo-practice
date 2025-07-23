@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { TrackerDto } from '../shared/dto';
 import { UpdateTrackerDto } from '../dto/request';
-import { ResponseCreateTracker } from '../dto/response';
+import { ResponseUpdateTrackerDto } from '../dto/response';
 import { TrackerRepository } from '../domain';
 
 @Injectable()
@@ -17,7 +17,7 @@ export class UpdateTrackerUseCase {
 
 		const trackerDto = plainToInstance(TrackerDto, { name: name, tracking_url: trackingUrl, install_postback_url: installPostbackUrl, event_postback_url: eventPostbackUrl });
 		const data = await this.trackerRepository.update(id, trackerDto);
-		const response = plainToInstance(ResponseCreateTracker, {
+		const response = plainToInstance(ResponseUpdateTrackerDto, {
 			id: data.id,
 			name: data.name,
 			trackingUrl: data.tracking_url,

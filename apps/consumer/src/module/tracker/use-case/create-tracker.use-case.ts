@@ -2,7 +2,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { TrackerDto } from '../shared/dto';
 import { CreateTrackerDto } from '../dto/request';
-import { ResponseCreateTracker } from '../dto/response';
+import { ResponseCreateTrackerDto } from '../dto/response';
 import { TrackerRepository } from '../domain';
 
 @Injectable()
@@ -17,7 +17,7 @@ export class CreateTrackerUseCase {
 
 		const trackerDto = plainToInstance(TrackerDto, { name, tracking_url, install_postback_url, event_postback_url });
 		const data = await this.trackerRepository.create(trackerDto);
-		const response = plainToInstance(ResponseCreateTracker, {
+		const response = plainToInstance(ResponseCreateTrackerDto, {
 			id: data.id,
 			name: data.name,
 			tracking_url: data.tracking_url,
