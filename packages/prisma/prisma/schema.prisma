@@ -23,7 +23,7 @@ model user {
 
 model tracker {
   id                   Int    @id @default(autoincrement())
-  name                 String @unique
+  name                 String @unique @db.VarChar(50)
   tracking_url         String @db.Text
   install_postback_url String @db.Text
   event_postback_url   String @db.Text
@@ -31,7 +31,39 @@ model tracker {
 
 model media {
   id                   Int    @id @default(autoincrement())
-  name                 String @unique
+  name                 String @unique @db.VarChar(50)
   install_postback_url String @db.Text
   event_postback_url   String @db.Text
 }
+
+model advertiser {
+  name String @unique @db.VarChar(50)
+  // ad       ad[]
+  // campaign campaign[]
+}
+
+// model ad {
+//   id              Int        @id @default(autoincrement())
+//   name            String     @unique @db.VarChar(50)
+//   image           String?    @db.Text
+//   advertiser      advertiser @relation(fields: [advertiser_name], references: [name])
+//   advertiser_name String
+//   campaign        campaign[]
+// }
+//
+// model campaign {
+//   id                   Int        @id @default(autoincrement())
+//   token                String     @unique @db.VarChar(100)
+//   name                 String     @unique @db.VarChar(50)
+//   type                 String     @db.Char(10)
+//   tracker_tracking_url String     @db.Text
+//   tracking_url         String     @db.Text
+//   tracker              tracker    @relation(fields: [tracker_name], references: [name])
+//   tracker_name         String
+//   advertiser           advertiser @relation(fields: [advertiser_name], references: [name])
+//   advertiser_name      String
+//   ad                   ad         @relation(fields: [ad_name], references: [name])
+//   ad_name              String
+//   media                media      @relation(fields: [media_name], references: [name])
+//   media_name           String
+// }
