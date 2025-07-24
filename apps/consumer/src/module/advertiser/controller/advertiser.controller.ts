@@ -1,15 +1,24 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { CreateAdvertiserDto } from '../dto/request';
-import { CreateAdvertiserUseCase } from '../use-case';
+import { Body, Controller, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { CreateAdvertiserDto, UpdateAdvertiserDto } from '../dto/request';
+import { CreateAdvertiserUseCase, UpdateAdvertiserUseCase } from '../use-case';
 import { AccessTokenValidatorGuard } from '../../../common/guard';
+import { AdvertiserIdDto } from '../shared/dto';
 
 @UseGuards(AccessTokenValidatorGuard)
 @Controller('advertiser')
 export class AdvertiserController {
-	constructor(private readonly createAdvertiserUseCase: CreateAdvertiserUseCase) {}
+	constructor(
+		private readonly createAdvertiserUseCase: CreateAdvertiserUseCase,
+		private readonly updateAdvertiserUseCase: UpdateAdvertiserUseCase
+	) {}
 
 	@Post()
 	async create(@Body() body: CreateAdvertiserDto) {
 		return await this.createAdvertiserUseCase.execute(body.name);
+	}
+
+	@Put(':id')
+	async update(@Param() param: AdvertiserIdDto, @Body() body: UpdateAdvertiserDto) {
+		return await this.updateAdvertiserUseCase.execute(parseInt(param.id), body);
 	}
 }

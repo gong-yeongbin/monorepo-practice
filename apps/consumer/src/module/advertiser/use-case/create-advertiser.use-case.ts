@@ -12,7 +12,7 @@ export class CreateAdvertiserUseCase {
 		if (advertiser) throw new ConflictException();
 
 		const response = await this.advertiserRepository.create(name);
-		const responseCreateAdvertiserDto = plainToInstance(ResponseCreateAdvertiserDto, { name: response.name });
+		const responseCreateAdvertiserDto = plainToInstance(ResponseCreateAdvertiserDto, { id: response.id, name: response.name });
 
 		return {
 			data: responseCreateAdvertiserDto,

@@ -13,8 +13,7 @@
     "deploy:dev": "dotenvx run --env-file=.env.development -- prisma migrate dev deploy",
     "migrate:prod": "dotenvx run --env-file=.env.production -- prisma migrate",
     "deploy:prod": "dotenvx run --env-file=.env.production -- prisma migrate deploy",
-    "generate": "prisma generate",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "generate": "prisma generate"
   },
   "keywords": [],
   "author": "",

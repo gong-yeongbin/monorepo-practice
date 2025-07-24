@@ -37,6 +37,7 @@ model media {
 }
 
 model advertiser {
+  id   Int    @id @default(autoincrement())
   name String @unique @db.VarChar(50)
   // ad       ad[]
   // campaign campaign[]

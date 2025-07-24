@@ -1,7 +1,7 @@
 import { IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 
-export class CreateAdvertiserDto {
+export class UpdateAdvertiserDto {
 	@IsString()
 	@Transform(({ value }) => value.trim())
 	name: string;
