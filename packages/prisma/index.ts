@@ -1,3 +1,4 @@
-export { prisma } from "./src/client";
-export * from "./generated/prisma";
-export * from "./entity";
+export * from '@prisma/client';
+export * from './prisma.module';
+export * from './prisma.service';
+export * from './prisma/entities';

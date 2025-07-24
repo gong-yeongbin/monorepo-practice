@@ -1,22 +1,39 @@
 {
   "name": "@repo/prisma",
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
   "scripts": {
-    "build": "tsup ./index.ts",
+    "build": "tsc -p tsconfig.json",
     "migrate:dev": "dotenvx run --env-file=.env.development -- prisma migrate dev",
     "deploy:dev": "dotenvx run --env-file=.env.development -- prisma migrate dev deploy",
     "migrate:prod": "dotenvx run --env-file=.env.production -- prisma migrate",
     "deploy:prod": "dotenvx run --env-file=.env.production -- prisma migrate deploy",
-    "generate": "prisma generate"
+    "generate": "prisma generate",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@nestjs/common": "^11.1.5"
   },
   "devDependencies": {
+    "@repo/eslint": "workspace:*",
+    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/js": "^9.31.0",
+    "@prisma/client": "^6.11.1",
+    "@repo/typescript": "workspace:*",
+    "@types/node": "^22.10.7",
+    "eslint": "^9.31.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.2.2",
+    "prettier": "^3.6.2",
     "prisma": "^6.11.1",
-    "tsup": "^8.5.0"
-  },
-  "dependencies": {
-    "@prisma/client": "^6.11.1"
-  },
-  "exports": {
-    ".": "./dist/index.js"
+    "typescript": "^5.8.3"
   }
 }
