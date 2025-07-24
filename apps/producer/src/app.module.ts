@@ -4,13 +4,13 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { ProducerModule } from './module';
 import { ValkeyModule } from './core/valkey/valkey.module';
-import { PrismaModule } from './core/prisma/prisma.module';
+import { PrismaModule } from '@repo/prisma';
 
 @Module({
 	imports: [
 		ConfigModule.forRoot({ envFilePath: [`${process.cwd()}/.env.development`, `${process.cwd()}/.env.production`, `${process.cwd()}/.env`] }),
-		ValkeyModule,
 		PrismaModule,
+		ValkeyModule,
 		ProducerModule,
 	],
 	controllers: [AppController],
