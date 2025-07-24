@@ -1,5 +1,5 @@
-import { Tracker } from '@repo/prisma/entity';
 import { TrackerDto } from '../shared/dto';
+import { Tracker } from '@repo/prisma';
 
 export abstract class TrackerRepository {
 	abstract findById(id: number): Promise<Tracker | null>;

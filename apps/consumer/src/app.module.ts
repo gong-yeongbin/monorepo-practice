@@ -7,11 +7,13 @@ import { UserModule } from './module/user/user.module';
 import { AuthModule } from './module/auth/auth.module';
 import { TrackerModule } from './module/tracker/tracker.module';
 import { MediaModule } from './module/media/media.module';
+import { PrismaModule } from '@repo/prisma';
 
 @Module({
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true, envFilePath: [`${process.cwd()}/.env.development`, `${process.cwd()}/.env.production`, `${process.cwd()}/.env`] }),
 		JwtModule.register({ global: true }),
+		PrismaModule,
 		AuthModule,
 		UserModule,
 		TrackerModule,
