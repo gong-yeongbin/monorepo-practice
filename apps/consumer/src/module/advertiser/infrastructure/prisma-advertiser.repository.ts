@@ -37,4 +37,12 @@ export class PrismaAdvertiserRepository implements AdvertiserRepository {
 			throw new InternalServerErrorException(e.message);
 		}
 	}
+
+	async findMany(): Promise<Advertiser[]> {
+		try {
+			return await this.prismaService.advertiser.findMany();
+		} catch (e) {
+			throw new InternalServerErrorException(e.message);
+		}
+	}
 }

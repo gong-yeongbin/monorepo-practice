@@ -5,4 +5,5 @@ export abstract class AdvertiserRepository {
 	abstract findByName(name: string): Promise<Advertiser | null>;
 	abstract create(name: string): Promise<Advertiser>;
 	abstract update(id: number, name: string): Promise<Advertiser>;
+	abstract findMany(): Promise<Advertiser[]>;
 }
