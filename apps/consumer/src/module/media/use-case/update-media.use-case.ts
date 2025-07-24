@@ -3,7 +3,7 @@ import { UpdateMediaDto } from '../dto/request';
 import { MediaRepository } from '../domain';
 import { plainToInstance } from 'class-transformer';
 import { MediaDto } from '../shared/dto';
-import { ResponseCreateMediaDto, ResponseUpdateMediaDto } from '../dto/response';
+import { ResponseUpdateMediaDto } from '../dto/response';
 
 @Injectable()
 export class UpdateMediaUseCase {
