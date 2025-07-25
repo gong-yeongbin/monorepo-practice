@@ -39,19 +39,19 @@ model media {
 model advertiser {
   id   Int    @id @default(autoincrement())
   name String @unique @db.VarChar(50)
-  // ad       ad[]
+  ad   ad[]
   // campaign campaign[]
 }
 
-// model ad {
-//   id              Int        @id @default(autoincrement())
-//   name            String     @unique @db.VarChar(50)
-//   image           String?    @db.Text
-//   advertiser      advertiser @relation(fields: [advertiser_name], references: [name])
-//   advertiser_name String
-//   campaign        campaign[]
-// }
-//
+model ad {
+  id              Int        @id @default(autoincrement())
+  name            String     @unique @db.VarChar(50)
+  image           String?    @db.Text
+  advertiser      advertiser @relation(fields: [advertiser_name], references: [name])
+  advertiser_name String
+  // campaign        campaign[]
+}
+
 // model campaign {
 //   id                   Int        @id @default(autoincrement())
 //   token                String     @unique @db.VarChar(100)
