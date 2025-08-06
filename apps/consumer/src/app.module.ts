@@ -8,7 +8,6 @@ import { UserModule } from './module/user/user.module';
 import { AuthModule } from './module/auth/auth.module';
 import { TrackerModule } from './module/tracker/tracker.module';
 import { MediaModule } from './module/media/media.module';
-import { AdvertiserModule } from './module/advertiser/advertiser.module';
 import { AdModule } from './module/ad/ad.module';
 
 @Module({
@@ -18,7 +17,6 @@ import { AdModule } from './module/ad/ad.module';
 		PrismaModule,
 		AuthModule,
 		UserModule,
-		AdvertiserModule,
 		TrackerModule,
 		MediaModule,
 		AdModule,
