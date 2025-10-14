@@ -1,15 +1,15 @@
 import { Controller, Get, Query, Redirect } from '@nestjs/common';
 import { TrackingDto } from '../dto/request';
-import { TrackingProducerUseCase } from '../use-case';
+import { TrackingUseCase } from '../use-case/tracking.use-case';
 
 @Controller()
-export class ProducerController {
-	constructor(private readonly trackingProducerUseCase: TrackingProducerUseCase) {}
+export class TrackingController {
+	constructor(private readonly trackingUseCase: TrackingUseCase) {}
 
 	@Get('tracking')
 	@Redirect()
 	async trackingProducer(@Query() query: TrackingDto) {
-		const url = await this.trackingProducerUseCase.producer(query);
+		const url = await this.trackingUseCase.execute(query);
 		return { url, statudCode: 302 };
 	}
 }

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
-import { ProducerModule } from './module';
+import { TrackingModule } from './module';
 import { ValkeyModule } from './core/valkey/valkey.module';
 import { PrismaModule } from '@repo/prisma';
 
@@ -11,7 +11,7 @@ import { PrismaModule } from '@repo/prisma';
 		ConfigModule.forRoot({ envFilePath: [`${process.cwd()}/.env.development`, `${process.cwd()}/.env.production`, `${process.cwd()}/.env`] }),
 		PrismaModule,
 		ValkeyModule,
-		ProducerModule,
+		TrackingModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
