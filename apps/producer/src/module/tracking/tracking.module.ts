@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TrackingController } from './controller/tracking.controller';
-import { TrackingProducerUseCase } from './use-case';
+import { TrackingUseCase } from './use-case';
 
 @Module({
 	controllers: [TrackingController],
-	providers: [TrackingProducerUseCase],
+	providers: [TrackingUseCase],
 })
 export class TrackingModule {}
