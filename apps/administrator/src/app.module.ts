@@ -12,7 +12,7 @@ import { AdModule } from './module/ad/ad.module';
 
 @Module({
 	imports: [
-		ConfigModule.forRoot({ isGlobal: true, envFilePath: [`${process.cwd()}/.env.development`, `${process.cwd()}/.env.production`, `${process.cwd()}/.env`] }),
+		ConfigModule.forRoot({ isGlobal: true, envFilePath: `${process.cwd()}/.env` }),
 		JwtModule.register({ global: true }),
 		PrismaModule,
 		AuthModule,

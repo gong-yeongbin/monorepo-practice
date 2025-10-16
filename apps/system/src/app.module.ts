@@ -7,12 +7,7 @@ import { ValkeyModule } from './core/valkey/valkey.module';
 import { PrismaModule } from '@repo/prisma';
 
 @Module({
-	imports: [
-		ConfigModule.forRoot({ envFilePath: [`${process.cwd()}/.env.development`, `${process.cwd()}/.env.production`, `${process.cwd()}/.env`] }),
-		PrismaModule,
-		ValkeyModule,
-		TrackingModule,
-	],
+	imports: [ConfigModule.forRoot({ envFilePath: `${process.cwd()}/.env` }), PrismaModule, ValkeyModule, TrackingModule],
 	controllers: [AppController],
 	providers: [AppService],
 })
