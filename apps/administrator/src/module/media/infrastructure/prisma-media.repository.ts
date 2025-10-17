@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { MediaRepository } from '../domain';
-import { MediaDto } from '../shared/dto';
 import { Media, PrismaService } from '@repo/prisma';
+import { MediaRepository } from '@module/media/domain';
+import { MediaDto } from '@module/media/shared/dto';
 
 @Injectable()
 export class PrismaMediaRepository implements MediaRepository {

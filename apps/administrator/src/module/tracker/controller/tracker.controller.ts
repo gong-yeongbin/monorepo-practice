@@ -1,8 +1,8 @@
 import { Body, Controller, Param, Post, Put, UseGuards } from '@nestjs/common';
-import { AccessTokenValidatorGuard } from '../../../common/guard';
-import { CreateTrackerDto, UpdateTrackerDto } from '../dto/request';
-import { CreateTrackerUseCase, UpdateTrackerUseCase } from '../use-case';
-import { TrackerIdDto } from '../shared/dto';
+import { AccessTokenValidatorGuard } from '@src/common/guard';
+import { CreateTrackerUseCase, UpdateTrackerUseCase } from '@module/tracker/use-case';
+import { CreateTrackerDto, UpdateTrackerDto } from '@module/tracker/dto/request';
+import { TrackerIdDto } from '@module/tracker/shared/dto';
 
 @UseGuards(AccessTokenValidatorGuard)
 @Controller('tracker')

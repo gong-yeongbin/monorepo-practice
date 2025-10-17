@@ -1,10 +1,10 @@
 import { Controller, Post, Res, UseGuards } from '@nestjs/common';
-import { User } from '../common/decorator';
-import { UserDto } from '../../user/shared/dto';
-import { CreateTokenUseCase } from '../use-case';
-import { LocalAuthGuard } from '../../../common/guard';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { CreateTokenUseCase } from '@module/auth/use-case';
+import { LocalAuthGuard } from '@common/guard';
+import { UserDto } from '@module/user/shared/dto';
+import { User } from '@module/auth/common/decorator';
 
 @Controller('auth')
 export class AuthController {

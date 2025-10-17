@@ -1,8 +1,8 @@
-import { AdController } from './controller/ad.controller';
 import { Module } from '@nestjs/common';
-import { AdRepository } from './domain';
-import { PrismaAdRepository } from './infrastructure';
-import { CreateAdUseCase, UpdateAdUseCase } from './use-case';
+import { AdController } from '@module/ad/controller';
+import { AdRepository } from '@module/ad/domain';
+import { PrismaAdRepository } from '@module/ad/infrastructure';
+import { CreateAdUseCase, UpdateAdUseCase } from '@module/ad/use-case';
 
 @Module({
 	controllers: [AdController],

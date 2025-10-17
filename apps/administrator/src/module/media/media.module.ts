@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { MediaController } from './controller/media.controller';
-import { CreateMediaUseCase, UpdateMediaUseCase } from './use-case';
-import { MediaRepository } from './domain';
-import { PrismaMediaRepository } from './infrastructure';
+import { MediaController } from '@module/media/controller';
+import { CreateMediaUseCase, UpdateMediaUseCase } from '@module/media/use-case';
+import { MediaRepository } from '@module/media/domain';
+import { PrismaMediaRepository } from '@module/media/infrastructure';
 
 @Module({
 	controllers: [MediaController],

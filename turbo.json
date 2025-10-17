@@ -3,7 +3,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env", "src/**", "tsconfig*.json"],
+      "inputs": ["$TURBO_DEFAULT$", "src/**", "tsconfig*.json"],
       "outputs": ["dist/**"]
     },
     "lint": {

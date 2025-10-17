@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { TrackerController } from './controller/tracker.controller';
-import { TrackerRepository } from './domain';
-import { PrismaTrackerRepository } from './infrastructure';
-import { CreateTrackerUseCase, UpdateTrackerUseCase } from './use-case';
+import { TrackerController } from '@module/tracker/controller';
+import { CreateTrackerUseCase, UpdateTrackerUseCase } from '@module/tracker/use-case';
+import { TrackerRepository } from '@module/tracker/domain';
+import { PrismaTrackerRepository } from '@module/tracker/infrastructure';
 
 @Module({
 	controllers: [TrackerController],

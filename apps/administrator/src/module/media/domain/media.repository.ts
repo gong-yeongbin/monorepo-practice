@@ -1,5 +1,5 @@
-import { MediaDto } from '../shared/dto';
 import { Media } from '@repo/prisma';
+import { MediaDto } from '@module/media/shared/dto';
 
 export abstract class MediaRepository {
 	abstract findById(id: number): Promise<Media | null>;

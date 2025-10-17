@@ -1,6 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { CreateUserDto } from '../dto/request';
-import { CreateUserUseCase } from '../use-case';
+import { CreateUserUseCase } from '@module/user/use-case';
+import { CreateUserDto } from '@module/user/dto/request';
 
 @Controller('user')
 export class UserController {

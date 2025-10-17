@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { AdRepository } from '../domain';
 import { Ad, PrismaService } from '@repo/prisma';
-import { AdDto } from '../shared/dto';
+import { AdRepository } from '@module/ad/domain';
+import { AdDto } from '@module/ad/shared/dto';
 
 @Injectable()
 export class PrismaAdRepository implements AdRepository {

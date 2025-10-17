@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { AdRepository } from '../domain';
-import { UpdateAdDto } from '../dto/request';
 import { plainToInstance } from 'class-transformer';
-import { AdDto } from '../shared/dto';
-import { ResponseUpdateAdDto } from '../dto/response';
+import { AdRepository } from '@module/ad/domain';
+import { UpdateAdDto } from '@module/ad/dto/request';
+import { AdDto } from '@module/ad/shared/dto';
+import { ResponseUpdateAdDto } from '@module/ad/dto/response';
 
 @Injectable()
 export class UpdateAdUseCase {

@@ -1,7 +1,7 @@
 import { Body, Controller, Param, Post, Put } from '@nestjs/common';
-import { CreateAdDto, UpdateAdDto } from '../dto/request';
-import { CreateAdUseCase, UpdateAdUseCase } from '../use-case';
-import { AdIdDto } from '../shared/dto/ad-id.dto';
+import { AdIdDto } from '@module/ad/shared/dto/ad-id.dto';
+import { CreateAdUseCase, UpdateAdUseCase } from '@module/ad/use-case';
+import { CreateAdDto, UpdateAdDto } from '@module/ad/dto/request';
 
 @Controller('ad')
 export class AdController {

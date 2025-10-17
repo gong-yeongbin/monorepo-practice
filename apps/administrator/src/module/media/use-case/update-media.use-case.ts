@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { UpdateMediaDto } from '../dto/request';
-import { MediaRepository } from '../domain';
 import { plainToInstance } from 'class-transformer';
-import { MediaDto } from '../shared/dto';
-import { ResponseUpdateMediaDto } from '../dto/response';
+import { MediaRepository } from '@module/media/domain';
+import { UpdateMediaDto } from '@module/media/dto/request';
+import { MediaDto } from '@module/media/shared/dto';
+import { ResponseUpdateMediaDto } from '@module/media/dto/response';
 
 @Injectable()
 export class UpdateMediaUseCase {

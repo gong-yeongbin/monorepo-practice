@@ -1,9 +1,9 @@
 import { ConflictException, Injectable } from '@nestjs/common';
-import { CreateMediaDto } from '../dto/request';
-import { MediaRepository } from '../domain';
 import { plainToInstance } from 'class-transformer';
-import { MediaDto } from '../shared/dto';
-import { ResponseCreateMediaDto } from '../dto/response';
+import { MediaRepository } from '@module/media/domain';
+import { CreateMediaDto } from '@module/media/dto/request';
+import { MediaDto } from '@module/media/shared/dto';
+import { ResponseCreateMediaDto } from '@module/media/dto/response';
 
 @Injectable()
 export class CreateMediaUseCase {

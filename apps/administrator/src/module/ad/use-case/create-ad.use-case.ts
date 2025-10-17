@@ -1,9 +1,9 @@
 import { ConflictException, Injectable } from '@nestjs/common';
-import { CreateAdDto } from '../dto/request';
 import { plainToInstance } from 'class-transformer';
-import { AdRepository } from '../domain';
-import { AdDto } from '../shared/dto';
-import { ResponseCreateAdDto } from '../dto/response';
+import { AdRepository } from '@module/ad/domain';
+import { CreateAdDto } from '@module/ad/dto/request';
+import { AdDto } from '@module/ad/shared/dto';
+import { ResponseCreateAdDto } from '@module/ad/dto/response';
 
 @Injectable()
 export class CreateAdUseCase {

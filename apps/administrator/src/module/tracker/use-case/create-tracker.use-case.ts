@@ -1,9 +1,9 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { TrackerDto } from '../shared/dto';
-import { CreateTrackerDto } from '../dto/request';
-import { ResponseCreateTrackerDto } from '../dto/response';
-import { TrackerRepository } from '../domain';
+import { TrackerRepository } from '@module/tracker/domain';
+import { CreateTrackerDto } from '@module/tracker/dto/request';
+import { TrackerDto } from '@module/tracker/shared/dto';
+import { ResponseCreateTrackerDto } from '@module/tracker/dto/response';
 
 @Injectable()
 export class CreateTrackerUseCase {

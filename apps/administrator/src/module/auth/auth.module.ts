@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { AuthController } from './controller/auth.controller';
 import { CreateTokenUseCase, ValidateUserUseCase } from './use-case';
-import { UserModule } from '../user/user.module';
 import { LocalStrategy } from './strategy';
+import { AuthController } from '@module/auth/controller';
+import { UserModule } from '@module/user/user.module';
 
 @Module({
 	imports: [UserModule],

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UserDto } from '../../user/shared/dto';
 import { ConfigService } from '@nestjs/config';
+import { UserDto } from '@module/user/shared/dto';
 
 @Injectable()
 export class CreateTokenUseCase {

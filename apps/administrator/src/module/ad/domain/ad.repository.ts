@@ -1,5 +1,5 @@
 import { Ad } from '@repo/prisma';
-import { AdDto } from '../shared/dto';
+import { AdDto } from '@module/ad/shared/dto';
 
 export abstract class AdRepository {
 	abstract findById(id: number): Promise<Ad | null>;
