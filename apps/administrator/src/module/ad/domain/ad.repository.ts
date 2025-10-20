@@ -1,9 +1,9 @@
-import { Ad } from '@repo/prisma';
 import { AdDto } from '@module/ad/shared/dto';
+import { Advertising } from '@repo/prisma';
 
 export abstract class AdRepository {
-	abstract findById(id: number): Promise<Ad | null>;
-	abstract findByName(name: string): Promise<Ad | null>;
-	abstract create(ad: AdDto): Promise<Ad>;
-	abstract update(id: number, ad: AdDto): Promise<Ad>;
+	abstract findById(id: number): Promise<Advertising | null>;
+	abstract findByName(name: string): Promise<Advertising | null>;
+	abstract create(ad: AdDto): Promise<Advertising>;
+	abstract update(id: number, ad: AdDto): Promise<Advertising>;
 }

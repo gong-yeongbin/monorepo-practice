@@ -1,5 +1,5 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { Ad, PrismaService } from '@repo/prisma';
+import { Advertising, PrismaService } from '@repo/prisma';
 import { AdRepository } from '@module/ad/domain';
 import { AdDto } from '@module/ad/shared/dto';
 
@@ -7,33 +7,33 @@ import { AdDto } from '@module/ad/shared/dto';
 export class PrismaAdRepository implements AdRepository {
 	constructor(private readonly prismaService: PrismaService) {}
 
-	async findById(id: number): Promise<Ad | null> {
+	async findById(id: number): Promise<Advertising | null> {
 		try {
-			return await this.prismaService.ad.findUnique({ where: { id: id } });
+			return await this.prismaService.advertising.findUnique({ where: { id: id } });
 		} catch (e) {
 			throw new InternalServerErrorException(e.message);
 		}
 	}
 
-	async findByName(name: string): Promise<Ad | null> {
+	async findByName(name: string): Promise<Advertising | null> {
 		try {
-			return await this.prismaService.ad.findUnique({ where: { name: name } });
+			return await this.prismaService.advertising.findUnique({ where: { name: name } });
 		} catch (e) {
 			throw new InternalServerErrorException(e.message);
 		}
 	}
 
-	async create(ad: AdDto): Promise<Ad> {
+	async create(ad: AdDto): Promise<Advertising> {
 		try {
-			return await this.prismaService.ad.create({ data: ad });
+			return await this.prismaService.advertising.create({ data: ad });
 		} catch (e) {
 			throw new InternalServerErrorException(e.message);
 		}
 	}
 
-	async update(id: number, ad: AdDto): Promise<Ad> {
+	async update(id: number, ad: AdDto): Promise<Advertising> {
 		try {
-			return await this.prismaService.ad.update({ where: { id: id }, data: { name: ad.name, image: ad.image } });
+			return await this.prismaService.advertising.update({ where: { id: id }, data: { name: ad.name, image: ad.image } });
 		} catch (e) {
 			throw new InternalServerErrorException(e.message);
 		}

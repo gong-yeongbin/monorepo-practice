@@ -14,7 +14,7 @@ export class CreateTokenUseCase {
 		const secret = this.configService.get<string>('JWT_SECRET');
 		const expiresIn = this.configService.get<string>('JWT_EXPIRES');
 
-		const payload = { userId: user.user_id, role: user.role };
+		const payload = { userId: user.user_id };
 
 		return await this.jwtService.signAsync(payload, { secret, expiresIn });
 	}
