@@ -18,7 +18,14 @@ model user {
   user_id  String @unique
   password String @db.VarChar(20)
   salt     String @db.VarChar(50)
-  role     String @db.Char(10)
+  role     Role   @default(ADMIN)
+}
+
+model advertiser {
+  id   Int    @id @default(autoincrement())
+  name String @unique @db.VarChar(30)
+
+  advertising advertising[]
 }
 
 model tracker {
@@ -27,6 +34,47 @@ model tracker {
   tracking_url         String @db.Text
   install_postback_url String @db.Text
   event_postback_url   String @db.Text
+
+  campaign campaign[]
+}
+
+model advertising {
+  id    Int     @id @default(autoincrement())
+  name  String  @unique @db.VarChar(30)
+  image String? @db.Text
+
+  advertiser      advertiser @relation(fields: [advertiser_name], references: [name])
+  advertiser_name String     @db.VarChar(30)
+
+  campaign campaign[]
+}
+
+model campaign {
+  id            Int     @id @default(autoincrement())
+  token         String  @unique @db.VarChar(50)
+  name          String  @db.VarChar(30)
+  type          Type
+  is_block      Boolean @default(false)
+  is_media_sent Boolean @default(false)
+
+  tracker          tracker     @relation(fields: [tracker_name], references: [name])
+  tracker_name     String      @db.VarChar(30)
+  advertising      advertising @relation(fields: [advertising_name], references: [name])
+  advertising_name String      @db.VarChar(30)
+  media            media       @relation(fields: [media_name], references: [name])
+  media_name       String      @db.VarChar(30)
+
+  campaign_info campaign_info[]
+}
+
+model campaign_info {
+  id          Int      @id @default(autoincrement())
+  campaign    campaign @relation(fields: [campaign_id], references: [id])
+  campaign_id Int      @db.Int
+
+  tracker_event_name String @default("install") @db.VarChar(30)
+  admin_event_name   String @default("install") @db.VarChar(30)
+  media_event_name   String @default("install") @db.VarChar(30)
 }
 
 model media {
@@ -38,35 +86,13 @@ model media {
   campaign campaign[]
 }
 
-model ad {
-  id              Int     @id @default(autoincrement())
-  advertiser_name String  @db.VarChar(30)
-  name            String  @unique @db.VarChar(30)
-  image           String? @db.Text
-
-  campaign campaign[]
+enum Role {
+  ADMIN
+  ADVERTISER
+  MEDIA
 }
 
-model campaign {
-  id                     Int                      @id @default(autoincrement())
-  token                  String                   @unique @db.VarChar(50)
-  name                   String                   @unique @db.VarChar(30)
-  type                   String                   @db.Char(10) // CPI, CPA
-  tracker_tracking_url   String                   @db.Text
-  tracking_url           String                   @db.Text
-  ad                     ad                       @relation(fields: [ad_id], references: [id])
-  ad_id                  Int
-  media                  media                    @relation(fields: [media_id], references: [id])
-  media_id               Int
-  is_block               Boolean                  @default(false)
-  campaign_event_mapping campaign_event_mapping[]
-}
-
-model campaign_event_mapping {
-  id                 Int      @id @default(autoincrement())
-  campaign           campaign @relation(fields: [campaign_id], references: [id])
-  campaign_id        Int
-  tracker_event_name String   @db.VarChar(30)
-  admin_label        String   @db.VarChar(30)
-  media_send_name    String   @db.VarChar(30)
+enum Type {
+  CPI
+  CPA
 }
