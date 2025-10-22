@@ -1,10 +1,10 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Media, PrismaService } from '@repo/prisma';
-import { MediaRepository } from '@module/media/domain';
-import { MediaDto } from '@module/media/shared/dto';
+import { IMedia } from '@module/media/domain';
+import { MediaDto } from '@module/media/dto/media.dto';
 
 @Injectable()
-export class PrismaMediaRepository implements MediaRepository {
+export class MediaRepository implements IMedia {
 	constructor(private readonly prismaService: PrismaService) {}
 
 	async findById(id: number): Promise<Media | null> {

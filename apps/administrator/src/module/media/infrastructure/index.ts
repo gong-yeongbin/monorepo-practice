@@ -1,1 +1,1 @@
-export * from './prisma-media.repository';
+export * from './media.repository';

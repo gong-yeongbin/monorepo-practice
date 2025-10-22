@@ -1,0 +1,1 @@
+export const MEDIA_REPOSITORY = Symbol('MEDIA_REPOSITORY');

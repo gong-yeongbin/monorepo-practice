@@ -1,11 +1,11 @@
 import { Body, Controller, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { CreateMediaDto, UpdateMediaDto } from '../dto/request';
 import { CreateMediaUseCase, UpdateMediaUseCase } from '../use-case';
-import { MediaIdDto } from '../shared/dto';
 import { AccessTokenValidatorGuard } from '@common/guard';
+import { MediaIdDto } from '@module/media/dto/media-id.dto';
 
-@UseGuards(AccessTokenValidatorGuard)
 @Controller('media')
+@UseGuards(AccessTokenValidatorGuard)
 export class MediaController {
 	constructor(
 		private readonly createMediaUseCase: CreateMediaUseCase,
