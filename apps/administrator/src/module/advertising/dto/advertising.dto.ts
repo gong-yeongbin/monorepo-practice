@@ -1,4 +1,4 @@
-export class AdDto {
+export class AdvertisingDto {
 	name: string;
 	image: string;
 	advertiser_name: string;

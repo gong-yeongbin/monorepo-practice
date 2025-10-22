@@ -7,5 +7,6 @@ import { CreateAdvertiserUseCase, GetAdvertiserListUseCase } from '@module/adver
 @Module({
 	controllers: [AdvertiserController],
 	providers: [CreateAdvertiserUseCase, GetAdvertiserListUseCase, { provide: ADVERTISER_REPOSITORY, useClass: AdvertiserRepository }],
+	exports: [ADVERTISER_REPOSITORY],
 })
 export class AdvertiserModule {}

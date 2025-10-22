@@ -1,7 +1,7 @@
 import { IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 
-export class CreateAdDto {
+export class UpdateAdvertisingDto {
 	@IsString()
 	@Transform(({ value }) => value.trim())
 	name: string;
@@ -10,8 +10,4 @@ export class CreateAdDto {
 	@IsString()
 	@Transform(({ value }) => value.trim())
 	image: string;
-
-	@IsString()
-	@Transform(({ value }) => value.trim())
-	advertiserName: string;
 }

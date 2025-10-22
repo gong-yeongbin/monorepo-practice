@@ -8,7 +8,7 @@ import { AuthModule } from '@module/auth/auth.module';
 import { UserModule } from '@module/user/user.module';
 import { TrackerModule } from '@module/tracker/tracker.module';
 import { MediaModule } from '@module/media/media.module';
-import { AdModule } from '@module/ad/ad.module';
+import { AdvertisingModule } from '@module/advertising/advertising.module';
 import { AdvertiserModule } from '@module/advertiser/advertiser.module';
 
 @Module({
@@ -20,7 +20,7 @@ import { AdvertiserModule } from '@module/advertiser/advertiser.module';
 		UserModule,
 		TrackerModule,
 		MediaModule,
-		AdModule,
+		AdvertisingModule,
 		AdvertiserModule,
 	],
 	controllers: [AppController],
