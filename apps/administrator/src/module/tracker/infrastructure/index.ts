@@ -1,1 +1,1 @@
-export * from './prisma-tracker.repository';
+export * from './tracker.repository';
