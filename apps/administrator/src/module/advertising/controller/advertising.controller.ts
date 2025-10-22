@@ -1,9 +1,11 @@
-import { Body, Controller, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { CreateAdvertisingUseCase, UpdateAdvertisingUseCase } from '@module/advertising/use-case';
 import { CreateAdvertisingDto, UpdateAdvertisingDto } from '@module/advertising/dto/request';
 import { AdvertisingIdDto } from '@module/advertising/dto/advertising-id.dto';
+import { AccessTokenValidatorGuard } from '@common/guard';
 
-@Controller('ad')
+@Controller('advertising')
+@UseGuards(AccessTokenValidatorGuard)
 export class AdvertisingController {
 	constructor(
 		private readonly createAdUseCase: CreateAdvertisingUseCase,

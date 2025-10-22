@@ -1,8 +1,10 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { CreateAdvertiserDto } from '@module/advertiser/dto/request';
 import { CreateAdvertiserUseCase, GetAdvertiserListUseCase } from '@module/advertiser/use-case';
+import { AccessTokenValidatorGuard } from '@common/guard';
 
 @Controller('advertiser')
+@UseGuards(AccessTokenValidatorGuard)
 export class AdvertiserController {
 	constructor(
 		private readonly createAdvertiserUseCase: CreateAdvertiserUseCase,
