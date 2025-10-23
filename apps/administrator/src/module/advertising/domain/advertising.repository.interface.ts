@@ -1,5 +1,5 @@
-import { Advertising } from '@repo/prisma';
 import { AdvertisingDto } from '@module/advertising/dto/advertising.dto';
+import { Advertising } from '@module/advertising/domain/advertising.entity';
 
 export interface IAdvertising {
 	findById(id: number): Promise<Advertising | null>;

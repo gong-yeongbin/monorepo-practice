@@ -1,4 +1,4 @@
-import { advertising } from '@prisma/client';
+import { advertising } from '@repo/prisma';
 
 export class Advertising implements advertising {
 	id: number;

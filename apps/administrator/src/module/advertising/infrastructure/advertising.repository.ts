@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { Advertising, PrismaService } from '@repo/prisma';
-import { IAdvertising } from '@module/advertising/domain';
+import { PrismaService } from '@repo/prisma';
+import { Advertising, IAdvertising } from '@module/advertising/domain';
 import { AdvertisingDto } from '@module/advertising/dto/advertising.dto';
 
 @Injectable()

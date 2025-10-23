@@ -10,13 +10,10 @@ export class AccessTokenValidatorGuard {
 	) {}
 
 	async canActivate(context: ExecutionContext) {
-		const request = context.switchToHttp().getRequest();
-
-		if (!request.cookies) throw new UnauthorizedException();
-
-		const access_token: string = request.cookies.access_token;
-
 		try {
+			const request = context.switchToHttp().getRequest();
+			// if (!request.cookies) throw new UnauthorizedException();
+			const access_token: string = request.cookies.access_token;
 			this.jwtService.verify(access_token, { secret: this.configService.get<string>('JWT_SECRET') });
 
 			return true;

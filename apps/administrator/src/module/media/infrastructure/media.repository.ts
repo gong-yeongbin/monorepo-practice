@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { Media, PrismaService } from '@repo/prisma';
-import { IMedia } from '@module/media/domain';
+import { PrismaService } from '@repo/prisma';
+import { IMedia, Media } from '@module/media/domain';
 import { MediaDto } from '@module/media/dto/media.dto';
 
 @Injectable()

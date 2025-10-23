@@ -19,7 +19,7 @@ export class CreateUserUseCase {
 		const userDto = plainToInstance(UserDto, { userId, password, role, salt });
 		const data = await this.userRepository.create(userDto);
 
-		const response = plainToInstance(ResponseUserDto, data);
+		const response = plainToInstance(ResponseUserDto, data, { excludeExtraneousValues: true });
 
 		return {
 			data: response,

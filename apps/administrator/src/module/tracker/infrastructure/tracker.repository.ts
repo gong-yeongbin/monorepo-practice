@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { PrismaService, Tracker } from '@repo/prisma';
-import { ITracker } from '@module/tracker/domain';
+import { PrismaService } from '@repo/prisma';
+import { ITracker, Tracker } from '@module/tracker/domain';
 import { TrackerDto } from '@module/tracker/dto/tracker.dto';
 
 @Injectable()
