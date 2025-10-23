@@ -1,13 +1,13 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { UserRepository } from '@module/user/domain';
 import { CreateUserDto } from '@module/user/dto/request';
-import { UserDto } from '@module/user/shared/dto';
 import { ResponseUserDto } from '@module/user/dto/response';
+import { UserDto } from '@module/user/dto/user.dto';
+import { IUser, USER_REPOSITORY } from '@module/user/domain';
 
 @Injectable()
 export class CreateUserUseCase {
-	constructor(private readonly userRepository: UserRepository) {}
+	constructor(@Inject(USER_REPOSITORY) private readonly userRepository: IUser) {}
 
 	async execute(createUserDto: CreateUserDto) {
 		const { userId, password, role } = createUserDto;
@@ -16,10 +16,10 @@ export class CreateUserUseCase {
 		const user = await this.userRepository.find(userId);
 		if (user) throw new ConflictException();
 
-		const userDto = plainToInstance(UserDto, { user_id: userId, password: password, role: role, salt: salt });
+		const userDto = plainToInstance(UserDto, { userId, password, role, salt });
 		const data = await this.userRepository.create(userDto);
 
-		const response = plainToInstance(ResponseUserDto, { id: data.id, userId: data.user_id, role: data.role });
+		const response = plainToInstance(ResponseUserDto, data);
 
 		return {
 			data: response,

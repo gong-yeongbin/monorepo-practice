@@ -3,8 +3,8 @@ import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { CreateTokenUseCase } from '@module/auth/use-case';
 import { LocalAuthGuard } from '@common/guard';
-import { UserDto } from '@module/user/shared/dto';
 import { User } from '@module/auth/common/decorator';
+import { UserDto } from '@module/user/dto/user.dto';
 
 @Controller('auth')
 export class AuthController {
