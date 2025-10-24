@@ -7,5 +7,6 @@ import { MediaRepository } from '@module/media/infrastructure';
 @Module({
 	controllers: [MediaController],
 	providers: [CreateMediaUseCase, UpdateMediaUseCase, { provide: MEDIA_REPOSITORY, useClass: MediaRepository }],
+	exports: [MEDIA_REPOSITORY],
 })
 export class MediaModule {}

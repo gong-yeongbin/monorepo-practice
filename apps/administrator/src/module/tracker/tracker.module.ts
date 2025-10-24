@@ -7,5 +7,6 @@ import { TRACKER_REPOSITORY } from '@module/tracker/domain';
 @Module({
 	controllers: [TrackerController],
 	providers: [CreateTrackerUseCase, UpdateTrackerUseCase, { provide: TRACKER_REPOSITORY, useClass: TrackerRepository }],
+	exports: [TRACKER_REPOSITORY],
 })
 export class TrackerModule {}

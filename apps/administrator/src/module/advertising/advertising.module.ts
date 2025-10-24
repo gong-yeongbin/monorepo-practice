@@ -9,5 +9,6 @@ import { AdvertiserModule } from '@module/advertiser/advertiser.module';
 	imports: [AdvertiserModule],
 	controllers: [AdvertisingController],
 	providers: [CreateAdvertisingUseCase, UpdateAdvertisingUseCase, { provide: ADVERTISING_REPOSITORY, useClass: AdvertisingRepository }],
+	exports: [ADVERTISING_REPOSITORY],
 })
 export class AdvertisingModule {}

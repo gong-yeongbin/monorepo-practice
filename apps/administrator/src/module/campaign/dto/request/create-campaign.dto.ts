@@ -1,20 +1,29 @@
-import { IsString } from 'class-validator';
+import { IsEnum, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 
-export class CreateTrackerDto {
+enum Type {
+	CPI,
+	CPA,
+}
+
+export class CreateCampaignDto {
 	@IsString()
 	@Transform(({ value }) => value.replaceAll(' ', ''))
 	name: string;
 
-	@IsString()
+	@IsEnum(Type)
 	@Transform(({ value }) => value.replaceAll(' ', ''))
-	trackingUrl: string;
+	type: Type;
 
 	@IsString()
 	@Transform(({ value }) => value.replaceAll(' ', ''))
-	installPostbackUrl: string;
+	trackerName: string;
 
 	@IsString()
 	@Transform(({ value }) => value.replaceAll(' ', ''))
-	eventPostbackUrl: string;
+	advertisingName: string;
+
+	@IsString()
+	@Transform(({ value }) => value.replaceAll(' ', ''))
+	mediaName: string;
 }

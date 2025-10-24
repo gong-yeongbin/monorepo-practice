@@ -50,12 +50,11 @@ model advertising {
 }
 
 model campaign {
-  id            Int     @id @default(autoincrement())
-  token         String  @unique @db.VarChar(50)
-  name          String  @db.VarChar(30)
-  type          Type
-  is_block      Boolean @default(false)
-  is_media_sent Boolean @default(false)
+  id        Int     @id @default(autoincrement())
+  token     String  @default(uuid()) @db.VarChar(36)
+  name      String  @db.VarChar(30)
+  type      Type
+  is_active Boolean @default(true)
 
   tracker          tracker     @relation(fields: [tracker_name], references: [name])
   tracker_name     String      @db.VarChar(30)

@@ -3,6 +3,6 @@ import { Transform } from 'class-transformer';
 
 export class CreateAdvertiserDto {
 	@IsString()
-	@Transform(({ value }) => value.trim())
+	@Transform(({ value }) => value.replaceAll(' ', ''))
 	name: string;
 }
