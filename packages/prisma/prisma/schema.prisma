@@ -35,7 +35,8 @@ model tracker {
   install_postback_url String @db.Text
   event_postback_url   String @db.Text
 
-  campaign campaign[]
+  campaign    campaign[]
+  advertising advertising[]
 }
 
 model advertising {
@@ -43,8 +44,10 @@ model advertising {
   name  String  @unique @db.VarChar(30)
   image String? @db.Text
 
-  advertiser      advertiser @relation(fields: [advertiser_name], references: [name])
+  advertiser      advertiser @relation(fields: [advertiser_name], references: [name], onUpdate: Cascade)
   advertiser_name String     @db.VarChar(30)
+  tracker         tracker    @relation(fields: [tracker_name], references: [name], onUpdate: Cascade)
+  tracker_name    String     @db.VarChar(30)
 
   campaign campaign[]
 }
@@ -56,11 +59,11 @@ model campaign {
   type      Type
   is_active Boolean @default(true)
 
-  tracker          tracker     @relation(fields: [tracker_name], references: [name])
+  tracker          tracker     @relation(fields: [tracker_name], references: [name], onUpdate: Cascade)
   tracker_name     String      @db.VarChar(30)
-  advertising      advertising @relation(fields: [advertising_name], references: [name])
+  advertising      advertising @relation(fields: [advertising_name], references: [name], onUpdate: Cascade)
   advertising_name String      @db.VarChar(30)
-  media            media       @relation(fields: [media_name], references: [name])
+  media            media       @relation(fields: [media_name], references: [name], onUpdate: Cascade)
   media_name       String      @db.VarChar(30)
 
   campaign_info campaign_info[]
@@ -68,7 +71,7 @@ model campaign {
 
 model campaign_info {
   id          Int      @id @default(autoincrement())
-  campaign    campaign @relation(fields: [campaign_id], references: [id])
+  campaign    campaign @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
   campaign_id Int      @db.Int
 
   tracker_event_name String @default("install") @db.VarChar(30)

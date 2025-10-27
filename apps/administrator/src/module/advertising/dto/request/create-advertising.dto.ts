@@ -8,10 +8,14 @@ export class CreateAdvertisingDto {
 
 	@IsOptional()
 	@IsString()
-	@Transform(({ value }) => value.replaceAll(' ', ''))
+	@Transform(({ value }) => (value ? value.replaceAll(' ', '') : null))
 	image: string;
 
 	@IsString()
 	@Transform(({ value }) => value.replaceAll(' ', ''))
 	advertiserName: string;
+
+	@IsString()
+	@Transform(({ value }) => value.replaceAll(' ', ''))
+	trackerName: string;
 }
