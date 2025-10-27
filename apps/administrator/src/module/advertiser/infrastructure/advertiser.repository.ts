@@ -24,9 +24,18 @@ export class AdvertiserRepository implements IAdvertiser {
 		}
 	}
 
-	async create(advertiser: AdvertiserDto): Promise<Advertiser> {
+	async create(name: string): Promise<Advertiser> {
 		try {
-			return await this.prismaService.advertiser.create({ data: advertiser });
+			return await this.prismaService.advertiser.create({ data: { name } });
+		} catch (e) {
+			throw new InternalServerErrorException(e.message);
+		}
+	}
+
+	async update(advertiser: AdvertiserDto): Promise<Advertiser> {
+		try {
+			const { id, name } = advertiser;
+			return await this.prismaService.advertiser.update({ where: { id }, data: { name } });
 		} catch (e) {
 			throw new InternalServerErrorException(e.message);
 		}
