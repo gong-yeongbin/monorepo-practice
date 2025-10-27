@@ -40,4 +40,12 @@ export class AdvertiserRepository implements IAdvertiser {
 			throw new InternalServerErrorException(e.message);
 		}
 	}
+
+	async delete(id: number): Promise<Advertiser> {
+		try {
+			return await this.prismaService.advertiser.delete({ where: { id } });
+		} catch (e) {
+			throw new InternalServerErrorException(e.message);
+		}
+	}
 }

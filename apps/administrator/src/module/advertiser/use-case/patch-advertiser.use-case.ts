@@ -9,9 +9,9 @@ import { ResponseAdvertiserDto } from '@module/advertiser/dto/response';
 export class PatchAdvertiserUseCase {
 	constructor(@Inject(ADVERTISER_REPOSITORY) private readonly advertiserRepository: IAdvertiser) {}
 
-	async execute(id: number, name: string) {
+	async execute(id: string, name: string) {
 		const advertiser = plainToInstance(AdvertiserDto, { id, name }, { enableImplicitConversion: true });
 		const result = await this.advertiserRepository.update(advertiser);
-		return plainToInstance(ResponseAdvertiserDto, result);
+		return { data: plainToInstance(ResponseAdvertiserDto, result) };
 	}
 }

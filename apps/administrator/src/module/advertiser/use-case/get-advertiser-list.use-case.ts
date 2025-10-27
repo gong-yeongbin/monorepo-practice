@@ -10,6 +10,6 @@ export class GetAdvertiserListUseCase {
 
 	async execute() {
 		const advertisers = await this.advertiserRepository.findMany();
-		return advertisers.map((advertiser) => plainToInstance(ResponseAdvertiserListDto, advertiser));
+		return { data: advertisers.map((advertiser) => plainToInstance(ResponseAdvertiserListDto, advertiser)) };
 	}
 }

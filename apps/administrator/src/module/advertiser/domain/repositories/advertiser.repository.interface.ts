@@ -6,4 +6,5 @@ export interface IAdvertiser {
 	findMany(): Promise<Advertiser[]>;
 	create(name: string): Promise<Advertiser>;
 	update(advertiser: AdvertiserDto): Promise<Advertiser>;
+	delete(id: number): Promise<Advertiser>;
 }

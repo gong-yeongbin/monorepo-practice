@@ -13,6 +13,6 @@ export class CreateAdvertiserUseCase {
 		if (advertiser) throw new ConflictException();
 
 		advertiser = await this.advertiserRepository.create(name);
-		return plainToInstance(ResponseAdvertiserDto, advertiser);
+		return { data: plainToInstance(ResponseAdvertiserDto, advertiser) };
 	}
 }
