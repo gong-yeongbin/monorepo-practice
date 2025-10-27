@@ -19,6 +19,6 @@ export class AdvertisingController {
 
 	@Put(':id')
 	async update(@Param() param: AdvertisingIdDto, @Body() body: UpdateAdvertisingDto) {
-		return await this.updateAdUseCase.execute(param.id, body);
+		return await this.updateAdUseCase.execute(parseInt(param.id), body);
 	}
 }

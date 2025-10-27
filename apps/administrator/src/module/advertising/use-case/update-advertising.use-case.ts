@@ -19,11 +19,10 @@ export class UpdateAdvertisingUseCase {
 		advertisingDto.name = name;
 		advertisingDto.image = image;
 
-		const response = await this.advertisingRepository.update(id, advertisingDto);
+		const result = await this.advertisingRepository.update(id, advertisingDto);
 
-		const responseUpdateAdDto = plainToInstance(ResponseUpdateAdvertisingDto, response);
 		return {
-			data: responseUpdateAdDto,
+			data: plainToInstance(ResponseUpdateAdvertisingDto, result),
 		};
 	}
 }

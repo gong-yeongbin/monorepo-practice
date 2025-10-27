@@ -24,12 +24,10 @@ export class CreateAdvertisingUseCase {
 		if (advertising) throw new ConflictException();
 
 		const advertisingDto = plainToInstance(AdvertisingDto, { name, image, advertiser_name: advertiserName });
-		const response = await this.advertisingRepository.create(advertisingDto);
-
-		const responseCreateAdDto = plainToInstance(ResponseCreateAdvertisingDto, response);
+		const result = await this.advertisingRepository.create(advertisingDto);
 
 		return {
-			data: responseCreateAdDto,
+			data: plainToInstance(ResponseCreateAdvertisingDto, result),
 		};
 	}
 }
