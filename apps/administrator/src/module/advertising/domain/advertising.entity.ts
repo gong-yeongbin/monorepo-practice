@@ -5,4 +5,5 @@ export class Advertising implements advertising {
 	name: string;
 	image: string | null;
 	advertiser_name: string;
+	tracker_name: string;
 }

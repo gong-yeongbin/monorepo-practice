@@ -35,7 +35,6 @@ model tracker {
   install_postback_url String @db.Text
   event_postback_url   String @db.Text
 
-  campaign    campaign[]
   advertising advertising[]
 }
 
@@ -53,14 +52,13 @@ model advertising {
 }
 
 model campaign {
-  id        Int     @id @default(autoincrement())
-  token     String  @default(uuid()) @db.VarChar(36)
-  name      String  @db.VarChar(30)
-  type      Type
-  is_active Boolean @default(true)
+  id                   Int     @id @default(autoincrement())
+  token                String  @default(uuid()) @db.VarChar(36)
+  name                 String  @db.VarChar(30)
+  type                 Type
+  is_active            Boolean @default(true)
+  tracker_tracking_url String  @db.Text
 
-  tracker          tracker     @relation(fields: [tracker_name], references: [name], onUpdate: Cascade)
-  tracker_name     String      @db.VarChar(30)
   advertising      advertising @relation(fields: [advertising_name], references: [name], onUpdate: Cascade)
   advertising_name String      @db.VarChar(30)
   media            media       @relation(fields: [media_name], references: [name], onUpdate: Cascade)

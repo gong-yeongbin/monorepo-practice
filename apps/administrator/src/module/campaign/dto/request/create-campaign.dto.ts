@@ -17,7 +17,7 @@ export class CreateCampaignDto {
 
 	@IsString()
 	@Transform(({ value }) => value.replaceAll(' ', ''))
-	trackerName: string;
+	trackerTrackingUrl: string;
 
 	@IsString()
 	@Transform(({ value }) => value.replaceAll(' ', ''))

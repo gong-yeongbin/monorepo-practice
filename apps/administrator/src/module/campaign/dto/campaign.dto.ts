@@ -8,8 +8,8 @@ export class CampaignDto {
 	@Expose()
 	type: $Enums.Type;
 
-	@Expose({ name: 'trackerName' })
-	tracker_name: string;
+	@Expose({ name: 'trackerTrackingUrl' })
+	tracker_tracking_url: string;
 
 	@Expose({ name: 'advertisingName' })
 	advertising_name: string;

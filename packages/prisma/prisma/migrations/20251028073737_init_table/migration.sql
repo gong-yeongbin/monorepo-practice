@@ -37,6 +37,7 @@ CREATE TABLE `advertising` (
     `name` VARCHAR(30) NOT NULL,
     `image` TEXT NULL,
     `advertiser_name` VARCHAR(30) NOT NULL,
+    `tracker_name` VARCHAR(30) NOT NULL,
 
     UNIQUE INDEX `advertising_name_key`(`name`),
     PRIMARY KEY (`id`)
@@ -49,7 +50,7 @@ CREATE TABLE `campaign` (
     `name` VARCHAR(30) NOT NULL,
     `type` ENUM('CPI', 'CPA') NOT NULL,
     `is_active` BOOLEAN NOT NULL DEFAULT true,
-    `tracker_name` VARCHAR(30) NOT NULL,
+    `tracker_tracking_url` TEXT NOT NULL,
     `advertising_name` VARCHAR(30) NOT NULL,
     `media_name` VARCHAR(30) NOT NULL,
 
@@ -82,7 +83,7 @@ CREATE TABLE `media` (
 ALTER TABLE `advertising` ADD CONSTRAINT `advertising_advertiser_name_fkey` FOREIGN KEY (`advertiser_name`) REFERENCES `advertiser`(`name`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `campaign` ADD CONSTRAINT `campaign_tracker_name_fkey` FOREIGN KEY (`tracker_name`) REFERENCES `tracker`(`name`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `advertising` ADD CONSTRAINT `advertising_tracker_name_fkey` FOREIGN KEY (`tracker_name`) REFERENCES `tracker`(`name`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `campaign` ADD CONSTRAINT `campaign_advertising_name_fkey` FOREIGN KEY (`advertising_name`) REFERENCES `advertising`(`name`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -91,4 +92,4 @@ ALTER TABLE `campaign` ADD CONSTRAINT `campaign_advertising_name_fkey` FOREIGN K
 ALTER TABLE `campaign` ADD CONSTRAINT `campaign_media_name_fkey` FOREIGN KEY (`media_name`) REFERENCES `media`(`name`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `campaign_info` ADD CONSTRAINT `campaign_info_campaign_id_fkey` FOREIGN KEY (`campaign_id`) REFERENCES `campaign`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `campaign_info` ADD CONSTRAINT `campaign_info_campaign_id_fkey` FOREIGN KEY (`campaign_id`) REFERENCES `campaign`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

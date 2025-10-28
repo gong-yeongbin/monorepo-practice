@@ -6,7 +6,7 @@ export class Campaign implements campaign {
 	token: string;
 	type: $Enums.Type;
 	is_active: boolean;
-	tracker_name: string;
+	tracker_tracking_url: string;
 	advertising_name: string;
 	media_name: string;
 }

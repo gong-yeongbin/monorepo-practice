@@ -16,8 +16,8 @@ export class ResponseCreateCampaignDto {
 	@Expose({ name: 'is_active' })
 	isActive: boolean;
 
-	@Expose({ name: 'tracker_name' })
-	trackerName: string;
+	@Expose({ name: 'tracker_tracking_url' })
+	trackerTrackingUrl: string;
 
 	@Expose({ name: 'advertising_name' })
 	advertisingName: string;
