@@ -68,13 +68,13 @@ model campaign {
 }
 
 model campaign_info {
-  id          Int      @id @default(autoincrement())
-  campaign    campaign @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
-  campaign_id Int      @db.Int
-
-  tracker_event_name String @default("install") @db.VarChar(30)
-  admin_event_name   String @default("install") @db.VarChar(30)
-  media_event_name   String @default("install") @db.VarChar(30)
+  id                 Int      @id @default(autoincrement())
+  campaign           campaign @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
+  campaign_id        Int      @db.Int
+  send_media         Boolean  @default(true)
+  tracker_event_name String   @default("install") @db.VarChar(30)
+  admin_event_name   String   @default("install") @db.VarChar(30)
+  media_event_name   String   @default("install") @db.VarChar(30)
 }
 
 model media {
