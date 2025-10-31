@@ -31,6 +31,14 @@ export class AdvertisingRepository implements IAdvertising {
 		}
 	}
 
+	async findManyCampaign(id: number): Promise<Advertising | null> {
+		try {
+			return await this.prismaService.advertising.findUnique({ where: { id }, include: { campaign: true } });
+		} catch (e) {
+			throw new InternalServerErrorException(e.message);
+		}
+	}
+
 	async create(advertising: AdvertisingDto): Promise<Advertising> {
 		try {
 			return await this.prismaService.advertising.create({ data: advertising });

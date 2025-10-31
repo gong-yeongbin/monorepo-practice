@@ -5,7 +5,7 @@ import { CampaignConfigRepository, CampaignRepository } from '@module/campaign/i
 import { AdvertisingModule } from '@module/advertising/advertising.module';
 import { TrackerModule } from '@module/tracker/tracker.module';
 import { MediaModule } from '@module/media/media.module';
-import { CreateCampaignUseCase, GetCampaignListUseCase, GetCampaignUseCase, UpdateCampaignConfigUseCase } from '@module/campaign/use-case';
+import { CreateCampaignUseCase, GetCampaignUseCase, UpdateCampaignConfigUseCase } from '@module/campaign/use-case';
 
 @Module({
 	imports: [TrackerModule, AdvertisingModule, MediaModule],
@@ -13,7 +13,6 @@ import { CreateCampaignUseCase, GetCampaignListUseCase, GetCampaignUseCase, Upda
 	providers: [
 		CreateCampaignUseCase,
 		GetCampaignUseCase,
-		GetCampaignListUseCase,
 		UpdateCampaignConfigUseCase,
 		{ provide: CAMPAIGN_REPOSITORY, useClass: CampaignRepository },
 		{ provide: CAMPAIGN_CONFIG_REPOSITORY, useClass: CampaignConfigRepository },

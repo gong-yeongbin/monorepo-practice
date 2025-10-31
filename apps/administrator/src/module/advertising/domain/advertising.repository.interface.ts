@@ -5,6 +5,7 @@ export interface IAdvertising {
 	findById(id: number): Promise<Advertising | null>;
 	findByName(name: string): Promise<Advertising | null>;
 	findMany(): Promise<Advertising[]>;
+	findManyCampaign(id: number): Promise<Advertising | null>;
 	create(advertising: AdvertisingDto): Promise<Advertising>;
 	update(id: number, advertising: AdvertisingDto): Promise<Advertising>;
 }

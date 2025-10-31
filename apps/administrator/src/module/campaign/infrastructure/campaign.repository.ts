@@ -16,14 +16,6 @@ export class CampaignRepository implements ICampaign {
 		}
 	}
 
-	async findManyByAdvertigingName(advertisingName: string): Promise<Campaign[]> {
-		try {
-			return await this.prismaService.campaign.findMany({ where: { advertising_name: advertisingName } });
-		} catch (e) {
-			throw new InternalServerErrorException(e.message);
-		}
-	}
-
 	async create(campaign: CampaignDto): Promise<Campaign> {
 		try {
 			return await this.prismaService.$transaction(async (prisma) => {
