@@ -1,14 +1,17 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { CreateCampaignDto } from '@module/campaign/dto/request/create-campaign.dto';
-import { CreateCampaignUseCase } from '@module/campaign/use-case';
+import { CreateCampaignUseCase, GetCampaignListUseCase, GetCampaignUseCase } from '@module/campaign/use-case';
 import { CampaignIdDto } from '@module/campaign/dto/campaign-id.dto';
-import { GetCampaignUseCase } from '@module/campaign/use-case/get-campaign.use-case';
+import { AdvertisingIdDto } from '@module/advertising/dto/advertising-id.dto';
+import { AccessTokenValidatorGuard } from '@common/guard';
 
 @Controller('campaign')
+@UseGuards(AccessTokenValidatorGuard)
 export class CampaignController {
 	constructor(
 		private readonly createCampaignUseCase: CreateCampaignUseCase,
-		private readonly getCampaignUseCase: GetCampaignUseCase
+		private readonly getCampaignUseCase: GetCampaignUseCase,
+		private readonly getCampaignListUseCase: GetCampaignListUseCase
 	) {}
 
 	@Post()
@@ -19,5 +22,10 @@ export class CampaignController {
 	@Get(':id')
 	async get(@Param() param: CampaignIdDto) {
 		return await this.getCampaignUseCase.execute(parseInt(param.id));
+	}
+
+	@Get(':id/list')
+	async list(@Param() param: AdvertisingIdDto) {
+		return await this.getCampaignListUseCase.execute(parseInt(param.id));
 	}
 }

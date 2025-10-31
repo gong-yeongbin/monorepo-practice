@@ -1,6 +1,6 @@
 import { Expose } from 'class-transformer';
 
-export class ResponseGetCampaignDto {
+export class ResponseGetCampaignListDto {
 	@Expose()
 	id: number;
 
@@ -16,7 +16,7 @@ export class ResponseGetCampaignDto {
 	@Expose({ name: 'is_active' })
 	isActive: boolean;
 
-	@Expose({ name: 'tracker_tracking_url' })
+	@Expose({ name: 'trakcer_tracking_url' })
 	trackerTrackingUrl: string;
 
 	@Expose({ name: 'advertising_name' })

@@ -53,7 +53,7 @@ model advertising {
 
 model campaign {
   id                   Int     @id @default(autoincrement())
-  token                String  @default(uuid()) @db.VarChar(36)
+  token                String  @unique @default(uuid()) @db.VarChar(36)
   name                 String  @db.VarChar(30)
   type                 Type
   is_active            Boolean @default(true)
@@ -64,13 +64,13 @@ model campaign {
   media            media       @relation(fields: [media_name], references: [name], onUpdate: Cascade)
   media_name       String      @db.VarChar(30)
 
-  campaign_info campaign_info[]
+  campaign_config campaign_config[]
 }
 
-model campaign_info {
+model campaign_config {
   id                 Int      @id @default(autoincrement())
-  campaign           campaign @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
-  campaign_id        Int      @db.Int
+  campaign           campaign @relation(fields: [token], references: [token], onDelete: Cascade)
+  token              String   @db.VarChar(36)
   send_media         Boolean  @default(true)
   tracker_event_name String   @default("install") @db.VarChar(30)
   admin_event_name   String   @default("install") @db.VarChar(30)

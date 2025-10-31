@@ -54,13 +54,15 @@ CREATE TABLE `campaign` (
     `advertising_name` VARCHAR(30) NOT NULL,
     `media_name` VARCHAR(30) NOT NULL,
 
+    UNIQUE INDEX `campaign_token_key`(`token`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `campaign_info` (
+CREATE TABLE `campaign_config` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `campaign_id` INTEGER NOT NULL,
+    `token` VARCHAR(36) NOT NULL,
+    `send_media` BOOLEAN NOT NULL DEFAULT true,
     `tracker_event_name` VARCHAR(30) NOT NULL DEFAULT 'install',
     `admin_event_name` VARCHAR(30) NOT NULL DEFAULT 'install',
     `media_event_name` VARCHAR(30) NOT NULL DEFAULT 'install',
@@ -92,4 +94,4 @@ ALTER TABLE `campaign` ADD CONSTRAINT `campaign_advertising_name_fkey` FOREIGN K
 ALTER TABLE `campaign` ADD CONSTRAINT `campaign_media_name_fkey` FOREIGN KEY (`media_name`) REFERENCES `media`(`name`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `campaign_info` ADD CONSTRAINT `campaign_info_campaign_id_fkey` FOREIGN KEY (`campaign_id`) REFERENCES `campaign`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `campaign_config` ADD CONSTRAINT `campaign_config_token_fkey` FOREIGN KEY (`token`) REFERENCES `campaign`(`token`) ON DELETE CASCADE ON UPDATE CASCADE;

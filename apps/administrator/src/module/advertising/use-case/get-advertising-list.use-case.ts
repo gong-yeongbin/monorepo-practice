@@ -4,7 +4,7 @@ import { plainToInstance } from 'class-transformer';
 import { ResponseGetAdvertisingListDto } from '@module/advertising/dto/response/response-get-advertising-list.dto';
 
 @Injectable()
-export class GetAdvertisingUseCase {
+export class GetAdvertisingListUseCase {
 	constructor(@Inject(ADVERTISING_REPOSITORY) private readonly advertisingRepository: IAdvertising) {}
 
 	async execute() {

@@ -13,7 +13,8 @@
     "deploy:dev": "prisma migrate dev deploy",
     "migrate:prod": "prisma migrate",
     "deploy:prod": "prisma migrate deploy",
-    "generate": "prisma generate"
+    "generate": "prisma generate",
+    "reset": "prisma migrate reset"
   },
   "keywords": [],
   "author": "",

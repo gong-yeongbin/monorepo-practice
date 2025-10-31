@@ -16,11 +16,19 @@ export class CampaignRepository implements ICampaign {
 		}
 	}
 
+	async findManyByAdvertigingName(advertisingName: string): Promise<Campaign[]> {
+		try {
+			return await this.prismaService.campaign.findMany({ where: { advertising_name: advertisingName } });
+		} catch (e) {
+			throw new InternalServerErrorException(e.message);
+		}
+	}
+
 	async create(campaign: CampaignDto): Promise<Campaign> {
 		try {
 			return await this.prismaService.$transaction(async (prisma) => {
 				const result = await prisma.campaign.create({ data: campaign });
-				await prisma.campaign_info.create({ data: { campaign_id: result.id } });
+				await prisma.campaign_config.create({ data: { token: result.token } });
 				return result;
 			});
 		} catch (e) {

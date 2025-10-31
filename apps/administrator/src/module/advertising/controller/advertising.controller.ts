@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
-import { CreateAdvertisingUseCase, GetAdvertisingUseCase, UpdateAdvertisingUseCase } from '@module/advertising/use-case';
+import { CreateAdvertisingUseCase, GetAdvertisingListUseCase, UpdateAdvertisingUseCase } from '@module/advertising/use-case';
 import { CreateAdvertisingDto, UpdateAdvertisingDto } from '@module/advertising/dto/request';
 import { AdvertisingIdDto } from '@module/advertising/dto/advertising-id.dto';
 import { AccessTokenValidatorGuard } from '@common/guard';
@@ -10,12 +10,12 @@ export class AdvertisingController {
 	constructor(
 		private readonly createAdvertisingUseCase: CreateAdvertisingUseCase,
 		private readonly updateAdvertisingUseCase: UpdateAdvertisingUseCase,
-		private readonly getAdvertisingUseCase: GetAdvertisingUseCase
+		private readonly getAdvertisingListUseCase: GetAdvertisingListUseCase
 	) {}
 
 	@Get()
-	async gets() {
-		return await this.getAdvertisingUseCase.execute();
+	async list() {
+		return await this.getAdvertisingListUseCase.execute();
 	}
 
 	@Post()
