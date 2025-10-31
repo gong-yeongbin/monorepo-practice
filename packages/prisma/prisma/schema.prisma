@@ -75,6 +75,8 @@ model campaign_config {
   tracker_event_name String   @default("install") @db.VarChar(30)
   admin_event_name   String   @default("install") @db.VarChar(30)
   media_event_name   String   @default("install") @db.VarChar(30)
+
+  @@unique([token, admin_event_name])
 }
 
 model media {
