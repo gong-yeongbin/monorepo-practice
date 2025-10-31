@@ -1,6 +1,5 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCampaignDto } from '@module/campaign/dto/request/create-campaign.dto';
-import { ITracker, TRACKER_REPOSITORY } from '@module/tracker/domain';
 import { ADVERTISING_REPOSITORY, IAdvertising } from '@module/advertising/domain';
 import { IMedia, MEDIA_REPOSITORY } from '@module/media/domain';
 import { CAMPAIGN_REPOSITORY } from '@module/campaign/domain/symbol';

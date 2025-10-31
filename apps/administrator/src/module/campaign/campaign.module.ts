@@ -6,10 +6,11 @@ import { AdvertisingModule } from '@module/advertising/advertising.module';
 import { TrackerModule } from '@module/tracker/tracker.module';
 import { MediaModule } from '@module/media/media.module';
 import { CreateCampaignUseCase } from '@module/campaign/use-case';
+import { GetCampaignUseCase } from '@module/campaign/use-case/get-campaign.use-case';
 
 @Module({
 	imports: [TrackerModule, AdvertisingModule, MediaModule],
 	controllers: [CampaignController],
-	providers: [CreateCampaignUseCase, { provide: CAMPAIGN_REPOSITORY, useClass: CampaignRepository }],
+	providers: [CreateCampaignUseCase, GetCampaignUseCase, { provide: CAMPAIGN_REPOSITORY, useClass: CampaignRepository }],
 })
 export class CampaignModule {}
