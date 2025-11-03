@@ -12,11 +12,13 @@ export class UpdateCampaignConfigUseCase {
 		@Inject(CAMPAIGN_CONFIG_REPOSITORY) private readonly campaignConfigRepository: ICampaignConfig
 	) {}
 
-	async execute(id: number, body: UpdateCampaignConfigDto) {
+	async execute(id: number, body: UpdateCampaignConfigDto[]) {
 		const campaign = await this.campaignRepository.find(id);
 		if (!campaign) throw new NotFoundException();
 
-		const campaignConfig = plainToInstance(CampaignConfigDto, body, { excludeExtraneousValues: true });
-		return await this.campaignConfigRepository.upsert(campaign.token, campaignConfig);
+		for (const config of body) {
+			const campaignConfig = plainToInstance(CampaignConfigDto, config, { excludeExtraneousValues: true });
+			await this.campaignConfigRepository.upsert(campaign.token, campaignConfig);
+		}
 	}
 }

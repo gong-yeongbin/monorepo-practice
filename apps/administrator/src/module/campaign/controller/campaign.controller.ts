@@ -25,7 +25,7 @@ export class CampaignController {
 	}
 
 	@Patch(':id')
-	async patch(@Param() param: CampaignIdDto, @Body() body: UpdateCampaignConfigDto) {
+	async patch(@Param() param: CampaignIdDto, @Body() body: UpdateCampaignConfigDto[]) {
 		return await this.updateCampaignConfigUseCase.execute(parseInt(param.id), body);
 	}
 }
