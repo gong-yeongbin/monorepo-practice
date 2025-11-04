@@ -17,27 +17,27 @@ export class TrackingUseCase {
 		const campaign = await this.campaignRepository.find(token);
 		if (!campaign) throw new NotFoundException();
 
-		let mapping: Appsflyer | Airbridge | Adbrixremaster | Adjust | Singular;
+		let instance: Appsflyer | Airbridge | Adbrixremaster | Adjust | Singular;
 		switch (campaign.tracker_name) {
 			case 'appsflyer':
-				mapping = plainToInstance(Appsflyer, { ...query, viewCode }, { excludeExtraneousValues: true });
+				instance = plainToInstance(Appsflyer, { ...query, viewCode }, { excludeExtraneousValues: true });
 				break;
 			case 'airbridge':
-				mapping = plainToInstance(Airbridge, { ...query, viewCode }, { excludeExtraneousValues: true });
+				instance = plainToInstance(Airbridge, { ...query, viewCode }, { excludeExtraneousValues: true });
 				break;
 			case 'adbrixremaster':
-				mapping = plainToInstance(Adbrixremaster, { ...query, viewCode, m_adid: adid || idfa }, { excludeExtraneousValues: true });
+				instance = plainToInstance(Adbrixremaster, { ...query, viewCode, m_adid: adid || idfa }, { excludeExtraneousValues: true });
 				break;
 			case 'adjust':
-				mapping = plainToInstance(Adjust, { ...query, viewCode }, { excludeExtraneousValues: true });
+				instance = plainToInstance(Adjust, { ...query, viewCode }, { excludeExtraneousValues: true });
 				break;
 			case 'singular':
-				mapping = plainToInstance(Singular, { ...query, viewCode }, { excludeExtraneousValues: true });
+				instance = plainToInstance(Singular, { ...query, viewCode }, { excludeExtraneousValues: true });
 				break;
 		}
 
 		const trackerTrackingUrl = campaign.tracker_tracking_url;
-		return trackerTrackingUrl.replace(/\{(\w+)\}/g, (_, key) => mapping[key] ?? '');
+		return trackerTrackingUrl.replace(/\{(\w+)\}/g, (_, key) => instance[key] ?? '');
 
 		// 캐시 조회 (token)
 
