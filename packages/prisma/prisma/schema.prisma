@@ -36,6 +36,7 @@ model tracker {
   event_postback_url   String @db.Text
 
   advertising advertising[]
+  campaign    campaign[]
 }
 
 model advertising {
@@ -59,6 +60,8 @@ model campaign {
   is_active            Boolean @default(true)
   tracker_tracking_url String  @db.Text
 
+  tracker          tracker     @relation(fields: [tracker_name], references: [name], onUpdate: Cascade)
+  tracker_name     String      @db.VarChar(30)
   advertising      advertising @relation(fields: [advertising_name], references: [name], onUpdate: Cascade)
   advertising_name String      @db.VarChar(30)
   media            media       @relation(fields: [media_name], references: [name], onUpdate: Cascade)

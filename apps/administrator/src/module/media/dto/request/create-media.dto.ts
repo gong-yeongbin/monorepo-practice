@@ -3,7 +3,7 @@ import { Transform } from 'class-transformer';
 
 export class CreateMediaDto {
 	@IsString()
-	@Transform(({ value }) => value.replaceAll(' ', ''))
+	@Transform(({ value }) => value.replaceAll(' ', '').toLowerCase())
 	name: string;
 
 	@IsString()

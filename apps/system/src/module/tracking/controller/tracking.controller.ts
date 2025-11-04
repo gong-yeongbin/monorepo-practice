@@ -1,6 +1,6 @@
 import { Controller, Get, Query, Redirect } from '@nestjs/common';
-import { TrackingDto } from '../dto/request';
-import { TrackingUseCase } from '../use-case';
+import { TrackingDto } from '@tracking/dto/request';
+import { TrackingUseCase } from '@tracking/use-case';
 
 @Controller()
 export class TrackingController {
@@ -8,8 +8,8 @@ export class TrackingController {
 
 	@Get('tracking')
 	@Redirect()
-	async trackingProducer(@Query() query: TrackingDto) {
-		const url = await this.trackingUseCase.execute(query);
-		return { url, statudCode: 302 };
+	async tracking(@Query() query: TrackingDto) {
+		const redirectUrl = await this.trackingUseCase.execute(query);
+		return { url: redirectUrl, statudCode: 302 };
 	}
 }

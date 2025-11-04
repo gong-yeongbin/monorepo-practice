@@ -11,6 +11,9 @@ export class CampaignDto {
 	@Expose({ name: 'trackerTrackingUrl' })
 	tracker_tracking_url: string;
 
+	@Expose({ name: 'trackerName' })
+	tracker_name: string;
+
 	@Expose({ name: 'advertisingName' })
 	advertising_name: string;
 

@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
-import { TrackingController } from './controller/tracking.controller';
-import { TrackingUseCase } from './use-case';
+import { CAMPAIGN_REPOSITORY } from '@tracking/domain/symbol';
+import { CampaignRepository } from '@tracking/infrastructure';
+import { TrackingController } from '@tracking/controller';
+import { TrackingUseCase } from '@tracking/use-case';
 
 @Module({
 	controllers: [TrackingController],
-	providers: [TrackingUseCase],
+	providers: [TrackingUseCase, { provide: CAMPAIGN_REPOSITORY, useClass: CampaignRepository }],
 })
 export class TrackingModule {}

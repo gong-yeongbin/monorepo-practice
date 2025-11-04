@@ -20,10 +20,14 @@ export class CreateCampaignDto {
 	trackerTrackingUrl: string;
 
 	@IsString()
+	@Transform(({ value }) => value.replaceAll(' ', '').toLowerCase())
+	trackerName: string;
+
+	@IsString()
 	@Transform(({ value }) => value.replaceAll(' ', ''))
 	advertisingName: string;
 
 	@IsString()
-	@Transform(({ value }) => value.replaceAll(' ', ''))
+	@Transform(({ value }) => value.replaceAll(' ', '').toLowerCase())
 	mediaName: string;
 }

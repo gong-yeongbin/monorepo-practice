@@ -1,24 +1,39 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, ValidateIf } from 'class-validator';
+import { Expose } from 'class-transformer';
 
 export class TrackingDto {
+	@Expose()
+	@IsNotEmpty()
 	@IsString()
 	token: string;
 
+	@Expose({ name: 'click_id' })
+	@IsNotEmpty()
 	@IsString()
-	click_id: string;
+	clickId: string;
 
-	@IsString()
-	pub_id: string;
-
-	@IsString()
+	@Expose({ name: 'pub_id' })
 	@IsOptional()
-	sub_id: string;
-
 	@IsString()
+	pubId: string;
+
+	@Expose({ name: 'sub_id' })
 	@IsOptional()
+	@IsString()
+	subId: string;
+
+	@Expose()
+	@IsOptional()
+	@IsString()
 	adid: string;
 
-	@IsString()
+	@Expose()
 	@IsOptional()
+	@IsString()
 	idfa: string;
+
+	@Expose()
+	@IsOptional()
+	@IsString()
+	uuid: string;
 }

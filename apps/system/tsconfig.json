@@ -1,7 +1,13 @@
 {
   "extends": "@repo/typescript/nestjs.json",
   "compilerOptions": {
+    "outDir": "./dist",
     "baseUrl": "./",
-    "outDir": "./dist"
+    "paths": {
+      "@src/*": ["src/*"],
+      "@module/*": ["src/module/*"],
+      "@tracking/*": ["src/module/tracking/*"],
+      "@postback/*": ["src/module/postback/*"]
+    }
   }
 }
