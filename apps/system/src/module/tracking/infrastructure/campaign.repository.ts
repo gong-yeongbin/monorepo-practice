@@ -7,7 +7,7 @@ import { PrismaService } from '@repo/prisma';
 export class CampaignRepository implements ICampaign {
 	constructor(private readonly prismaService: PrismaService) {}
 
-	async find(token: string): Promise<Campaign | null> {
+	async findByToken(token: string): Promise<Campaign | null> {
 		try {
 			return await this.prismaService.campaign.findUnique({ where: { token }, include: {} });
 		} catch (error) {

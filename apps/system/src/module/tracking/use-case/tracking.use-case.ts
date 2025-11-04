@@ -1,20 +1,19 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { createHash } from 'crypto';
 import { CAMPAIGN_REPOSITORY } from '@tracking/domain/symbol';
 import { ICampaign } from '@tracking/domain/repositories';
 import { Adbrixremaster, Adjust, Airbridge, Appsflyer, Singular } from '@tracking/dto';
-import { TrackingDto } from '@tracking/dto/request';
+import { BodyDto, QueryDto } from '@tracking/dto/request';
 
 @Injectable()
 export class TrackingUseCase {
 	constructor(@Inject(CAMPAIGN_REPOSITORY) private readonly campaignRepository: ICampaign) {}
 
-	async execute(query: TrackingDto): Promise<string> {
-		const { token, pubId, subId, adid, idfa } = query;
-		const viewCode = createHash('sha256').update(`${token}${pubId}${subId}`).digest('base64');
+	async execute(query: QueryDto, body: BodyDto): Promise<string> {
+		const { token, adid, idfa } = query;
+		const { viewCode } = body;
 
-		const campaign = await this.campaignRepository.find(token);
+		const campaign = await this.campaignRepository.findByToken(token);
 		if (!campaign) throw new NotFoundException();
 
 		let instance: Appsflyer | Airbridge | Adbrixremaster | Adjust | Singular;

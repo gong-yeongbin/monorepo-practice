@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsOptional, IsString, ValidateIf } from 'class-validator';
 import { Expose } from 'class-transformer';
 
-export class TrackingDto {
+export class QueryDto {
 	@Expose()
 	@IsNotEmpty()
 	@IsString()
