@@ -3,11 +3,11 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { TrackingModule } from './module';
-import { ValkeyModule } from './core/valkey/valkey.module';
+import { CacheModule } from '@src/core/cache/cache.module';
 import { PrismaModule } from '@repo/prisma';
 
 @Module({
-	imports: [ConfigModule.forRoot({ envFilePath: `${process.cwd()}/.env` }), PrismaModule, ValkeyModule, TrackingModule],
+	imports: [ConfigModule.forRoot({ envFilePath: `${process.cwd()}/.env` }), PrismaModule, CacheModule, TrackingModule],
 	controllers: [AppController],
 	providers: [AppService],
 })
