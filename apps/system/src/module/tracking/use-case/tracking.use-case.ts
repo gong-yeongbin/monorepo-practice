@@ -2,7 +2,7 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { CAMPAIGN_REPOSITORY } from '@tracking/domain/symbol';
 import { ICampaign } from '@tracking/domain/repositories';
-import { Adbrixremaster, Adjust, Airbridge, Appsflyer, Singular } from '@tracking/dto';
+import { Adbrixremaster, Adjust, Airbridge, Appsflyer } from '@tracking/dto';
 import { BodyDto, QueryDto } from '@tracking/dto/request';
 
 @Injectable()
@@ -16,7 +16,7 @@ export class TrackingUseCase {
 		const campaign = await this.campaignRepository.findByToken(token);
 		if (!campaign) throw new NotFoundException();
 
-		let instance: Appsflyer | Airbridge | Adbrixremaster | Adjust | Singular;
+		let instance!: Appsflyer | Airbridge | Adbrixremaster | Adjust;
 		switch (campaign.tracker_name) {
 			case 'appsflyer':
 				instance = plainToInstance(Appsflyer, { ...query, viewCode }, { excludeExtraneousValues: true });
@@ -29,9 +29,6 @@ export class TrackingUseCase {
 				break;
 			case 'adjust':
 				instance = plainToInstance(Adjust, { ...query, viewCode }, { excludeExtraneousValues: true });
-				break;
-			case 'singular':
-				instance = plainToInstance(Singular, { ...query, viewCode }, { excludeExtraneousValues: true });
 				break;
 		}
 
