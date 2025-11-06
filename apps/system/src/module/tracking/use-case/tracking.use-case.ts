@@ -24,7 +24,7 @@ export class TrackingUseCase {
 			case 'airbridge':
 				instance = plainToInstance(Airbridge, { ...query, viewCode }, { excludeExtraneousValues: true });
 				break;
-			case 'adbrixremaster':
+			case 'adbrix-remaster':
 				instance = plainToInstance(Adbrixremaster, { ...query, viewCode, m_adid: adid || idfa }, { excludeExtraneousValues: true });
 				break;
 			case 'adjust':
