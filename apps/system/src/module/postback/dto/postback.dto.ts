@@ -2,7 +2,7 @@ import { Expose } from 'class-transformer';
 
 export class PostbackDto {
 	@Expose()
-	tracker: string;
+	trackerName: string;
 
 	@Expose()
 	eventName: string;

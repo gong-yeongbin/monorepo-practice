@@ -8,11 +8,11 @@ import { Adbrixremaster, Adjust, Airbridge, Appsflyer } from '@postback/dto/inst
 export class InstallPostbackUseCase {
 	constructor() {}
 
-	async execute(tracker: string, query: any) {
+	async execute(name: string, query: any) {
 		let installPostback!: Appsflyer | Airbridge | Adbrixremaster | Adjust;
 		const eventName = 'install';
 
-		switch (tracker) {
+		switch (name) {
 			case 'appsflyer':
 				installPostback = plainToInstance(Appsflyer, query, { excludeExtraneousValues: true });
 				break;
@@ -31,7 +31,7 @@ export class InstallPostbackUseCase {
 
 		return plainToInstance(
 			PostbackDto,
-			{ tracker, eventName, ...installPostback, pubId, subId, query: JSON.stringify(query) },
+			{ trackerName: name, eventName, ...installPostback, pubId, subId, query: JSON.stringify(query) },
 			{ excludeExtraneousValues: true, exposeDefaultValues: true }
 		);
 	}
