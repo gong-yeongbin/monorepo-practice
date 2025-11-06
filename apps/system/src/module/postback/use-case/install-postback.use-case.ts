@@ -19,7 +19,7 @@ export class InstallPostbackUseCase {
 			case 'airbridge':
 				installPostback = plainToInstance(Airbridge, query, { excludeExtraneousValues: true });
 				break;
-			case 'adbrixremaster':
+			case 'adbrix-remaster':
 				installPostback = plainToInstance(Adbrixremaster, query, { excludeExtraneousValues: true });
 				break;
 			case 'adjust':
