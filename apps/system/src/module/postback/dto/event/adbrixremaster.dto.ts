@@ -16,10 +16,12 @@ export class Adbrixremaster {
 
 	@Expose()
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	@Transform(({ obj }) => obj.adid || null)
 	adid: string;
 
 	@Expose({ name: 'idfv' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	@Transform(({ obj }) => obj.idfv || null)
 	idfa: string;
 
 	@Expose({ name: 'a_ip' })
@@ -30,13 +32,45 @@ export class Adbrixremaster {
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
 	countryCode: string;
 
-	@Expose({ name: 'a_server_datetime' })
-	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
-	@Transform(({ value }) => dayjs(value).add(9, 'hour').toDate())
-	clickDateTime: Date;
-
 	@Expose({ name: 'event_datetime' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
 	@Transform(({ value }) => dayjs(value).add(9, 'hour').toDate())
 	installDateTime: Date;
+
+	@Expose({ name: 'event_datetime' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	@Transform(({ value }) => dayjs(value).add(9, 'hour').toDate())
+	eventDateTime: Date;
+
+	@Expose({ name: 'event_name' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	eventName: string;
+
+	@Expose()
+	@Transform(({ obj }) => {
+		if (obj?.param_json) {
+			const paramJson = JSON.parse(obj.param_json);
+			if (paramJson['abx:item.abx:sales']) {
+				return paramJson['abx:item.abx:currency'];
+			} else if (paramJson['abx:items']) {
+				return paramJson['abx:items'][0]['abx:currency'];
+			}
+			return null;
+		}
+	})
+	revenueCurrency: string;
+
+	@Expose()
+	@Transform(({ obj }) => {
+		if (obj?.param_json) {
+			const paramJson = JSON.parse(obj.param_json);
+			if (paramJson['abx:item.abx:sales']) {
+				return paramJson['abx:item.abx:sales'];
+			} else if (paramJson['abx:items']) {
+				return paramJson['abx:items'].reduce((acc, curr) => (acc += parseInt(curr['abx:sales']) || 0), 0);
+			}
+			return null;
+		}
+	})
+	revenue: string;
 }

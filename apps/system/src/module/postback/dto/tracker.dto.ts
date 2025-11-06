@@ -1,7 +1,7 @@
 import { IsEnum } from 'class-validator';
 
 enum Name {
-	ADBRIXREMASTER = 'adbrixremaster',
+	ADBRIXREMASTER = 'adbrix-remaster',
 	ADJUST = 'adjust',
 	AIRBRIDGE = 'airbridge',
 	APPSFLYER = 'appsflyer',

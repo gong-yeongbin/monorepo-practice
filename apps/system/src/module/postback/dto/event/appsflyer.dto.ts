@@ -1,43 +1,53 @@
 import { Expose, Transform } from 'class-transformer';
-import * as dayjs from 'dayjs';
 
-export class Airbridge {
-	@Expose({ name: 'click_id' })
+export class Appsflyer {
+	@Expose({ name: 'clickid' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
 	clickId: string;
 
-	@Expose({ name: 'sub_id' })
+	@Expose({ name: 'af_siteid' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
 	viewCode: string;
 
-	@Expose({ name: 'custom_param1' })
+	@Expose({ name: 'af_c_id' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
 	token: string;
 
-	@Expose({ name: 'google_aid' })
+	@Expose({ name: 'advertising_id' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	@Transform(({ obj }) => obj.advertising_id || null)
 	adid: string;
 
 	@Expose()
-	@Transform(({ obj }) => obj.ios_idfa || obj.ios_ifv)
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	@Transform(({ obj }) => obj.idfv || obj.idfa || null)
 	idfa: string;
 
 	@Expose({ name: 'device_ip' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
 	ip: string;
 
-	@Expose({ name: 'country' })
+	@Expose({ name: 'country_code' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
 	countryCode: string;
 
-	@Expose({ name: 'click_timestamp' })
+	@Expose({ name: 'install_time' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
-	@Transform(({ value }) => dayjs.unix(value / 1000).toDate())
-	clickDateTime: Date;
-
-	@Expose({ name: 'install_timestamp' })
-	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
-	@Transform(({ value }) => dayjs.unix(value / 1000).toDate())
 	installDateTime: Date;
+
+	@Expose({ name: 'event_time' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	eventDateTime: Date;
+
+	@Expose({ name: 'event_name' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	eventName: string;
+
+	@Expose({ name: 'event_revenue_currency' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	revenueCurrency: string;
+
+	@Expose({ name: 'event_revenue' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	revenue: string;
 }

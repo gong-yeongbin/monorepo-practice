@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { PostbackController } from '@postback/controller';
-import { InstallPostbackUseCase } from '@postback/use-case';
+import { EventPostbackUseCase, InstallPostbackUseCase } from '@postback/use-case';
 
 @Module({
 	controllers: [PostbackController],
-	providers: [InstallPostbackUseCase],
+	providers: [InstallPostbackUseCase, EventPostbackUseCase],
 })
 export class PostbackModule {}

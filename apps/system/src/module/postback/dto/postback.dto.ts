@@ -2,6 +2,12 @@ import { Expose } from 'class-transformer';
 
 export class PostbackDto {
 	@Expose()
+	tracker: string;
+
+	@Expose()
+	eventName: string;
+
+	@Expose()
 	clickId: string;
 
 	@Expose()
@@ -33,4 +39,13 @@ export class PostbackDto {
 
 	@Expose()
 	installDateTime: Date;
+
+	@Expose()
+	eventDateTime: Date;
+
+	@Expose()
+	revenueCurrency: string;
+
+	@Expose()
+	revenue: string;
 }
