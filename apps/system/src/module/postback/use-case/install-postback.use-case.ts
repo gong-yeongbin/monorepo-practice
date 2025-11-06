@@ -29,6 +29,10 @@ export class InstallPostbackUseCase {
 		const pubId = base64.decode(installPostback.viewCode).split(':')[1] || null;
 		const subId = base64.decode(installPostback.viewCode).split(':')[2] || null;
 
-		return plainToInstance(PostbackDto, { tracker, eventName, ...installPostback, pubId, subId }, { excludeExtraneousValues: true, exposeDefaultValues: true });
+		return plainToInstance(
+			PostbackDto,
+			{ tracker, eventName, ...installPostback, pubId, subId, query: JSON.stringify(query) },
+			{ excludeExtraneousValues: true, exposeDefaultValues: true }
+		);
 	}
 }

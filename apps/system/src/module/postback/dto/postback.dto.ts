@@ -48,4 +48,7 @@ export class PostbackDto {
 
 	@Expose()
 	revenue: string;
+
+	@Expose()
+	query: string;
 }
