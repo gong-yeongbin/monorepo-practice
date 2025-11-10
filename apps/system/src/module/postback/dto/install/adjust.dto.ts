@@ -40,10 +40,10 @@ export class Adjust {
 	@Expose({ name: 'click_time' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
 	@Transform(({ value }) => dayjs.unix(value).utcOffset(540).format(), { toClassOnly: true })
-	clickDateTime: Date;
+	clickedAt: Date;
 
 	@Expose({ name: 'installed_at' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
 	@Transform(({ value }) => dayjs.unix(value).utcOffset(540).format(), { toClassOnly: true })
-	installDateTime: Date;
+	installedAt: Date;
 }

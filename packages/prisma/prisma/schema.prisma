@@ -91,29 +91,29 @@ model media {
   campaign campaign[]
 }
 
-// model postback {
-//   id               Int       @id @default(autoincrement())
-//   tracker_name     String    @db.VarChar(30)
-//   event_name       String    @db.VarChar(100)
-//   click_id         String    @db.VarChar(100)
-//   pub_id           String?   @db.VarChar(50)
-//   sub_id           String?   @db.VarChar(50)
-//   view_code        String    @db.VarChar(100)
-//   token            String    @db.VarChar(100)
-//   adid             String?   @db.VarChar(50)
-//   idfa             String?   @db.VarChar(50)
-//   ip               String    @db.VarChar(30)
-//   country_code     String?   @db.VarChar(10)
-//   clicked_at       DateTime? @db.DateTime()
-//   installed_at     DateTime? @db.DateTime()
-//   evented_at       DateTime? @db.DateTime()
-//   media_sent_at    DateTime? @db.DateTime()
-//   revenue_currency String?   @db.VarChar(10)
-//   revenue          String?   @db.VarChar(50)
-//   query            String    @db.Text
-//
-//   @@index([token])
-// }
+model postback {
+  id               Int       @id @default(autoincrement())
+  tracker_name     String    @db.VarChar(30)
+  event_name       String    @db.VarChar(100)
+  click_id         String    @db.VarChar(100)
+  pub_id           String?   @db.VarChar(50)
+  sub_id           String?   @db.VarChar(50)
+  view_code        String    @db.VarChar(100)
+  token            String    @db.VarChar(100)
+  adid             String?   @db.VarChar(50)
+  idfa             String?   @db.VarChar(50)
+  ip               String    @db.VarChar(30)
+  country_code     String?   @db.VarChar(10)
+  clicked_at       DateTime? @db.DateTime()
+  installed_at     DateTime? @db.DateTime()
+  evented_at       DateTime? @db.DateTime()
+  media_sent_at    DateTime? @db.DateTime()
+  revenue_currency String?   @db.VarChar(10)
+  revenue          String?   @db.VarChar(50)
+  raw_query_params String    @db.Text
+
+  @@index([token])
+}
 
 enum Role {
   ADMIN

@@ -34,11 +34,11 @@ export class Adbrixremaster {
 
 	@Expose({ name: 'a_server_datetime' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
-	@Transform(({ value }) => dayjs(value).add(9, 'hour').toDate())
-	clickDateTime: Date;
+	@Transform(({ value }) => dayjs(value).add(9, 'hour').format())
+	clickedAt: Date;
 
 	@Expose({ name: 'event_datetime' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
-	@Transform(({ value }) => dayjs(value).add(9, 'hour').toDate())
-	installDateTime: Date;
+	@Transform(({ value }) => dayjs(value).add(9, 'hour').format())
+	installedAt: Date;
 }

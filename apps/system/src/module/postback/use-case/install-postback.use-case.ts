@@ -31,7 +31,7 @@ export class InstallPostbackUseCase {
 
 		return plainToInstance(
 			PostbackDto,
-			{ trackerName: name, eventName, ...installPostback, pubId, subId, query: JSON.stringify(query) },
+			{ trackerName: name, eventName, ...installPostback, pubId, subId, rawQueryParams: JSON.stringify(query) },
 			{ excludeExtraneousValues: true, exposeDefaultValues: true }
 		);
 	}

@@ -30,7 +30,7 @@ export class EventPostbackUseCase {
 
 		return plainToInstance(
 			PostbackDto,
-			{ trackerName: name, ...eventPostback, pubId, subId, query: JSON.stringify(query) },
+			{ trackerName: name, ...eventPostback, pubId, subId, rawQueryParams: JSON.stringify(query) },
 			{ excludeExtraneousValues: true, exposeDefaultValues: true }
 		);
 	}

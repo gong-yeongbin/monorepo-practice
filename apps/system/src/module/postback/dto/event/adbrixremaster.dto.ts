@@ -32,15 +32,15 @@ export class Adbrixremaster {
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
 	countryCode: string;
 
-	@Expose({ name: 'event_datetime' })
+	@Expose({ name: 'attr_event_datetime' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
-	@Transform(({ value }) => dayjs(value).add(9, 'hour').toDate())
-	installDateTime: Date;
+	@Transform(({ value }) => dayjs(value).add(9, 'hour').format())
+	installedAt: Date;
 
 	@Expose({ name: 'event_datetime' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
-	@Transform(({ value }) => dayjs(value).add(9, 'hour').toDate())
-	eventDateTime: Date;
+	@Transform(({ value }) => dayjs(value).add(9, 'hour').format())
+	eventedAt: Date;
 
 	@Expose({ name: 'event_name' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))

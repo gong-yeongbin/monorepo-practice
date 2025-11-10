@@ -33,11 +33,11 @@ export class Appsflyer {
 
 	@Expose({ name: 'install_time' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
-	installDateTime: Date;
+	installedAt: Date;
 
 	@Expose({ name: 'event_time' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
-	eventDateTime: Date;
+	eventedAt: Date;
 
 	@Expose({ name: 'event_name' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))

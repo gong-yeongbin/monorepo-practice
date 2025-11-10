@@ -35,12 +35,12 @@ export class Airbridge {
 	@Expose({ name: 'install_timestamp' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
 	@Transform(({ value }) => dayjs.unix(value / 1000).toDate())
-	installDateTime: Date;
+	installedAt: Date;
 
 	@Expose({ name: 'event_timestamp' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
 	@Transform(({ value }) => dayjs.unix(value / 1000).toDate())
-	eventDateTime: Date;
+	eventedAt: Date;
 
 	@Expose()
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))

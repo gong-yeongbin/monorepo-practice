@@ -33,9 +33,9 @@ export class Appsflyer {
 
 	@Expose({ name: 'click_time' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
-	clickDateTime: Date;
+	clickedAt: Date;
 
 	@Expose({ name: 'install_time' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
-	installDateTime: Date;
+	installedAt: Date;
 }
