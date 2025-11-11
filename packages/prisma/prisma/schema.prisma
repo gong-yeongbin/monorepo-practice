@@ -115,6 +115,29 @@ model postback {
   @@index([token])
 }
 
+model daily_statistic {
+  id           Int      @id @default(autoincrement())
+  view_code    String   @db.VarChar(100)
+  token        String   @db.VarChar(100)
+  pub_id       String?  @db.VarChar(50)
+  sub_id       String?  @db.VarChar(50)
+  click        Int      @default(0)
+  install      Int      @default(0)
+  registration Int      @default(0)
+  retention    Int      @default(0)
+  purchase     Int      @default(0)
+  revenue      Int      @default(0)
+  etc1         Int      @default(0)
+  etc2         Int      @default(0)
+  etc3         Int      @default(0)
+  etc4         Int      @default(0)
+  etc5         Int      @default(0)
+  unregistered Int      @default(0)
+  created_at   DateTime @db.Date()
+
+  @@unique([view_code, created_at])
+}
+
 enum Role {
   ADMIN
   ADVERTISER

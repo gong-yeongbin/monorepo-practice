@@ -1,8 +1,7 @@
-import { CallHandler, ExecutionContext, Inject, Injectable, NestInterceptor } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Inject, Injectable, NestInterceptor, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { map, Observable, of } from 'rxjs';
 import { ICache } from '@src/core/cache/domain/repositories';
 import { CACHE_REPOSITORY } from '@src/core/cache/domain/symbol';
-import { base64 } from '@src/common/util/base64.util';
 
 @Injectable()
 export class TrackingCacheInterceptor implements NestInterceptor {
@@ -11,9 +10,7 @@ export class TrackingCacheInterceptor implements NestInterceptor {
 	async intercept(context: ExecutionContext, next: CallHandler<any>): Promise<Observable<any>> {
 		const request = context.switchToHttp().getRequest();
 		const response = context.switchToHttp().getResponse();
-		const viewCode = base64.encode(`${request.query?.token}:${request.query?.pub_id ?? ''}:${request.query?.sub_id ?? ''}`);
-
-		request.body = { viewCode };
+		const viewCode = request.body?.viewCode;
 
 		const url = await this.cache.get(viewCode);
 		if (url) {

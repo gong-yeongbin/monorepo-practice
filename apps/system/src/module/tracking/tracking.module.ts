@@ -1,13 +1,29 @@
 import { Module } from '@nestjs/common';
-import { CAMPAIGN_REPOSITORY } from '@tracking/domain/symbol';
-import { CampaignRepository } from '@tracking/infrastructure';
+import { CAMPAIGN_REPOSITORY, DAILY_STATISTIC_REPOSITORY } from '@tracking/domain/symbol';
+import { CampaignRepository, DailyStatisticRepository } from '@tracking/infrastructure';
 import { TrackingController } from '@tracking/controller';
-import { TrackingUseCase } from '@tracking/use-case';
+import { TrackingConsumerUseCase, TrackingUseCase } from '@tracking/use-case';
 import { CacheModule } from '@src/core/cache/cache.module';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { KAFKA_OPTION } from '@src/main';
 
 @Module({
-	imports: [CacheModule],
+	imports: [
+		CacheModule,
+		ClientsModule.register([
+			{
+				name: 'KAFKA_SERVICE',
+				transport: Transport.KAFKA,
+				options: KAFKA_OPTION,
+			},
+		]),
+	],
 	controllers: [TrackingController],
-	providers: [TrackingUseCase, { provide: CAMPAIGN_REPOSITORY, useClass: CampaignRepository }],
+	providers: [
+		TrackingUseCase,
+		TrackingConsumerUseCase,
+		{ provide: CAMPAIGN_REPOSITORY, useClass: CampaignRepository },
+		{ provide: DAILY_STATISTIC_REPOSITORY, useClass: DailyStatisticRepository },
+	],
 })
 export class TrackingModule {}

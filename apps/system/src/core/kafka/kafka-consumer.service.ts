@@ -7,9 +7,13 @@ export class KafkaConsumerService implements OnModuleInit, OnApplicationShutdown
 		brokers: ['localhost:9092'],
 	});
 	private readonly consumer: Consumer = this.kafka.consumer({ groupId: 'mecross-system-group' });
+	private isConnected: boolean = false;
 
 	async onModuleInit() {
-		await this.consumer.connect();
+		if (!this.isConnected) {
+			await this.consumer.connect();
+		}
+		this.isConnected = true;
 	}
 
 	async each(topic: string, eachMessage: (params: EachMessagePayload) => Promise<void>) {

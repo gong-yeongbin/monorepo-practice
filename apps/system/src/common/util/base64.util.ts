@@ -13,10 +13,11 @@ export const base64 = {
 		return encodeURIComponent(encrypted);
 	},
 	decode: (value: string) => {
+		value = decodeURIComponent(value);
 		const decipher = crypto.createDecipheriv('aes-128-cbc', Buffer.from(key), Buffer.from(iv));
 		let decrypted = decipher.update(value, 'base64', 'binary');
 		decrypted += decipher.final('binary');
 
-		return decodeURIComponent(decrypted);
+		return decrypted;
 	},
 };
