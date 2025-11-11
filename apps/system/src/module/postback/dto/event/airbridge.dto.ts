@@ -7,7 +7,7 @@ export class Airbridge {
 	clickId: string;
 
 	@Expose({ name: 'sub_id' })
-	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	@Transform(({ value }) => (Array.isArray(value) ? encodeURIComponent(value[0]) : encodeURIComponent(value)))
 	viewCode: string;
 
 	@Expose({ name: 'custom_param1' })

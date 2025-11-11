@@ -6,7 +6,7 @@ export class Appsflyer {
 	clickId: string;
 
 	@Expose({ name: 'af_siteid' })
-	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	@Transform(({ value }) => (Array.isArray(value) ? encodeURIComponent(value[0]) : encodeURIComponent(value)))
 	viewCode: string;
 
 	@Expose({ name: 'af_c_id' })

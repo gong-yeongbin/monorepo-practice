@@ -7,7 +7,7 @@ export class Adbrixremaster {
 	clickId: string;
 
 	@Expose({ name: 'cb_2' })
-	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	@Transform(({ value }) => (Array.isArray(value) ? encodeURIComponent(value[0]) : encodeURIComponent(value)))
 	viewCode: string;
 
 	@Expose({ name: 'cb_1' })
