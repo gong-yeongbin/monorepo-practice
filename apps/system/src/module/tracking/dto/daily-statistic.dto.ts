@@ -14,40 +14,40 @@ export class DailyStatisticDto {
 	sub_id: string | null;
 
 	@Expose()
-	click: number;
+	click: number = 0;
 
 	@Expose()
-	install: number;
+	install: number = 0;
 
 	@Expose()
-	registration: number;
+	registration: number = 0;
 
 	@Expose()
-	retention: number;
+	retention: number = 0;
 
 	@Expose()
-	purchase: number;
+	purchase: number = 0;
 
 	@Expose()
-	revenue: number;
+	revenue: number = 0;
 
 	@Expose()
-	etc1: number;
+	etc1: number = 0;
 
 	@Expose()
-	etc2: number;
+	etc2: number = 0;
 
 	@Expose()
-	etc3: number;
+	etc3: number = 0;
 
 	@Expose()
-	etc4: number;
+	etc4: number = 0;
 
 	@Expose()
-	etc5: number;
+	etc5: number = 0;
 
 	@Expose()
-	unregistered: number;
+	unregistered: number = 0;
 
 	@Expose({ name: 'createdAt' })
 	created_at: Date;

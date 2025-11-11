@@ -25,5 +25,6 @@ import { KAFKA_OPTION } from '@src/main';
 		{ provide: CAMPAIGN_REPOSITORY, useClass: CampaignRepository },
 		{ provide: DAILY_STATISTIC_REPOSITORY, useClass: DailyStatisticRepository },
 	],
+	exports: [CAMPAIGN_REPOSITORY, DAILY_STATISTIC_REPOSITORY],
 })
 export class TrackingModule {}

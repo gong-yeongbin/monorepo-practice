@@ -7,9 +7,11 @@ import { POSTBACK_REPOSITORY } from '@postback/domain/symbol';
 import { PostbackRepository } from '@postback/infrastructure/postback.repository';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { KAFKA_OPTION } from '@src/main';
+import { TrackingModule } from '@src/module';
 
 @Module({
 	imports: [
+		TrackingModule,
 		ClientsModule.register([
 			{
 				name: 'KAFKA_SERVICE',

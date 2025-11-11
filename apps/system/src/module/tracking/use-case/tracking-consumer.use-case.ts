@@ -11,16 +11,26 @@ export class TrackingConsumerUseCase {
 	constructor(@Inject(DAILY_STATISTIC_REPOSITORY) private readonly dailyStatisticRepository: IDailyStatistic) {}
 
 	async execute(viewCode: string) {
+		const baseDate = dayjs(dayjs().format('YYYY-MM-DD')).add(9, 'hour').toDate();
 		const token = base64.decode(viewCode).split(':')[0] || null;
 		const pubId = base64.decode(viewCode).split(':')[1] || null;
 		const subId = base64.decode(viewCode).split(':')[2] || null;
 
-		const dailyStatistic = plainToInstance(
-			DailyStatisticDto,
-			{ viewCode, token, pubId, subId, click: 1, createdAt: dayjs(dayjs().format('YYYY-MM-DD')).add(9, 'hour').toDate() },
-			{ excludeExtraneousValues: true }
-		);
+		const dailyStatistic = await this.dailyStatisticRepository.find(viewCode, baseDate);
 
-		await this.dailyStatisticRepository.upsert(dailyStatistic);
+		let dailyStatisticDto: DailyStatisticDto;
+		if (dailyStatistic) {
+			dailyStatisticDto = plainToInstance(DailyStatisticDto, dailyStatistic, { ignoreDecorators: true });
+		} else {
+			dailyStatisticDto = plainToInstance(
+				DailyStatisticDto,
+				{ view_code: viewCode, token: token, pub_id: pubId, sub_id: subId, created_at: baseDate },
+				{ exposeDefaultValues: true }
+			);
+		}
+
+		dailyStatisticDto.click += 1;
+
+		await this.dailyStatisticRepository.upsert(dailyStatisticDto);
 	}
 }
