@@ -3,7 +3,6 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { KafkaOptions, MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { Partitioners } from 'kafkajs';
 
 export const KAFKA_OPTION: KafkaOptions['options'] = {
 	client: {
@@ -13,15 +12,14 @@ export const KAFKA_OPTION: KafkaOptions['options'] = {
 	consumer: {
 		groupId: 'mecross-system-consumer',
 	},
-	producer: { createPartitioner: Partitioners.LegacyPartitioner },
+	producer: {
+		allowAutoTopicCreation: true,
+		retry: { retries: 0 },
+	},
 };
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
-	app.connectMicroservice<MicroserviceOptions>({
-		transport: Transport.KAFKA,
-		options: KAFKA_OPTION,
-	});
 
 	const configService = app.get<ConfigService>(ConfigService);
 	const port = configService.get<number>('PORT');

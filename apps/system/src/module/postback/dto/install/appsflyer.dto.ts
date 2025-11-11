@@ -1,4 +1,5 @@
 import { Expose, Transform } from 'class-transformer';
+import * as dayjs from 'dayjs';
 
 export class Appsflyer {
 	@Expose({ name: 'clickid' })
@@ -6,7 +7,7 @@ export class Appsflyer {
 	clickId: string;
 
 	@Expose({ name: 'af_siteid' })
-	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	@Transform(({ value }) => (Array.isArray(value) ? encodeURIComponent(value[0]) : encodeURIComponent(value)))
 	viewCode: string;
 
 	@Expose({ name: 'af_c_id' })
@@ -32,10 +33,10 @@ export class Appsflyer {
 	countryCode: string;
 
 	@Expose({ name: 'click_time' })
-	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	@Transform(({ value }) => (Array.isArray(value) ? dayjs(value[0]).format() : dayjs(value).format()))
 	clickedAt: Date;
 
 	@Expose({ name: 'install_time' })
-	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	@Transform(({ value }) => (Array.isArray(value) ? dayjs(value[0]).format() : dayjs(value).format()))
 	installedAt: Date;
 }

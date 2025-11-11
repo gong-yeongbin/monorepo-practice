@@ -4,20 +4,10 @@ import { CampaignRepository, DailyStatisticRepository } from '@tracking/infrastr
 import { TrackingController } from '@tracking/controller';
 import { TrackingConsumerUseCase, TrackingUseCase } from '@tracking/use-case';
 import { CacheModule } from '@src/core/cache/cache.module';
-import { ClientsModule, Transport } from '@nestjs/microservices';
-import { KAFKA_OPTION } from '@src/main';
+import { KafkaModule } from '@core/kafka/kafka.module';
 
 @Module({
-	imports: [
-		CacheModule,
-		ClientsModule.register([
-			{
-				name: 'KAFKA_SERVICE',
-				transport: Transport.KAFKA,
-				options: KAFKA_OPTION,
-			},
-		]),
-	],
+	imports: [CacheModule, KafkaModule],
 	controllers: [TrackingController],
 	providers: [
 		TrackingUseCase,

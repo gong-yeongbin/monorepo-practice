@@ -1,24 +1,15 @@
-import { CallHandler, ExecutionContext, Inject, Injectable, NestInterceptor, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { map, Observable } from 'rxjs';
-import { ClientKafka } from '@nestjs/microservices';
+import { ProducerService } from '@core/kafka/producer.service';
 
 @Injectable()
-export class PostbackProducerInterceptor implements NestInterceptor, OnModuleInit, OnModuleDestroy {
-	constructor(@Inject('KAFKA_SERVICE') private readonly client: ClientKafka) {}
-
-	async onModuleInit() {
-		this.client.subscribeToResponseOf('postback');
-		await this.client.connect();
-	}
-
-	async onModuleDestroy(): Promise<void> {
-		await this.client.close();
-	}
+export class PostbackProducerInterceptor implements NestInterceptor {
+	constructor(private readonly producer: ProducerService) {}
 
 	async intercept(context: ExecutionContext, next: CallHandler<any>): Promise<Observable<any>> {
 		return next.handle().pipe(
 			map(async (data) => {
-				this.client.emit('postback', { value: JSON.stringify(data) });
+				await this.producer.each('postback', JSON.stringify(data));
 			})
 		);
 	}

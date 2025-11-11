@@ -1,4 +1,4 @@
-import { CallHandler, ExecutionContext, Inject, Injectable, NestInterceptor, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Inject, Injectable, NestInterceptor } from '@nestjs/common';
 import { map, Observable, of } from 'rxjs';
 import { ICache } from '@src/core/cache/domain/repositories';
 import { CACHE_REPOSITORY } from '@src/core/cache/domain/symbol';
