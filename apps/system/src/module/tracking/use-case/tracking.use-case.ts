@@ -34,10 +34,5 @@ export class TrackingUseCase {
 
 		const trackerTrackingUrl = campaign.tracker_tracking_url;
 		return trackerTrackingUrl.replace(/\{(\w+)\}/g, (_, key) => instance[key] ?? '');
-
-		// ===== kafka producer =====
-		// 데일리 클릭 카운트 (token + pub + sub = view_code)
-		// 매체 전송
-		// 트래킹 로그?
 	}
 }

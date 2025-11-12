@@ -1,14 +1,13 @@
 import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
 import { Tracker } from '@postback/dto';
-import { EventPostbackUseCase, InstallPostbackUseCase, PostbackConsumerUseCase } from '@postback/use-case';
+import { EventPostbackUseCase, InstallPostbackUseCase } from '@postback/use-case';
 import { PostbackProducerInterceptor } from '@postback/interceptor';
 
 @Controller()
 export class PostbackController {
 	constructor(
 		private readonly installPostbackUseCase: InstallPostbackUseCase,
-		private readonly eventPostbackUseCase: EventPostbackUseCase,
-		private readonly postbackConsumeUseCase: PostbackConsumerUseCase
+		private readonly eventPostbackUseCase: EventPostbackUseCase
 	) {}
 
 	@Get(':name/install')

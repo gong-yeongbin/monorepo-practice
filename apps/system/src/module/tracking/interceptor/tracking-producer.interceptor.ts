@@ -1,11 +1,12 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Inject, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { base64 } from '@src/common/util/base64.util';
-import { ProducerService } from '@core/kafka/producer.service';
+import { PRODUCER } from '@core/kafka/symbol';
+import { IProducer } from '@core/kafka/interface';
 
 @Injectable()
 export class TrackingProducerInterceptor implements NestInterceptor {
-	constructor(private readonly producer: ProducerService) {}
+	constructor(@Inject(PRODUCER) private readonly producer: IProducer) {}
 
 	async intercept(context: ExecutionContext, next: CallHandler<any>): Promise<Observable<any>> {
 		const request = context.switchToHttp().getRequest();

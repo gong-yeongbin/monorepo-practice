@@ -1,9 +1,14 @@
 import { Module } from '@nestjs/common';
-import { ProducerService } from '@core/kafka/producer.service';
-import { ConsumerService } from '@core/kafka/consumer.service';
+import { CONSUMER, PRODUCER } from '@core/kafka/symbol';
+import { ConsumerRepository, ProducerRepository } from '@core/kafka/repository';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-	providers: [ProducerService, ConsumerService],
-	exports: [ProducerService, ConsumerService],
+	imports: [ConfigModule],
+	providers: [
+		{ provide: PRODUCER, useClass: ProducerRepository },
+		{ provide: CONSUMER, useClass: ConsumerRepository },
+	],
+	exports: [PRODUCER, CONSUMER],
 })
 export class KafkaModule {}
