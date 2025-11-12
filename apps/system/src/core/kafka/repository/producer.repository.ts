@@ -1,9 +1,9 @@
-import { Injectable, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnApplicationShutdown, OnModuleInit, Scope } from '@nestjs/common';
 import { Kafka, Producer } from 'kafkajs';
 import { IProducer } from '@core/kafka/interface';
 import { ConfigService } from '@nestjs/config';
 
-@Injectable()
+@Injectable({ scope: Scope.TRANSIENT })
 export class ProducerRepository implements IProducer, OnApplicationShutdown {
 	private readonly kafka: Kafka;
 	private readonly producer: Producer;

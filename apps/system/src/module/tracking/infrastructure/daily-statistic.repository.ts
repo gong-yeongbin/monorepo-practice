@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { IDailyStatistic } from '@tracking/domain/repositories';
-import { PrismaService } from '@repo/prisma';
+import { Prisma, PrismaService } from '@repo/prisma';
 import { DailyStatisticDto } from '../dto';
 import { DailyStatistic } from '../domain/entities';
 
@@ -21,14 +21,29 @@ export class DailyStatisticRepository implements IDailyStatistic {
 			const { view_code, token, pub_id, sub_id, click, install, registration, retention, purchase, revenue, etc1, etc2, etc3, etc4, etc5, unregistered, created_at } =
 				dailyStatistic;
 
-			await this.prismaService.$transaction(async (prisma) => {
-				await prisma.$queryRaw` SELECT * FROM daily_statistic WHERE view_code = ${view_code} AND created_at = ${created_at} FOR UPDATE`;
-				await prisma.daily_statistic.upsert({
-					where: { view_code_created_at: { view_code, created_at } },
-					create: { view_code, token, pub_id, sub_id, click, install, registration, retention, purchase, revenue, etc1, etc2, etc3, etc4, etc5, unregistered, created_at },
-					update: { click, install, registration, retention, purchase, revenue, etc1, etc2, etc3, etc4, etc5, unregistered },
-				});
-			});
+			await this.prismaService.$transaction(
+				async (prisma) => {
+					await prisma.daily_statistic.upsert({
+						where: { view_code_created_at: { view_code, created_at } },
+						create: { view_code, token, pub_id, sub_id, click, install, registration, retention, purchase, revenue, etc1, etc2, etc3, etc4, etc5, unregistered, created_at },
+						update: {
+							click: { increment: click },
+							install: { increment: install },
+							registration: { increment: registration },
+							retention: { increment: retention },
+							purchase: { increment: purchase },
+							revenue: { increment: revenue },
+							etc1: { increment: etc1 },
+							etc2: { increment: etc2 },
+							etc3: { increment: etc3 },
+							etc4: { increment: etc4 },
+							etc5: { increment: etc5 },
+							unregistered: { increment: unregistered },
+						},
+					});
+				},
+				{ isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead }
+			);
 		} catch (e) {
 			throw new InternalServerErrorException(e.message);
 		}

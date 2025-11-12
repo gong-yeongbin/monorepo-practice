@@ -13,34 +13,41 @@ export class TrackingConsumerUseCase implements OnModuleInit {
 	constructor(
 		@Inject(DAILY_STATISTIC_REPOSITORY) private readonly dailyStatisticRepository: IDailyStatistic,
 		@Inject(CONSUMER) private readonly consumer: IConsumer
-	) {}
+	) {
+		this.consumer.init('mecross-system-tracking');
+	}
 
 	async onModuleInit() {
-		await this.consumer.each('tracking', async ({ message }) => {
-			if (message.value?.toString()) {
-				const baseDate = dayjs(dayjs().format('YYYY-MM-DD')).add(9, 'hour').toDate();
-				const viewCode = message.value.toString();
+		await this.consumer.batch('tracking', async ({ batch, resolveOffset, heartbeat }) => {
+			const dailyStatisticMap = new Map<string, DailyStatisticDto>();
+			for (const message of batch.messages) {
+				if (message.value?.toString()) {
+					const baseDate = dayjs(dayjs().format('YYYY-MM-DD')).add(9, 'hour').toDate();
+					const viewCode = message.value.toString();
 
-				const token = base64.decode(viewCode).split(':')[0] || null;
-				const pubId = base64.decode(viewCode).split(':')[1] || null;
-				const subId = base64.decode(viewCode).split(':')[2] || null;
+					const token = base64.decode(viewCode).split(':')[0] || null;
+					const pubId = base64.decode(viewCode).split(':')[1] || null;
+					const subId = base64.decode(viewCode).split(':')[2] || null;
 
-				const dailyStatistic = await this.dailyStatisticRepository.find(viewCode, baseDate);
+					let dailyStatisticDto = dailyStatisticMap.get(viewCode);
+					if (dailyStatisticDto) {
+						dailyStatisticDto.click += 1;
+					} else {
+						dailyStatisticDto = plainToInstance(
+							DailyStatisticDto,
+							{ view_code: viewCode, token: token, pub_id: pubId, sub_id: subId, click: 1, created_at: baseDate },
+							{ exposeDefaultValues: true }
+						);
 
-				let dailyStatisticDto: DailyStatisticDto;
-				if (dailyStatistic) {
-					dailyStatisticDto = plainToInstance(DailyStatisticDto, dailyStatistic, { ignoreDecorators: true });
-				} else {
-					dailyStatisticDto = plainToInstance(
-						DailyStatisticDto,
-						{ view_code: viewCode, token: token, pub_id: pubId, sub_id: subId, created_at: baseDate },
-						{ exposeDefaultValues: true }
-					);
+						dailyStatisticMap.set(viewCode, dailyStatisticDto);
+					}
 				}
-
-				dailyStatisticDto.click += 1;
-				await this.dailyStatisticRepository.upsert(dailyStatisticDto);
+				resolveOffset(message.offset);
+				await heartbeat();
 			}
+
+			await Promise.all([...dailyStatisticMap.values()].map(async (dailyStatistic) => await this.dailyStatisticRepository.upsert(dailyStatistic)));
+			dailyStatisticMap.clear();
 		});
 	}
 }
