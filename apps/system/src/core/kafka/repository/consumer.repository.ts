@@ -17,6 +17,7 @@ export class ConsumerRepository implements IConsumer, OnApplicationShutdown {
 	async init(groupId: string) {
 		this.consumer = this.kafka.consumer({
 			groupId,
+			allowAutoTopicCreation: true,
 			minBytes: 10000,
 			maxBytes: 1000000,
 			maxBytesPerPartition: 1000000,
