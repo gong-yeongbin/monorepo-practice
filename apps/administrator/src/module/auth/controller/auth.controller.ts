@@ -1,4 +1,4 @@
-import { Controller, Post, Res, UseGuards } from '@nestjs/common';
+import { Controller, HttpCode, HttpStatus, Post, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { CreateTokenUseCase } from '@module/auth/use-case';
@@ -19,7 +19,8 @@ export class AuthController {
 
 	@UseGuards(LocalAuthGuard)
 	@Post('sign-in')
-	async signIn(@User() user: UserDto, @Res() response: Response) {
+	@HttpCode(HttpStatus.OK)
+	async signIn(@User() user: UserDto, @Res() response: Response): Promise<Response<any, Record<string, any>>> {
 		const access_token = await this.createTokenUseCase.execute(user);
 		return response.cookie('access_token', access_token, { secure: true, httpOnly: true, maxAge: this.jwtExpires }).send();
 	}
