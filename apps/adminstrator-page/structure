@@ -1,0 +1,12 @@
+src/
+├── assets/        # 이미지, 폰트, CSS 등 정적 파일
+├── components/    # 재사용 가능한 Vue 컴포넌트
+├── views/         # 각 페이지별 컴포넌트 (라우터에 딸림)
+├── router/        # 라우팅 설정
+├── store/         # 상태 관리(Pinia/Vuex 등)
+├── composables/   # Composition API 기반 커스텀 훅
+├── layouts/       # 레이아웃(헤더/푸터/사이드바)
+├── services/      # API 호출 등 비즈니스 로직 분리
+├── utils/         # 유틸 함수
+├── App.vue        # 루트 컴포넌트
+├── main.ts        # 앱 진입점
