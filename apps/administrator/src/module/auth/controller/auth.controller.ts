@@ -8,13 +8,14 @@ import { User } from '@module/auth/decorator';
 
 @Controller('auth')
 export class AuthController {
+	private readonly cookieConfig: Record<string, any>;
 	private readonly jwtExpires: number;
 
 	constructor(
 		private readonly configService: ConfigService,
 		private readonly createTokenUseCase: CreateTokenUseCase
 	) {
-		this.jwtExpires = configService.get<number>('JWT_EXPIRES') ?? 0;
+		this.cookieConfig = { secure: configService.get<string>('ENV') != 'DEV', httpOnly: true, maxAge: configService.get<number>('JWT_EXPIRES') ?? 0 };
 	}
 
 	@UseGuards(LocalAuthGuard)
@@ -22,6 +23,6 @@ export class AuthController {
 	@HttpCode(HttpStatus.OK)
 	async signIn(@User() user: UserDto, @Res() response: Response): Promise<Response<any, Record<string, any>>> {
 		const access_token = await this.createTokenUseCase.execute(user);
-		return response.cookie('access_token', access_token, { secure: true, httpOnly: true, maxAge: this.jwtExpires }).send();
+		return response.cookie('access_token', access_token, this.cookieConfig).send();
 	}
 }
