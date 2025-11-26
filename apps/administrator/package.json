@@ -31,6 +31,7 @@
     "cookie-parser": "^1.4.7",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
+    "passport-secure-cookie": "^0.0.5",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },
@@ -72,7 +73,6 @@
       "json",
       "ts"
     ],
-
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
