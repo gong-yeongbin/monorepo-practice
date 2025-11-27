@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
+import { TransformInterceptor } from '@common/interceptor';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
@@ -21,6 +22,7 @@ async function bootstrap() {
 			transform: true,
 		})
 	);
+	app.useGlobalInterceptors(new TransformInterceptor());
 	await app.listen(port ? port : 3000);
 }
 bootstrap();
