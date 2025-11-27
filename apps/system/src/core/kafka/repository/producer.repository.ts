@@ -1,4 +1,4 @@
-import { Injectable, OnApplicationShutdown, OnModuleInit, Scope } from '@nestjs/common';
+import { Injectable, OnApplicationShutdown, Scope } from '@nestjs/common';
 import { Kafka, Producer } from 'kafkajs';
 import { IProducer } from '@core/kafka/interface';
 import { ConfigService } from '@nestjs/config';
@@ -13,7 +13,7 @@ export class ProducerRepository implements IProducer, OnApplicationShutdown {
 			brokers: [this.configService.get<string>('KAFKA_HOST') || 'localhost:9092'],
 			clientId: this.configService.get<string>('KAFKA_CLIENT_ID'),
 		});
-		this.producer = this.kafka.producer({ allowAutoTopicCreation: true, retry: { retries: 0 } });
+		this.producer = this.kafka.producer({ allowAutoTopicCreation: true, retry: { retries: 3 } });
 	}
 
 	async each(topic: string, message: string) {

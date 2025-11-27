@@ -1,8 +1,8 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ICampaign } from '@module/campaign/domain/repositories';
 import { PrismaService } from '@repo/prisma';
-import { Campaign } from '../domain/entities';
-import { CampaignDto } from '../dto/campaign.dto';
+import { Campaign } from '@campaign/domain/entities';
+import { CampaignDto } from '@campaign/dto/campaign.dto';
 
 @Injectable()
 export class CampaignRepository implements ICampaign {
@@ -11,6 +11,14 @@ export class CampaignRepository implements ICampaign {
 	async find(id: number): Promise<Campaign | null> {
 		try {
 			return await this.prismaService.campaign.findUnique({ where: { id } });
+		} catch (e) {
+			throw new InternalServerErrorException(e.message);
+		}
+	}
+
+	async findMany(baseDate: Date): Promise<Campaign[]> {
+		try {
+			return await this.prismaService.campaign.findMany({ where: { is_active: true } });
 		} catch (e) {
 			throw new InternalServerErrorException(e.message);
 		}

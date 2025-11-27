@@ -6,7 +6,9 @@
     "paths": {
       "@src/*": ["src/*"],
       "@common/*": ["src/common/*"],
-      "@module/*": ["src/module/*"]
+      "@module/*": ["src/module/*"],
+      "@campaign/*": ["src/module/campaign/*"],
+      "@dashboard/*": ["src/module/dashboard/*"]
     }
   }
 }

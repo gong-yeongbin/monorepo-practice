@@ -17,5 +17,6 @@ import { CreateCampaignUseCase, GetCampaignUseCase, UpdateCampaignConfigUseCase 
 		{ provide: CAMPAIGN_REPOSITORY, useClass: CampaignRepository },
 		{ provide: CAMPAIGN_CONFIG_REPOSITORY, useClass: CampaignConfigRepository },
 	],
+	exports: [CAMPAIGN_REPOSITORY],
 })
 export class CampaignModule {}

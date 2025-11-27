@@ -11,6 +11,7 @@ import { MediaModule } from '@module/media/media.module';
 import { AdvertisingModule } from '@module/advertising/advertising.module';
 import { AdvertiserModule } from '@module/advertiser/advertiser.module';
 import { CampaignModule } from '@module/campaign/campaign.module';
+import { DashboardModule } from '@dashboard/dashboard.module';
 
 @Module({
 	imports: [
@@ -24,6 +25,7 @@ import { CampaignModule } from '@module/campaign/campaign.module';
 		AdvertisingModule,
 		AdvertiserModule,
 		CampaignModule,
+		DashboardModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
