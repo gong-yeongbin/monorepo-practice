@@ -1,4 +1,4 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { PostbackDto } from '@postback/dto';
 import { POSTBACK_REPOSITORY } from '@postback/domain/symbol';
@@ -26,7 +26,11 @@ export class PostbackConsumerUseCase implements OnModuleInit {
 			if (message.value?.toString()) {
 				const baseDate = dayjs(dayjs().format('YYYY-MM-DD')).add(9, 'hour').toDate();
 				const postback = plainToInstance(PostbackDto, JSON.parse(message.value?.toString()), { ignoreDecorators: true, enableImplicitConversion: true });
-				const campaign = await this.campaignRepository.findByToken(postback.token);
+				if (!postback?.token) return; // 에러 로그 처리
+
+				const campaign = await this.campaignRepository.findByToken(postback?.token);
+
+				if (!campaign) return; // 에러 로그 처리
 
 				const dailyStatisticDto = plainToInstance(
 					DailyStatisticDto,

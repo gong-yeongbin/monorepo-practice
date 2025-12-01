@@ -12,8 +12,12 @@ export class ProducerRepository implements IProducer, OnApplicationShutdown {
 		this.kafka = new Kafka({
 			brokers: [this.configService.get<string>('KAFKA_HOST') || 'localhost:9092'],
 			clientId: this.configService.get<string>('KAFKA_CLIENT_ID'),
+			retry: {
+				initialRetryTime: 300,
+				retries: 10,
+			},
 		});
-		this.producer = this.kafka.producer({ allowAutoTopicCreation: true, retry: { retries: 3 } });
+		this.producer = this.kafka.producer({ allowAutoTopicCreation: true });
 	}
 
 	async each(topic: string, message: string) {
