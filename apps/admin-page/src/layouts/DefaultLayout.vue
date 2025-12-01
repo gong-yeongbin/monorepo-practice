@@ -1,14 +1,17 @@
 <script setup lang="ts">
-import BaseSidebar from '@/components/BaseSidebar.vue'
+import Sidebar from '@/components/Sidebar.vue'
+import Header from '@/components/Header.vue'
 </script>
 
 <template>
   <div class="layout">
-    <BaseSidebar />
-
+    <Sidebar />
     <main class="content">
-      <!-- 여기 안에서 DashboardView 같은 view 를 렌더 -->
-      <slot />
+      <Header />
+      <div class="page">
+        <!-- 여기 안에서 DashboardView 같은 view 를 렌더 -->
+        <slot />
+      </div>
     </main>
   </div>
 </template>
@@ -32,5 +35,9 @@ import BaseSidebar from '@/components/BaseSidebar.vue'
   padding: 16px;
   min-height: 100vh;
   box-sizing: border-box;
+}
+
+.page {
+  padding: 16px;
 }
 </style>
