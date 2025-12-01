@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useUserStore } from '@/stores/userStore.ts'
+import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import router from '@/router'
 import axios from 'axios'
 import DataTable from 'primevue/datatable'
@@ -75,21 +76,23 @@ onMounted(async () => {
 </script>
 
 <template>
-  <DataTable :value="advertisingStatistic">
-    <Column field="advertisingName" header="광고명" />
-    <Column field="click" header="click" />
-    <Column field="install" header="install" />
-    <Column field="registration" header="registration" />
-    <Column field="retention" header="retention" />
-    <Column field="purchase" header="purchase" />
-    <Column field="revenue" header="revenue" />
-    <Column field="etc1" header="etc1" />
-    <Column field="etc2" header="etc2" />
-    <Column field="etc3" header="etc3" />
-    <Column field="etc4" header="etc4" />
-    <Column field="etc5" header="etc5" />
-    <Column field="unregistered" header="unregistered" />
-  </DataTable>
+  <DefaultLayout>
+    <DataTable :value="advertisingStatistic">
+      <Column field="advertisingName" header="광고명" />
+      <Column field="click" header="click" />
+      <Column field="install" header="install" />
+      <Column field="registration" header="registration" />
+      <Column field="retention" header="retention" />
+      <Column field="purchase" header="purchase" />
+      <Column field="revenue" header="revenue" />
+      <Column field="etc1" header="etc1" />
+      <Column field="etc2" header="etc2" />
+      <Column field="etc3" header="etc3" />
+      <Column field="etc4" header="etc4" />
+      <Column field="etc5" header="etc5" />
+      <Column field="unregistered" header="unregistered" />
+    </DataTable>
+  </DefaultLayout>
 </template>
 
 <style scoped></style>
