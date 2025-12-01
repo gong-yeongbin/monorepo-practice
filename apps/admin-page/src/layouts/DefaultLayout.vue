@@ -15,16 +15,22 @@ import BaseSidebar from '@/components/BaseSidebar.vue'
 
 <style scoped>
 .layout {
-  display: flex;
+  /* 사이드바는 fixed 라서 flex 에는 안 들어와도 됨 */
 }
 
-/* 사이드바가 fixed 이기 때문에 padding-left 로 내용 밀어주기 */
+/* 왼쪽 고정 사이드바 */
+:deep(.sidebar) {
+  position: fixed;
+  inset: 0 auto 0 0; /* top:0, left:0, bottom:0 */
+  width: 220px; /* 고정 폭 */
+}
+
+/* 오른쪽 콘텐츠 영역 */
 .content {
-  flex: 1;
-  padding-left: 220px; /* sidebar width 와 동일하게 */
+  /* 사이드바 폭만큼 밀어줌 */
+  margin-left: 220px;
+  padding: 16px;
   min-height: 100vh;
-  background: #f3f4f6;
-  padding-top: 16px;
-  padding-right: 16px;
+  box-sizing: border-box;
 }
 </style>
