@@ -23,7 +23,7 @@ export class AdvertisingRepository implements IAdvertising {
 		}
 	}
 
-	async findMany(): Promise<Advertising[]> {
+	async findMany(): Promise<Advertising[] | null> {
 		try {
 			return await this.prismaService.advertising.findMany({ orderBy: { id: 'desc' } });
 		} catch (e) {

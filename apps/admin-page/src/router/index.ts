@@ -3,6 +3,7 @@ import LoginView from '@/views/LoginView.vue'
 import DashBoard from '@/views/DashBoard.vue'
 import Tracker from '@/views/TrackerView.vue'
 import Media from '@/views/MediaView.vue'
+import Advertising from '@/views/AdvertisingView.vue'
 
 import { useUserStore } from '@/stores/userStore.ts'
 
@@ -20,6 +21,12 @@ const routes = [
     path: '/dashboard',
     name: 'dashboard',
     component: DashBoard,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/advertising',
+    name: 'advertising',
+    component: Advertising,
     meta: { requiresAuth: true },
   },
   {

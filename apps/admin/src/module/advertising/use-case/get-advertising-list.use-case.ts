@@ -9,8 +9,6 @@ export class GetAdvertisingListUseCase {
 
 	async execute() {
 		const advertisings = await this.advertisingRepository.findMany();
-		return {
-			data: advertisings.map((advertising) => plainToInstance(ResponseGetAdvertisingListDto, advertising, { excludeExtraneousValues: true })),
-		};
+		return advertisings?.map((advertising) => plainToInstance(ResponseGetAdvertisingListDto, advertising, { excludeExtraneousValues: true }));
 	}
 }
