@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '@/views/LoginView.vue'
 import DashBoard from '@/views/DashBoard.vue'
 import Tracker from '@/views/TrackerView.vue'
+import Media from '@/views/MediaView.vue'
 
 import { useUserStore } from '@/stores/userStore.ts'
 
@@ -25,6 +26,12 @@ const routes = [
     path: '/tracker',
     name: 'tracker',
     component: Tracker,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/media',
+    name: 'media',
+    component: Media,
     meta: { requiresAuth: true },
   },
 ]
