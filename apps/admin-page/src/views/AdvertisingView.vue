@@ -9,6 +9,7 @@ interface Advertising {
   image: string
   name: string
   trackerName: string
+  campaign: number
 }
 
 const AdvertisingList = ref<Advertising[]>([])
@@ -37,6 +38,7 @@ onMounted(async () => {
           </div>
         </template>
       </Column>
+      <Column field="campaign" header="운영캠페인" />
     </DataTable>
   </DefaultLayout>
 </template>

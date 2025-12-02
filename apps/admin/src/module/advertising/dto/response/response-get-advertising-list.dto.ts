@@ -15,4 +15,7 @@ export class ResponseGetAdvertisingListDto {
 
 	@Expose({ name: 'tracker_name' })
 	trackerName: string;
+
+	@Expose()
+	campaign: number;
 }

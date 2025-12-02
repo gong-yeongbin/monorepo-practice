@@ -25,7 +25,7 @@ export class AdvertisingRepository implements IAdvertising {
 
 	async findMany(): Promise<Advertising[] | null> {
 		try {
-			return await this.prismaService.advertising.findMany({ orderBy: { id: 'desc' } });
+			return await this.prismaService.advertising.findMany({ orderBy: { id: 'desc' }, include: { campaign: true } });
 		} catch (e) {
 			throw new InternalServerErrorException(e.message);
 		}
