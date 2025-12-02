@@ -23,6 +23,14 @@ export class MediaRepository implements IMedia {
 		}
 	}
 
+	async findMany(): Promise<Media[] | null> {
+		try {
+			return await this.prismaService.media.findMany();
+		} catch (e) {
+			throw new InternalServerErrorException(e.message);
+		}
+	}
+
 	async create(media: MediaDto): Promise<Media> {
 		try {
 			return await this.prismaService.media.create({ data: media });

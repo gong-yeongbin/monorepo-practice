@@ -1,6 +1,6 @@
-import { Body, Controller, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { CreateMediaDto, UpdateMediaDto } from '../dto/request';
-import { CreateMediaUseCase, UpdateMediaUseCase } from '../use-case';
+import { CreateMediaUseCase, GetMediaListUseCase, UpdateMediaUseCase } from '../use-case';
 import { AccessTokenValidatorGuard } from '@common/guard';
 import { MediaIdDto } from '@module/media/dto/media-id.dto';
 
@@ -9,8 +9,14 @@ import { MediaIdDto } from '@module/media/dto/media-id.dto';
 export class MediaController {
 	constructor(
 		private readonly createMediaUseCase: CreateMediaUseCase,
-		private readonly updateMediaUseCase: UpdateMediaUseCase
+		private readonly updateMediaUseCase: UpdateMediaUseCase,
+		private readonly getMediaListUseCase: GetMediaListUseCase
 	) {}
+
+	@Get()
+	async list() {
+		return await this.getMediaListUseCase.execute();
+	}
 
 	@Post()
 	async create(@Body() body: CreateMediaDto) {
