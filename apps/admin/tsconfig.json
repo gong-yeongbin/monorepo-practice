@@ -8,6 +8,7 @@
       "@common/*": ["src/common/*"],
       "@module/*": ["src/module/*"],
       "@campaign/*": ["src/module/campaign/*"],
+      "@advertising/*": ["src/module/advertising/*"],
       "@dashboard/*": ["src/module/dashboard/*"]
     }
   }
