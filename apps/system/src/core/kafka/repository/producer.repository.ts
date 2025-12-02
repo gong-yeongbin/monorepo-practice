@@ -13,7 +13,7 @@ export class ProducerRepository implements IProducer, OnApplicationShutdown {
 			brokers: [this.configService.get<string>('KAFKA_HOST') || 'localhost:9092'],
 			clientId: this.configService.get<string>('KAFKA_CLIENT_ID'),
 			retry: {
-				initialRetryTime: 300,
+				initialRetryTime: 3000,
 				retries: 10,
 			},
 		});

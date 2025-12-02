@@ -2,7 +2,6 @@
 const menuItems = [
   { path: '/dashboard', label: '대시보드' },
   { path: '/advertising', label: '광고' },
-  { path: '/campaign', label: '캠페인' },
   { path: '/tracker', label: '트래커' },
   { path: '/media', label: '매체' },
 ]

@@ -1,14 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useUserStore } from '@/stores/userStore.ts'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
-import router from '@/router'
 import axios from 'axios'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-
-const userStore = useUserStore()
-if (!userStore.isLogin) router.push('/login')
 
 interface AdvertisingStatistic {
   advertisingName: string
@@ -29,49 +24,54 @@ interface AdvertisingStatistic {
 const today = new Date().toISOString().slice(0, 10)
 const advertisingStatistic = ref<AdvertisingStatistic[]>([])
 
+const calcSummary = (rows: AdvertisingStatistic[]): AdvertisingStatistic => {
+  return rows.reduce<AdvertisingStatistic>(
+    (acc, curr) => ({
+      advertisingName: '합계',
+      click: acc.click + curr.click,
+      install: acc.install + curr.install,
+      registration: acc.registration + curr.registration,
+      retention: acc.retention + curr.retention,
+      purchase: acc.purchase + curr.purchase,
+      revenue: acc.revenue + curr.revenue,
+      etc1: acc.etc1 + curr.etc1,
+      etc2: acc.etc2 + curr.etc2,
+      etc3: acc.etc3 + curr.etc3,
+      etc4: acc.etc4 + curr.etc4,
+      etc5: acc.etc5 + curr.etc5,
+      unregistered: acc.unregistered + curr.unregistered,
+    }),
+    {
+      advertisingName: '합계',
+      click: 0,
+      install: 0,
+      registration: 0,
+      retention: 0,
+      purchase: 0,
+      revenue: 0,
+      etc1: 0,
+      etc2: 0,
+      etc3: 0,
+      etc4: 0,
+      etc5: 0,
+      unregistered: 0,
+    },
+  )
+}
+
 onMounted(async () => {
-  axios
-    .get('http://localhost:3002/dashboard', {
+  try {
+    const { data } = await axios.get('http://localhost:3002/dashboard', {
       params: { baseDate: today },
       withCredentials: true,
     })
-    .then((response) => {
-      advertisingStatistic.value = response.data.data
-      const sum = advertisingStatistic.value.reduce(
-        (acc, curr) => {
-          acc.click += curr.click
-          acc.install += curr.install
-          acc.registration += curr.registration
-          acc.retention += curr.retention
-          acc.purchase += curr.purchase
-          acc.revenue += curr.revenue
-          acc.etc1 += curr.etc1
-          acc.etc2 += curr.etc2
-          acc.etc3 += curr.etc3
-          acc.etc4 += curr.etc4
-          acc.etc5 += curr.etc5
-          acc.unregistered += curr.unregistered
-          return acc
-        },
-        {
-          advertisingName: '합계',
-          click: 0,
-          install: 0,
-          registration: 0,
-          retention: 0,
-          purchase: 0,
-          revenue: 0,
-          etc1: 0,
-          etc2: 0,
-          etc3: 0,
-          etc4: 0,
-          etc5: 0,
-          unregistered: 0,
-        },
-      )
-      advertisingStatistic.value.push(sum)
-    })
-    .catch(() => {})
+    const rows: AdvertisingStatistic[] = data.data
+    const summary = calcSummary(rows)
+    advertisingStatistic.value = [...rows, summary]
+  } catch (error) {
+    // TODO: 에러 처리 (토스트, 알럿 등)
+    console.error(error)
+  }
 })
 </script>
 

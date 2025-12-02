@@ -1,39 +1,18 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import axios from 'axios'
-import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/userStore.ts'
+import router from '@/router'
 
 const userStore = useUserStore()
 const user_id = ref('')
 const user_pw = ref('')
-const router = useRouter()
 
 async function onLogin() {
   if (!user_id.value) return alert('ID를 입력하세요.')
   if (!user_pw.value) return alert('PW를 입력하세요.')
 
-  axios
-    .post(
-      'http://localhost:3002/auth/sign-in',
-      {
-        userId: user_id.value,
-        password: user_pw.value,
-      },
-      { withCredentials: true },
-    )
-    .then((response) => {
-      if (response.status === 200) {
-        userStore.login()
-        router.push('./dashboard')
-      }
-    })
-    .catch(() => {
-      user_id.value = ''
-      user_pw.value = ''
-      userStore.logout()
-      alert('로그인 실패')
-    })
+  const response = await userStore.login(user_id.value, user_pw.value)
+  if (response) await router.push('/dashboard')
 }
 </script>
 

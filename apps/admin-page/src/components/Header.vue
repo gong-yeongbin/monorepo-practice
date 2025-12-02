@@ -1,10 +1,17 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useUserStore } from '@/stores/userStore.ts'
+
+const userStore = useUserStore()
+function logout() {
+  userStore.logout()
+}
+</script>
 
 <template>
   <header class="header">
     <div class="right">
       <span class="username"> {{ '@@' }} </span>
-      <button class="logout-btn">로그아웃</button>
+      <button class="logout-btn" @click="logout()">로그아웃</button>
     </div>
   </header>
 </template>
