@@ -23,6 +23,14 @@ export class TrackerRepository implements ITracker {
 		}
 	}
 
+	async findMany(): Promise<Tracker[] | null> {
+		try {
+			return await this.prismaService.tracker.findMany();
+		} catch (e) {
+			throw new InternalServerErrorException(e.message);
+		}
+	}
+
 	async create(tracker: TrackerDto): Promise<Tracker> {
 		try {
 			return await this.prismaService.tracker.create({ data: tracker });
