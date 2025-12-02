@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import axios from 'axios'
 import DataTable from 'primevue/datatable'
+import DatePicker from 'primevue/datepicker'
 import Column from 'primevue/column'
 
 interface AdvertisingStatistic {
@@ -21,7 +22,7 @@ interface AdvertisingStatistic {
   unregistered: number
 }
 
-const today = new Date().toISOString().slice(0, 10)
+const selectedDate = ref<Date>(new Date())
 const advertisingStatistic = ref<AdvertisingStatistic[]>([])
 
 const calcSummary = (rows: AdvertisingStatistic[]): AdvertisingStatistic => {
@@ -59,24 +60,31 @@ const calcSummary = (rows: AdvertisingStatistic[]): AdvertisingStatistic => {
   )
 }
 
-onMounted(async () => {
-  try {
-    const { data } = await axios.get('http://localhost:3002/dashboard', {
-      params: { baseDate: today },
-      withCredentials: true,
-    })
-    const rows: AdvertisingStatistic[] = data.data
-    const summary = calcSummary(rows)
-    advertisingStatistic.value = [...rows, summary]
-  } catch (error) {
-    // TODO: 에러 처리 (토스트, 알럿 등)
-    console.error(error)
-  }
+const fetchData = async (baseDate: string) => {
+  const { data } = await axios.get('http://localhost:3002/dashboard', {
+    params: { baseDate },
+    withCredentials: true,
+  })
+  const rows: AdvertisingStatistic[] = data.data
+  const summary = calcSummary(rows)
+  advertisingStatistic.value = [...rows, summary]
+}
+
+onMounted(() => {
+  fetchData(selectedDate.value.toISOString().slice(0, 10))
+})
+
+watch(selectedDate, (newVal) => {
+  if (newVal) fetchData(newVal.toISOString().slice(0, 10))
 })
 </script>
 
 <template>
   <DefaultLayout>
+    <div style="margin-bottom: 1rem; display: flex; gap: 0.5rem; align-items: center">
+      <DatePicker v-model="selectedDate" inputId="baseDate" dateFormat="yy-mm-dd" showIcon />
+    </div>
+
     <DataTable :value="advertisingStatistic">
       <Column field="advertisingName" header="광고명" />
       <Column field="click" header="click" />
