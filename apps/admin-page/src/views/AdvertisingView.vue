@@ -29,8 +29,14 @@ onMounted(async () => {
 <template>
   <DefaultLayout>
     <DataTable :value="AdvertisingList">
-      <Column field="image" />
-      <Column field="name" header="광고명" />
+      <Column header="">
+        <template #body="{ data }">
+          <div class="flex items-center gap-2">
+            <img :src="data.image" alt="" style="width: 32px; height: 32px" />
+            <span>{{ data.name }}</span>
+          </div>
+        </template>
+      </Column>
     </DataTable>
   </DefaultLayout>
 </template>

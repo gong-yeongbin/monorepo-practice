@@ -28,7 +28,7 @@ const advertisingStatistic = ref<AdvertisingStatistic[]>([])
 const calcSummary = (rows: AdvertisingStatistic[]): AdvertisingStatistic => {
   return rows.reduce<AdvertisingStatistic>(
     (acc, curr) => ({
-      advertisingName: '합계',
+      advertisingName: '',
       click: acc.click + curr.click,
       install: acc.install + curr.install,
       registration: acc.registration + curr.registration,
@@ -43,7 +43,7 @@ const calcSummary = (rows: AdvertisingStatistic[]): AdvertisingStatistic => {
       unregistered: acc.unregistered + curr.unregistered,
     }),
     {
-      advertisingName: '합계',
+      advertisingName: '',
       click: 0,
       install: 0,
       registration: 0,
