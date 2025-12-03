@@ -11,9 +11,8 @@ export class GetCampaignListUseCase {
 		const advertising = await this.advertisingRepository.findById(id);
 		if (!advertising) throw new NotFoundException();
 
-		const result = await this.advertisingRepository.findManyCampaign(id);
 		return {
-			data: result?.campaign?.map((advertising) => plainToInstance(ResponseGetCampaignListDto, advertising, { excludeExtraneousValues: true })),
+			data: advertising?.campaign?.map((campaign) => plainToInstance(ResponseGetCampaignListDto, campaign, { excludeExtraneousValues: true })),
 		};
 	}
 }

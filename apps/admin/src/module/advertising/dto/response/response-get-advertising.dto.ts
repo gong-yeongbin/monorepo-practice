@@ -1,5 +1,6 @@
-import { Expose } from 'class-transformer';
-import { CampaignDto } from '@advertising/dto/campaign.dto';
+import { Expose, Type } from 'class-transformer';
+import { CampaignDto } from '@advertising/dto/response/campaign.dto';
+import { ValidateNested } from 'class-validator';
 
 export class ResponseGetAdvertisingDto {
 	@Expose()
@@ -18,5 +19,7 @@ export class ResponseGetAdvertisingDto {
 	trackerName: string;
 
 	@Expose()
+	@Type(() => CampaignDto)
+	@ValidateNested({ each: true })
 	campaign: CampaignDto[];
 }

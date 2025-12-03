@@ -7,8 +7,8 @@ import { ADVERTISING_REPOSITORY, IAdvertising } from '@advertising/domain';
 export class GetAdvertisingUseCase {
 	constructor(@Inject(ADVERTISING_REPOSITORY) private readonly advertisingRepository: IAdvertising) {}
 
-	async execute(advertisingId: number) {
-		const advertising = await this.advertisingRepository.findManyCampaign(advertisingId);
-		return plainToInstance(ResponseGetAdvertisingDto, advertising);
+	async execute(name: string) {
+		const advertising = await this.advertisingRepository.findByName(name);
+		return plainToInstance(ResponseGetAdvertisingDto, advertising, { excludeExtraneousValues: true });
 	}
 }

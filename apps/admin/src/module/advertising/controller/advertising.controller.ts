@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { CreateAdvertisingUseCase, GetAdvertisingListUseCase, GetAdvertisingUseCase, GetCampaignListUseCase, UpdateAdvertisingUseCase } from '@module/advertising/use-case';
 import { CreateAdvertisingDto, UpdateAdvertisingDto } from '@module/advertising/dto/request';
-import { AdvertisingIdDto } from '@module/advertising/dto/advertising-id.dto';
 import { AccessTokenValidatorGuard } from '@common/guard';
+import { AdvertisingIdDto, AdvertisingNameDto } from '@advertising/dto';
 
 @Controller('advertising')
 @UseGuards(AccessTokenValidatorGuard)
@@ -20,13 +20,13 @@ export class AdvertisingController {
 		return await this.getAdvertisingListUseCase.execute();
 	}
 
-	@Get(':id')
-	async get(@Param() param: AdvertisingIdDto) {
-		return await this.getAdvertisingUseCase.execute(parseInt(param.id));
+	@Get(':name')
+	async getByName(@Param() param: AdvertisingNameDto) {
+		return await this.getAdvertisingUseCase.execute(param.name);
 	}
 
 	@Get(':id/campaign')
-	async getCampaign(@Param() param: AdvertisingIdDto) {
+	async getById(@Param() param: AdvertisingIdDto) {
 		return await this.getCampaignListUseCase.execute(parseInt(param.id));
 	}
 
