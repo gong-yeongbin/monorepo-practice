@@ -7,25 +7,27 @@ import { plainToInstance } from 'class-transformer';
 import { ResponseAdvertisingDashboardDto } from '@dashboard/dto/response';
 
 @Injectable()
-export class GetDashboardAdvertisingUseCase {
+export class GetStatisticByAdvertisingUseCase {
 	constructor(
 		@Inject(CAMPAIGN_REPOSITORY) private readonly campaignRepository: ICampaign,
 		@Inject(DAILY_STATISTIC_REPOSITORY) private readonly dailyStatisticRepository: IDailyStatistic
 	) {}
 
 	async execute(baseDate: Date): Promise<ResponseAdvertisingDashboardDto[]> {
-		const campaigns = await this.campaignRepository.findMany(baseDate);
-		const advertigings = campaigns.reduce((acc, curr) => {
+		const campaignList = await this.campaignRepository.findMany();
+		const advertigingList = campaignList.reduce((acc, curr) => {
 			if (!acc[curr.advertising_name]) acc[curr.advertising_name] = [];
 			acc[curr.advertising_name].push(curr.token);
 			return acc;
 		}, {});
 
-		return await Promise.all(
-			Object.keys(advertigings).map(async (name) => {
-				const sumDailyStatistic = await this.dailyStatisticRepository.findMany(advertigings[name], baseDate);
-				return plainToInstance(ResponseAdvertisingDashboardDto, { name, ...sumDailyStatistic });
+		const response = await Promise.all(
+			Object.keys(advertigingList).map(async (name) => {
+				const sumDailyStatistic = await this.dailyStatisticRepository.findManyByAdvertising(advertigingList[name], baseDate);
+				if (sumDailyStatistic) return plainToInstance(ResponseAdvertisingDashboardDto, { name, ...sumDailyStatistic });
 			})
 		);
+
+		return response.filter((res) => res !== undefined);
 	}
 }
