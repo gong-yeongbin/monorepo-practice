@@ -32,10 +32,10 @@ export class DailyStatisticRepository implements IDailyStatistic {
 		}
 	}
 
-	async findManyByCampaign(tokens: string[], startDate: Date, endDate: Date): Promise<SumDailyStatistic | null> {
+	async findManyByCampaign(token: string, startDate: Date, endDate: Date): Promise<SumDailyStatistic | null> {
 		try {
 			const result = await this.prismaService.daily_statistic.aggregate({
-				where: { token: { in: tokens }, created_at: { gte: startDate, lte: endDate } },
+				where: { token, created_at: { gte: startDate, lte: endDate } },
 				_sum: {
 					click: true,
 					install: true,

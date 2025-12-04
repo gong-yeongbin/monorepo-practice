@@ -14,7 +14,6 @@ export class DashboardController {
 
 	@Get('advertising')
 	async statisticByAdvertising(@Query() query: GetStatisticByAdvertisingDto) {
-		console.log(query);
 		return await this.getStatisticByAdvertisingUseCase.execute(query.baseDate);
 	}
 
