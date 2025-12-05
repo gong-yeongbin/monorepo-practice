@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { IDailyStatistic } from '@dashboard/domain/repositories';
 import { PrismaService } from '@repo/prisma';
-import { DashboardAdvertising, DashboardCampaign, DashboardMedia } from '@dashboard/domain/entities';
+import { DailyStatistic, DashboardAdvertising, DashboardCampaign, DashboardMedia } from '@dashboard/domain/entities';
 
 @Injectable()
 export class DailyStatisticRepository implements IDailyStatistic {
@@ -81,6 +81,14 @@ export class DailyStatisticRepository implements IDailyStatistic {
 			return groupby.map((group) => {
 				return { ...group._sum, createdDate: group.created_date };
 			});
+		} catch (e) {
+			throw new InternalServerErrorException(e.message);
+		}
+	}
+
+	async dashboardMediaDetail(token: string, startDate: Date, endDate: Date): Promise<DailyStatistic[] | null> {
+		try {
+			return await this.prismaService.daily_statistic.findMany({ where: { token, created_date: { gte: startDate, lte: endDate } } });
 		} catch (e) {
 			throw new InternalServerErrorException(e.message);
 		}
