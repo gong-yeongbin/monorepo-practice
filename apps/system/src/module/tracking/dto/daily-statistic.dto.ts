@@ -49,6 +49,6 @@ export class DailyStatisticDto {
 	@Expose()
 	unregistered: number = 0;
 
-	@Expose({ name: 'createdAt' })
-	created_at: Date;
+	@Expose()
+	created_date: Date;
 }

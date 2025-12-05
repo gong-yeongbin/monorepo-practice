@@ -33,7 +33,7 @@ export class TrackingConsumerUseCase implements OnModuleInit {
 					} else {
 						dailyStatisticDto = plainToInstance(
 							DailyStatisticDto,
-							{ view_code: viewCode, token: token, pub_id: pubId, sub_id: subId, click: 1, created_at: baseDate },
+							{ view_code: viewCode, token: token, pub_id: pubId, sub_id: subId, click: 1, created_date: baseDate },
 							{ exposeDefaultValues: true }
 						);
 

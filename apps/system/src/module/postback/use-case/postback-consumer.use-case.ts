@@ -25,6 +25,7 @@ export class PostbackConsumerUseCase implements OnModuleInit {
 				if (message.value?.toString()) {
 					const baseDate = dayjs(dayjs().format('YYYY-MM-DD')).add(9, 'hour').toDate();
 					const postback = plainToInstance(PostbackDto, JSON.parse(message.value?.toString()), { ignoreDecorators: true, enableImplicitConversion: true });
+
 					if (!postback?.token) return; // 에러 로그 처리
 
 					const campaign = await this.campaignRepository.findByToken(postback?.token);
@@ -33,7 +34,7 @@ export class PostbackConsumerUseCase implements OnModuleInit {
 
 					const dailyStatisticDto = plainToInstance(
 						DailyStatisticDto,
-						{ view_code: postback.view_code, token: postback.token, pub_id: postback.pub_id, sub_id: postback.sub_id, created_at: baseDate },
+						{ view_code: postback.view_code, token: postback.token, pub_id: postback.pub_id, sub_id: postback.sub_id, created_date: baseDate },
 						{ exposeDefaultValues: true }
 					);
 

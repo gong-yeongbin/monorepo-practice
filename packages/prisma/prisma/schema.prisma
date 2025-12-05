@@ -135,9 +135,9 @@ model daily_statistic {
   etc4         Int      @default(0)
   etc5         Int      @default(0)
   unregistered Int      @default(0)
-  created_at   DateTime @db.Date()
+  created_date DateTime @db.Date()
 
-  @@unique([view_code, created_at])
+  @@unique([view_code, created_date])
 }
 
 enum Role {
