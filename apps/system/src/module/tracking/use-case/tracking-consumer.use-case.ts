@@ -13,12 +13,10 @@ export class TrackingConsumerUseCase implements OnModuleInit {
 	constructor(
 		@Inject(DAILY_STATISTIC_REPOSITORY) private readonly dailyStatisticRepository: IDailyStatistic,
 		@Inject(CONSUMER) private readonly consumer: IConsumer
-	) {
-		this.consumer.init('mecross-system-tracking');
-	}
+	) {}
 
 	async onModuleInit() {
-		await this.consumer.batch('tracking', async ({ batch, resolveOffset, heartbeat }) => {
+		await this.consumer.registerBatch('tracking', async ({ batch, resolveOffset, heartbeat }) => {
 			const dailyStatisticMap = new Map<string, DailyStatisticDto>();
 			for (const message of batch.messages) {
 				if (message.value?.toString()) {
