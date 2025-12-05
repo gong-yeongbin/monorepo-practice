@@ -1,4 +1,4 @@
-export class SumDailyStatistic {
+export class DashboardMedia {
 	click: number | null;
 	install: number | null;
 	registration: number | null;
@@ -11,4 +11,5 @@ export class SumDailyStatistic {
 	etc4: number | null;
 	etc5: number | null;
 	unregistered: number | null;
+	createdDate: Date | null;
 }

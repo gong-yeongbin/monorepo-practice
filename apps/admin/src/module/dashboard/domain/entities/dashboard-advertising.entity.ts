@@ -1,4 +1,4 @@
-export class SumDailyStatistic {
+export class DashboardAdvertising {
 	click: number | null;
 	install: number | null;
 	registration: number | null;

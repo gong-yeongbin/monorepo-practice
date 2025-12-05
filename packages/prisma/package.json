@@ -9,10 +9,8 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "migrate:dev": "prisma migrate dev",
-    "deploy:dev": "prisma deploy",
-    "migrate:prod": "prisma migrate",
-    "deploy:prod": "prisma migrate deploy",
+    "dev": "prisma migrate deploy",
+    "prod": "prisma migrate deploy",
     "generate": "prisma generate",
     "reset": "prisma migrate reset"
   },

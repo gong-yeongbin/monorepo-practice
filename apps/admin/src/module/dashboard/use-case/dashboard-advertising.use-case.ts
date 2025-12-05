@@ -7,7 +7,7 @@ import { plainToInstance } from 'class-transformer';
 import { ResponseAdvertisingDashboardDto } from '@dashboard/dto/response';
 
 @Injectable()
-export class GetStatisticByAdvertisingUseCase {
+export class DashboardAdvertisingUseCase {
 	constructor(
 		@Inject(CAMPAIGN_REPOSITORY) private readonly campaignRepository: ICampaign,
 		@Inject(DAILY_STATISTIC_REPOSITORY) private readonly dailyStatisticRepository: IDailyStatistic
@@ -23,8 +23,8 @@ export class GetStatisticByAdvertisingUseCase {
 
 		const response = await Promise.all(
 			Object.keys(advertigingList).map(async (name) => {
-				const sumDailyStatistic = await this.dailyStatisticRepository.findManyByAdvertising(advertigingList[name], baseDate);
-				if (sumDailyStatistic) return plainToInstance(ResponseAdvertisingDashboardDto, { name, ...sumDailyStatistic });
+				const dashboardAdvertising = await this.dailyStatisticRepository.dashboardAdvertising(advertigingList[name], baseDate);
+				if (dashboardAdvertising) return plainToInstance(ResponseAdvertisingDashboardDto, { name, ...dashboardAdvertising });
 			})
 		);
 

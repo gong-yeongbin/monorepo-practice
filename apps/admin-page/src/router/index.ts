@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, type RouteLocationNormalized } from 'vue-router'
 import LoginView from '@/views/LoginView.vue'
 import DashBoard from '@/views/DashBoard.vue'
 import Tracker from '@/views/TrackerView.vue'
@@ -31,9 +31,10 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: '/advertising/campaign',
+    path: '/advertising/:name/campaign',
     name: 'advertisingCampaign',
     component: AdvertisingCampaign,
+    props: true,
     meta: { requiresAuth: true },
   },
   {

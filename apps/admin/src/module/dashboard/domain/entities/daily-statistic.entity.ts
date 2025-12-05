@@ -18,5 +18,5 @@ export class DailyStatistic implements daily_statistic {
 	etc4: number;
 	etc5: number;
 	unregistered: number;
-	created_at: Date;
+	created_date: Date;
 }

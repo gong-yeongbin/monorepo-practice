@@ -1,24 +1,30 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
-import { GetStatisticByAdvertisingDto, GetStatisticByCampaignDto } from '@dashboard/dto/request';
-import { GetStatisticByAdvertisingUseCase, GetStatisticByCampaignUseCase } from '@dashboard/use-case';
+import { DashboardAdvertisingUseCase, DashboardCampaignUseCase, DashboardMediaUseCase } from '@dashboard/use-case';
 import { CookieAuthGuard } from '@common/guard';
-import { AdvertisingNameDto } from '@dashboard/dto/advertising-name.dto';
+import { BaseDateDto, DateRangeDto } from '@dashboard/dto/request/query';
+import { AdvertisingNameDto, CampaignTokenDto } from '@dashboard/dto/request/param';
 
 @UseGuards(CookieAuthGuard)
 @Controller('dashboard')
 export class DashboardController {
 	constructor(
-		private readonly getStatisticByAdvertisingUseCase: GetStatisticByAdvertisingUseCase,
-		private readonly getStatisticByCampaignUseCase: GetStatisticByCampaignUseCase
+		private readonly dashboardAdvertisingUseCase: DashboardAdvertisingUseCase,
+		private readonly dashboardCampaignUseCase: DashboardCampaignUseCase,
+		private readonly dashboardMediaUseCase: DashboardMediaUseCase
 	) {}
 
 	@Get('advertising')
-	async statisticByAdvertising(@Query() query: GetStatisticByAdvertisingDto) {
-		return await this.getStatisticByAdvertisingUseCase.execute(query.baseDate);
+	async dashboard(@Query() query: BaseDateDto) {
+		return await this.dashboardAdvertisingUseCase.execute(query.baseDate);
 	}
 
-	@Get('advertising/:name/campaign')
-	async statisticByCampaign(@Param() param: AdvertisingNameDto, @Query() query: GetStatisticByCampaignDto) {
-		return await this.getStatisticByCampaignUseCase.execute(param.name, query.startDate, query.endDate);
+	@Get('advertising/:name')
+	async advertising(@Param() param: AdvertisingNameDto, @Query() query: DateRangeDto) {
+		return await this.dashboardCampaignUseCase.execute(param.name, query.startDate, query.endDate);
+	}
+
+	@Get('campaign/:token')
+	async campaign(@Param() param: CampaignTokenDto, @Query() query: DateRangeDto) {
+		return await this.dashboardMediaUseCase.execute(param.token, query.startDate, query.endDate);
 	}
 }

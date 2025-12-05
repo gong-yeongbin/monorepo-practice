@@ -1,12 +1,8 @@
 import { IsDate } from 'class-validator';
 import { Transform } from 'class-transformer';
 
-export class GetStatisticByCampaignDto {
+export class BaseDateDto {
 	@IsDate()
 	@Transform(({ value }) => new Date(value))
-	startDate: Date;
-
-	@IsDate()
-	@Transform(({ value }) => new Date(value))
-	endDate: Date;
+	baseDate: Date;
 }

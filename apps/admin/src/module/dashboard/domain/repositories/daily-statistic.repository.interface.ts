@@ -1,6 +1,8 @@
-import { SumDailyStatistic } from '@dashboard/domain/entities';
+import { DashboardAdvertising, DashboardCampaign } from '@dashboard/domain/entities';
+import { DashboardMedia } from '@dashboard/domain/entities/dashboard-media.entity';
 
 export interface IDailyStatistic {
-	findManyByAdvertising(tokens: string[], baseDate: Date): Promise<SumDailyStatistic | null>;
-	findManyByCampaign(token: string, startDate: Date, endDate: Date): Promise<SumDailyStatistic | null>;
+	dashboardAdvertising(tokens: string[], baseDate: Date): Promise<DashboardAdvertising | null>;
+	dashboardCampaign(token: string, startDate: Date, endDate: Date): Promise<DashboardCampaign | null>;
+	dashboardMedia(token: string, startDate: Date, endDate: Date): Promise<DashboardMedia[] | null>;
 }
