@@ -6,6 +6,14 @@ import DataTable from 'primevue/datatable'
 import DatePicker from 'primevue/datepicker'
 import Column from 'primevue/column'
 
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone'
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+dayjs.tz.setDefault('Asia/Seoul')
+
 interface AdvertisingStatistic {
   advertisingName: string
   click: number
@@ -28,7 +36,7 @@ const advertisingStatistic = ref<AdvertisingStatistic[]>([])
 const calcSummary = (rows: AdvertisingStatistic[]): AdvertisingStatistic => {
   return rows.reduce<AdvertisingStatistic>(
     (acc, curr) => ({
-      advertisingName: '',
+      advertisingName: '합계',
       click: acc.click + curr.click,
       install: acc.install + curr.install,
       registration: acc.registration + curr.registration,
@@ -43,7 +51,7 @@ const calcSummary = (rows: AdvertisingStatistic[]): AdvertisingStatistic => {
       unregistered: acc.unregistered + curr.unregistered,
     }),
     {
-      advertisingName: '',
+      advertisingName: '합계',
       click: 0,
       install: 0,
       registration: 0,
@@ -61,7 +69,7 @@ const calcSummary = (rows: AdvertisingStatistic[]): AdvertisingStatistic => {
 }
 
 const fetchData = async (baseDate: string) => {
-  const { data } = await axios.get('http://localhost:3002/dashboard', {
+  const { data } = await axios.get('http://localhost:3002/dashboard/advertising', {
     params: { baseDate },
     withCredentials: true,
   })
@@ -71,22 +79,39 @@ const fetchData = async (baseDate: string) => {
 }
 
 onMounted(() => {
-  fetchData(selectedDate.value.toISOString().slice(0, 10))
+  fetchData(dayjs(selectedDate.value).format('YYYY-MM-DD'))
 })
 
 watch(selectedDate, (newVal) => {
-  if (newVal) fetchData(newVal.toISOString().slice(0, 10))
+  if (newVal) fetchData(dayjs(newVal).format('YYYY-MM-DD'))
 })
 </script>
 
 <template>
   <DefaultLayout>
     <div style="margin-bottom: 1rem; display: flex; gap: 0.5rem; align-items: center">
-      <DatePicker v-model="selectedDate" inputId="baseDate" dateFormat="yy-mm-dd" showIcon />
+      <DatePicker v-model="selectedDate" dateFormat="yy-mm-dd" showIcon />
     </div>
 
     <DataTable :value="advertisingStatistic">
-      <Column field="advertisingName" header="광고명" />
+      <Column field="advertisingName" header="광고명">
+        <template #body="{ data }">
+          <span v-if="data.advertisingName === '합계'">
+            {{ data.advertisingName }}
+          </span>
+          <router-link
+            v-else
+            :to="{
+              name: 'advertisingCampaign', // 라우터에 정의한 name과 동일
+              params: { name: data.advertisingName },
+            }"
+            style="color: #007bff; text-decoration: none"
+          >
+            {{ data.advertisingName }}
+          </router-link>
+        </template>
+      </Column>
+
       <Column field="click" header="click" />
       <Column field="install" header="install" />
       <Column field="registration" header="registration" />
