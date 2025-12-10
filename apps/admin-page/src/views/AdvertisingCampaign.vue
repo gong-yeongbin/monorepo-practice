@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Tracker from '@/components/Tracker.vue'
-import CampaignList from '@/components/CampaignList.vue'
+import CampaignStatistic from '@/components/CampaignStatistic.vue'
 
 import { useRoute } from 'vue-router'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
@@ -14,7 +14,7 @@ const route = useRoute()
     </div>
 
     <div class="campaign-wrap">
-      <CampaignList :name="route.params.name" />
+      <CampaignStatistic :name="route.params.name" />
     </div>
   </DefaultLayout>
 </template>

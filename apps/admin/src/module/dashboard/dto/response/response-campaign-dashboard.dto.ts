@@ -8,6 +8,9 @@ export class ResponseCampaignDashboardDto {
 	mediaName: string;
 
 	@Expose()
+	token: string;
+
+	@Expose()
 	type: string;
 
 	@Expose({ name: 'is_active' })
