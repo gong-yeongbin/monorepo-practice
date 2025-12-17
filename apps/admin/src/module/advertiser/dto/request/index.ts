@@ -1,2 +1,2 @@
-export * from './create-advertiser.dto';
-export * from './patch-advertiser.dto';
+export * from './create-advertiser.input';
+export * from './update-advertiser.input';

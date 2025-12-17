@@ -1,1 +1,1 @@
-export * from './advertiser.controller';
+export * from './advertiser.resolver';

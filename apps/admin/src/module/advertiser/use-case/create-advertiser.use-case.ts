@@ -2,7 +2,7 @@ import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { ADVERTISER_REPOSITORY } from '@module/advertiser/domain/symbol';
 import { IAdvertiser } from '@module/advertiser/domain/repositories';
-import { ResponseAdvertiserDto } from '@module/advertiser/dto/response';
+import { Advertiser } from '@module/advertiser/dto/response';
 
 @Injectable()
 export class CreateAdvertiserUseCase {
@@ -13,6 +13,6 @@ export class CreateAdvertiserUseCase {
 		if (advertiser) throw new ConflictException();
 
 		advertiser = await this.advertiserRepository.create(name);
-		return { data: plainToInstance(ResponseAdvertiserDto, advertiser) };
+		return plainToInstance(Advertiser, advertiser);
 	}
 }

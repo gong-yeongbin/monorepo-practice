@@ -1,6 +1,6 @@
 import { Expose } from 'class-transformer';
 
-export class AdvertiserDto {
+export class CreateAdvertiserDto {
 	@Expose()
 	id: number;
 

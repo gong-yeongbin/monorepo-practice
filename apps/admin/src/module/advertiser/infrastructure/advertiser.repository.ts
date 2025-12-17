@@ -2,7 +2,7 @@ import { IAdvertiser } from '@module/advertiser/domain/repositories';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '@repo/prisma';
 import { Advertiser } from '@module/advertiser/domain/entities';
-import { AdvertiserDto } from '@module/advertiser/dto/advertiser.dto';
+import { CreateAdvertiserDto } from '@module/advertiser/dto/create-advertiser.dto';
 
 @Injectable()
 export class AdvertiserRepository implements IAdvertiser {
@@ -32,7 +32,7 @@ export class AdvertiserRepository implements IAdvertiser {
 		}
 	}
 
-	async update(advertiser: AdvertiserDto): Promise<Advertiser> {
+	async update(advertiser: CreateAdvertiserDto): Promise<Advertiser> {
 		try {
 			const { id, name } = advertiser;
 			return await this.prismaService.advertiser.update({ where: { id }, data: { name } });
