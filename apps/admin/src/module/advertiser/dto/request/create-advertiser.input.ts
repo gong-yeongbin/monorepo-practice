@@ -4,6 +4,6 @@ import { Field, InputType } from '@nestjs/graphql';
 @InputType()
 export class CreateAdvertiserInput {
 	@Field()
+	@Transform(({ value }) => value.replaceAll(' ', ''))
 	name: string;
-	// @Transform(({ value }) => value.replaceAll(' ', ''))
 }
