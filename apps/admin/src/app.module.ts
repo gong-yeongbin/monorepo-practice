@@ -14,7 +14,6 @@ import { CampaignModule } from '@module/campaign/campaign.module';
 import { DashboardModule } from '@dashboard/dashboard.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { join } from 'path';
 import { AppResolver } from '@src/app.resolver';
 
 @Module({
@@ -22,6 +21,7 @@ import { AppResolver } from '@src/app.resolver';
 		GraphQLModule.forRoot<ApolloDriverConfig>({
 			driver: ApolloDriver,
 			autoSchemaFile: true,
+			context: ({ req, res }) => ({ req, res }),
 		}),
 		ConfigModule.forRoot({ isGlobal: true }),
 		JwtModule.register({ global: true }),

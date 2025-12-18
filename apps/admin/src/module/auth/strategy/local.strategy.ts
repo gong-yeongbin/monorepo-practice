@@ -6,7 +6,7 @@ import { ValidateUserUseCase } from '@module/auth/use-case';
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
 	constructor(private readonly validateUserUseCase: ValidateUserUseCase) {
-		super({ usernameField: 'userId' });
+		super({ usernameField: 'userId', passwordField: 'password' });
 	}
 
 	async validate(userId: string, password: string) {

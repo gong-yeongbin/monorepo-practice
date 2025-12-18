@@ -73,8 +73,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       passport-secure-cookie:
-        specifier: ^0.0.5
-        version: 0.0.5
+        specifier: ^1.1.0
+        version: 1.1.0
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
@@ -4733,8 +4733,8 @@ packages:
     resolution: {integrity: sha512-9wCE6qKznvf9mQYYbgJ3sVOHmCWoUNMVFoZzNoznmISbhnNNPhN9xfY3sLmScHMetEJeoY7CXwfhCe7argfQow==}
     engines: {node: '>= 0.4.0'}
 
-  passport-secure-cookie@0.0.5:
-    resolution: {integrity: sha512-JDaPPCRDp+LAjbbyuM8iJ7Re2/qBmspHL02rKjPof6cZTE4DC7d/M3At0X0GAtsY6uIcroJ8UdB48nZtDuwTZg==}
+  passport-secure-cookie@1.1.0:
+    resolution: {integrity: sha512-TgGotqZEKsVzUrRabqDgvpQT7LxWRqUrGsVE5foYHdGaA2UV7SdwfMutxsCyj2ZUro+PatjBwxKrLPDRxYKk2g==}
 
   passport-strategy@1.0.0:
     resolution: {integrity: sha512-CB97UUvDKJde2V0KDWWB3lyf6PC3FaZP7YxZ2G8OAtn9p4HI9j9JLP9qjOGZFvyl8uwNT8qM+hGnz/n16NI7oA==}
@@ -11283,7 +11283,7 @@ snapshots:
     dependencies:
       passport-strategy: 1.0.0
 
-  passport-secure-cookie@0.0.5:
+  passport-secure-cookie@1.1.0:
     dependencies:
       cookie-parser: 1.4.7
       express: 5.1.0
