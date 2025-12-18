@@ -21,7 +21,6 @@ export class AdvertiserResolver {
 
 	@Mutation(() => Advertiser)
 	async createAdvertiser(@Args('input') input: CreateAdvertiserInput) {
-		console.log(input);
 		return await this.createAdvertiserUseCase.execute(input.name);
 	}
 
