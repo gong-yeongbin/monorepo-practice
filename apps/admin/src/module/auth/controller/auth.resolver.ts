@@ -3,6 +3,8 @@ import { CreateTokenUseCase, ValidateUserUseCase } from '@module/auth/use-case';
 import { UnauthorizedException, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LocalAuthGuard } from '@common/guard';
+import { User } from '@module/auth/decorator';
+import { UserDto } from '@module/user/dto/user.dto';
 
 @Resolver()
 export class AuthResolver {
@@ -18,10 +20,7 @@ export class AuthResolver {
 
 	@Mutation(() => Boolean)
 	@UseGuards(LocalAuthGuard)
-	async login(@Args('userId') userId: string, @Args('password') password: string, @Context() ctx) {
-		const user = await this.validateUserUseCase.execute(userId, password);
-		if (!user) throw new UnauthorizedException();
-
+	async login(@Args('userId') userId: string, @Args('password') password: string, @User() user: UserDto, @Context() ctx) {
 		const access_token = await this.createTokenUseCase.execute(user);
 		ctx.res.cookie('access_token', access_token, this.cookieConfig);
 
