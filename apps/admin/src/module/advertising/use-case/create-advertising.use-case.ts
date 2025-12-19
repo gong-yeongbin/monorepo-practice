@@ -1,12 +1,13 @@
 import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { CreateAdvertisingDto } from '@module/advertising/dto/request';
-import { ResponseCreateAdvertisingDto } from '@module/advertising/dto/response';
-import { ADVERTISING_REPOSITORY, IAdvertising } from '@module/advertising/domain';
-import { AdvertisingDto } from '@module/advertising/dto/advertising.dto';
+import { CreateAdvertisingInput } from '@module/advertising/dto/request';
+import { Advertising } from '@module/advertising/dto/response';
 import { ADVERTISER_REPOSITORY } from '@module/advertiser/domain/symbol';
 import { IAdvertiser } from '@module/advertiser/domain/repositories';
 import { ITracker, TRACKER_REPOSITORY } from '@module/tracker/domain';
+import { CreateAdvertisingDto } from '@advertising/dto';
+import { ADVERTISING_REPOSITORY } from '@advertising/domain/symbol';
+import { IAdvertising } from '@advertising/domain/repositories';
 
 @Injectable()
 export class CreateAdvertisingUseCase {
@@ -16,8 +17,8 @@ export class CreateAdvertisingUseCase {
 		@Inject(TRACKER_REPOSITORY) private readonly trakcerRepository: ITracker
 	) {}
 
-	async execute(request: CreateAdvertisingDto) {
-		const { name, image, advertiserName, trackerName } = request;
+	async execute(input: CreateAdvertisingInput) {
+		const { name, image, advertiserName, trackerName } = input;
 
 		const advertiser = await this.advertiserRepository.find(advertiserName);
 		const tracker = await this.trakcerRepository.findByName(trackerName);
@@ -26,11 +27,9 @@ export class CreateAdvertisingUseCase {
 		const advertising = await this.advertisingRepository.findByName(name);
 		if (advertising) throw new ConflictException();
 
-		const advertisingDto = plainToInstance(AdvertisingDto, { name, image, advertiser_name: advertiserName, tracker_name: trackerName });
-		const result = await this.advertisingRepository.create(advertisingDto);
+		const createAdvertisingDto = plainToInstance(CreateAdvertisingDto, { name, image, advertiser_name: advertiserName, tracker_name: trackerName });
+		const result = await this.advertisingRepository.create(createAdvertisingDto);
 
-		return {
-			data: plainToInstance(ResponseCreateAdvertisingDto, result),
-		};
+		return plainToInstance(Advertising, result);
 	}
 }

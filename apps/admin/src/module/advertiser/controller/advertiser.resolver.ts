@@ -21,11 +21,11 @@ export class AdvertiserResolver {
 
 	@Mutation(() => Advertiser)
 	async createAdvertiser(@Args('input') input: CreateAdvertiserInput) {
-		return await this.createAdvertiserUseCase.execute(input.name);
+		return await this.createAdvertiserUseCase.execute(input);
 	}
 
 	@Mutation(() => Advertiser)
 	async updateAdvertiser(@Args('input') input: UpdateAdvertiserInput) {
-		return await this.updateAdvertiserUseCase.execute(input.id, input.name);
+		return await this.updateAdvertiserUseCase.execute(input);
 	}
 }

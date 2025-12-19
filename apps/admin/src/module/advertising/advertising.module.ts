@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
-import { AdvertisingController } from '@module/advertising/controller';
 import { AdvertisingRepository } from '@module/advertising/infrastructure';
 import { CreateAdvertisingUseCase, GetAdvertisingListUseCase, GetAdvertisingUseCase, UpdateAdvertisingUseCase } from '@module/advertising/use-case';
-import { ADVERTISING_REPOSITORY } from '@module/advertising/domain';
 import { AdvertiserModule } from '@module/advertiser/advertiser.module';
 import { TrackerModule } from '@module/tracker/tracker.module';
+import { AdvertisingResolver } from '@advertising/controller/advertising.resolver';
+import { ADVERTISING_REPOSITORY } from '@advertising/domain/symbol';
 
 @Module({
 	imports: [AdvertiserModule, TrackerModule],
-	controllers: [AdvertisingController],
 	providers: [
+		AdvertisingResolver,
 		CreateAdvertisingUseCase,
 		UpdateAdvertisingUseCase,
 		GetAdvertisingListUseCase,

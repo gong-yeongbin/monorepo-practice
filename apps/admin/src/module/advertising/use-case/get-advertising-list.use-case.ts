@@ -1,7 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ADVERTISING_REPOSITORY, IAdvertising } from '@module/advertising/domain';
 import { plainToInstance } from 'class-transformer';
-import { ResponseGetAdvertisingListDto } from '@module/advertising/dto/response/response-get-advertising-list.dto';
+import { Advertising } from '@advertising/dto/response';
+import { ADVERTISING_REPOSITORY } from '@advertising/domain/symbol';
+import { IAdvertising } from '@advertising/domain/repositories';
 
 @Injectable()
 export class GetAdvertisingListUseCase {
@@ -9,8 +10,6 @@ export class GetAdvertisingListUseCase {
 
 	async execute() {
 		const advertisings = await this.advertisingRepository.findMany();
-		return advertisings?.map((advertising) =>
-			plainToInstance(ResponseGetAdvertisingListDto, { ...advertising, campaign: advertising.campaign?.length }, { excludeExtraneousValues: true })
-		);
+		return advertisings.map((advertising) => plainToInstance(Advertising, advertising, { excludeExtraneousValues: true }));
 	}
 }

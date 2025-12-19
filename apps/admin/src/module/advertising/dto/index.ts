@@ -1,3 +1,2 @@
-export * from './advertising.dto';
-export * from './advertising-id.dto';
-export * from './advertising-name.dto';
+export * from './create-advertising.dto';
+export * from './update-advertising.dto';

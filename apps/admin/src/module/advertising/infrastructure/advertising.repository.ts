@@ -1,7 +1,8 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '@repo/prisma';
-import { Advertising, IAdvertising } from '@module/advertising/domain';
-import { AdvertisingDto } from '@module/advertising/dto/advertising.dto';
+import { CreateAdvertisingDto, UpdateAdvertisingDto } from '@advertising/dto';
+import { IAdvertising } from '@advertising/domain/repositories';
+import { Advertising } from '@advertising/domain/entities';
 
 @Injectable()
 export class AdvertisingRepository implements IAdvertising {
@@ -23,7 +24,7 @@ export class AdvertisingRepository implements IAdvertising {
 		}
 	}
 
-	async findMany(): Promise<Advertising[] | null> {
+	async findMany(): Promise<Advertising[]> {
 		try {
 			return await this.prismaService.advertising.findMany({ orderBy: { id: 'desc' }, include: { campaign: { where: { is_active: true } } } });
 		} catch (e) {
@@ -31,15 +32,7 @@ export class AdvertisingRepository implements IAdvertising {
 		}
 	}
 
-	async findManyCampaign(id: number): Promise<Advertising | null> {
-		try {
-			return await this.prismaService.advertising.findUnique({ where: { id }, include: { campaign: true } });
-		} catch (e) {
-			throw new InternalServerErrorException(e.message);
-		}
-	}
-
-	async create(advertising: AdvertisingDto): Promise<Advertising> {
+	async create(advertising: CreateAdvertisingDto): Promise<Advertising> {
 		try {
 			return await this.prismaService.advertising.create({ data: advertising });
 		} catch (e) {
@@ -47,9 +40,10 @@ export class AdvertisingRepository implements IAdvertising {
 		}
 	}
 
-	async update(id: number, advertising: AdvertisingDto): Promise<Advertising> {
+	async update(advertising: UpdateAdvertisingDto): Promise<Advertising> {
 		try {
-			return await this.prismaService.advertising.update({ where: { id: id }, data: { name: advertising.name, image: advertising.image } });
+			const { id, name, image } = advertising;
+			return await this.prismaService.advertising.update({ where: { id }, data: { name, image } });
 		} catch (e) {
 			throw new InternalServerErrorException(e.message);
 		}
