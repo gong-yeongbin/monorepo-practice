@@ -31,6 +31,6 @@ export class CreateAdvertisingUseCase {
 		const createAdvertisingDto = plainToInstance(CreateAdvertisingDto, { name, image, advertiserName, trackerName }, { excludeExtraneousValues: true });
 		const result = await this.advertisingRepository.create(createAdvertisingDto);
 
-		return plainToInstance(Advertising, result);
+		return plainToInstance(Advertising, result, { excludeExtraneousValues: true });
 	}
 }

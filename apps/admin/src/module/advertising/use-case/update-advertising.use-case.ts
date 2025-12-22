@@ -20,6 +20,6 @@ export class UpdateAdvertisingUseCase {
 
 		const result = await this.advertisingRepository.update(updateAdvertisingDto);
 
-		return plainToInstance(Advertising, result);
+		return plainToInstance(Advertising, result, { excludeExtraneousValues: true });
 	}
 }
