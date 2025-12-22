@@ -1,2 +1,3 @@
-export * from './create-tracker.dto';
-export * from './update-tracker.dto';
+export * from './create-tracker.input';
+
+export * from './update-tracker.input';

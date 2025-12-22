@@ -6,9 +6,10 @@ import { ICampaign } from '@module/campaign/domain/repositories';
 import { plainToInstance } from 'class-transformer';
 import { CampaignDto } from '@module/campaign/dto/campaign.dto';
 import { ResponseCreateCampaignDto } from '@module/campaign/dto/response';
-import { ITracker, TRACKER_REPOSITORY } from '@module/tracker/domain';
 import { ADVERTISING_REPOSITORY } from '@advertising/domain/symbol';
 import { IAdvertising } from '@advertising/domain/repositories';
+import { TRACKER_REPOSITORY } from '@module/tracker/domain/symbol';
+import { ITracker } from '@module/tracker/domain/repositories';
 
 @Injectable()
 export class CreateCampaignUseCase {

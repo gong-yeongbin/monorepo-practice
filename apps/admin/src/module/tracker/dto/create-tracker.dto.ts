@@ -1,6 +1,6 @@
 import { Expose } from 'class-transformer';
 
-export class TrackerDto {
+export class CreateTrackerDto {
 	@Expose()
 	name: string;
 

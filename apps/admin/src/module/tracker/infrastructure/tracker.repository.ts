@@ -1,7 +1,8 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '@repo/prisma';
-import { ITracker, Tracker } from '@module/tracker/domain';
-import { TrackerDto } from '@module/tracker/dto/tracker.dto';
+import { CreateTrackerDto, UpdateTrackerDto } from '@module/tracker/dto';
+import { ITracker } from '@module/tracker/domain/repositories';
+import { Tracker } from '@module/tracker/domain/entities';
 
 @Injectable()
 export class TrackerRepository implements ITracker {
@@ -23,7 +24,7 @@ export class TrackerRepository implements ITracker {
 		}
 	}
 
-	async findMany(): Promise<Tracker[] | null> {
+	async findMany(): Promise<Tracker[]> {
 		try {
 			return await this.prismaService.tracker.findMany();
 		} catch (e) {
@@ -31,7 +32,7 @@ export class TrackerRepository implements ITracker {
 		}
 	}
 
-	async create(tracker: TrackerDto): Promise<Tracker> {
+	async create(tracker: CreateTrackerDto): Promise<Tracker> {
 		try {
 			return await this.prismaService.tracker.create({ data: tracker });
 		} catch (e) {
@@ -39,9 +40,9 @@ export class TrackerRepository implements ITracker {
 		}
 	}
 
-	async update(id: number, tracker: TrackerDto): Promise<Tracker> {
+	async update(tracker: UpdateTrackerDto): Promise<Tracker> {
 		try {
-			return await this.prismaService.tracker.update({ where: { id: id }, data: tracker });
+			return await this.prismaService.tracker.update({ where: { id: tracker.id }, data: tracker });
 		} catch (e) {
 			throw new InternalServerErrorException(e.message);
 		}

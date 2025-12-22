@@ -1,0 +1,28 @@
+import { CreateTrackerUseCase, GetTrackerListUseCase, UpdateTrackerUseCase } from '@module/tracker/use-case';
+import { CreateTrackerInput, UpdateTrackerInput } from '@module/tracker/dto/request';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Tracker } from '@module/tracker/dto/response';
+
+@Resolver(() => Tracker)
+export class TrackerResolver {
+	constructor(
+		private readonly createTrackerUseCase: CreateTrackerUseCase,
+		private readonly updateTrackerUseCase: UpdateTrackerUseCase,
+		private readonly getTrackerListUseCase: GetTrackerListUseCase
+	) {}
+
+	@Query(() => [Tracker], { name: 'trackers' })
+	async findAll() {
+		return await this.getTrackerListUseCase.execute();
+	}
+
+	@Mutation(() => Tracker)
+	async createTracker(@Args('input') input: CreateTrackerInput) {
+		return await this.createTrackerUseCase.execute(input);
+	}
+
+	@Mutation(() => Tracker)
+	async updateTracker(@Args('input') input: UpdateTrackerInput) {
+		return await this.updateTrackerUseCase.execute(input);
+	}
+}

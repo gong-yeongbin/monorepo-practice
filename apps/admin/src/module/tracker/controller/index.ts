@@ -1,1 +1,1 @@
-export * from './tracker.controller';
+export * from './tracker.resolver';

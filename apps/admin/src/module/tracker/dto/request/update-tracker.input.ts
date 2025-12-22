@@ -1,20 +1,24 @@
-import { IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { Field, InputType, Int } from '@nestjs/graphql';
 
-export class UpdateTrackerDto {
-	@IsString()
+@InputType()
+export class UpdateTrackerInput {
+	@Field(() => Int)
+	id: number;
+
+	@Field()
 	@Transform(({ value }) => value.trim())
 	name: string;
 
-	@IsString()
+	@Field()
 	@Transform(({ value }) => value.trim())
 	trackingUrl: string;
 
-	@IsString()
+	@Field()
 	@Transform(({ value }) => value.trim())
 	installPostbackUrl: string;
 
-	@IsString()
+	@Field()
 	@Transform(({ value }) => value.trim())
 	eventPostbackUrl: string;
 }

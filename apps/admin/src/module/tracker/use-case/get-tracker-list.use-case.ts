@@ -1,7 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ITracker, TRACKER_REPOSITORY } from '@module/tracker/domain';
 import { plainToInstance } from 'class-transformer';
-import { ResponseGetTrackerListDto } from '@module/tracker/dto/response';
+import { Tracker } from '@module/tracker/dto/response';
+import { TRACKER_REPOSITORY } from '@module/tracker/domain/symbol';
+import { ITracker } from '@module/tracker/domain/repositories';
 
 @Injectable()
 export class GetTrackerListUseCase {
@@ -9,6 +10,6 @@ export class GetTrackerListUseCase {
 
 	async execute() {
 		const trackerList = await this.trackerRepository.findMany();
-		return trackerList?.map((tracker) => plainToInstance(ResponseGetTrackerListDto, { ...tracker }, { excludeExtraneousValues: true }));
+		return trackerList.map((tracker) => plainToInstance(Tracker, tracker, { excludeExtraneousValues: true }));
 	}
 }

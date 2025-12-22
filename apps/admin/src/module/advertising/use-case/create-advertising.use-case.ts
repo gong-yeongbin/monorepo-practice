@@ -4,10 +4,11 @@ import { CreateAdvertisingInput } from '@module/advertising/dto/request';
 import { Advertising } from '@module/advertising/dto/response';
 import { ADVERTISER_REPOSITORY } from '@module/advertiser/domain/symbol';
 import { IAdvertiser } from '@module/advertiser/domain/repositories';
-import { ITracker, TRACKER_REPOSITORY } from '@module/tracker/domain';
 import { CreateAdvertisingDto } from '@advertising/dto';
 import { ADVERTISING_REPOSITORY } from '@advertising/domain/symbol';
 import { IAdvertising } from '@advertising/domain/repositories';
+import { TRACKER_REPOSITORY } from '@module/tracker/domain/symbol';
+import { ITracker } from '@module/tracker/domain/repositories';
 
 @Injectable()
 export class CreateAdvertisingUseCase {
