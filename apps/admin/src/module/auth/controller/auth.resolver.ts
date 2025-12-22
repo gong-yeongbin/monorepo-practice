@@ -1,10 +1,10 @@
 import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
 import { CreateTokenUseCase, ValidateUserUseCase } from '@module/auth/use-case';
-import { UnauthorizedException, UseGuards } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LocalAuthGuard } from '@common/guard';
 import { User } from '@module/auth/decorator';
-import { UserDto } from '@module/user/dto/user.dto';
+import { CreateUserDto } from '@module/user/dto/create-user.dto';
 
 @Resolver()
 export class AuthResolver {
@@ -12,7 +12,6 @@ export class AuthResolver {
 
 	constructor(
 		private readonly configService: ConfigService,
-		private readonly validateUserUseCase: ValidateUserUseCase,
 		private readonly createTokenUseCase: CreateTokenUseCase
 	) {
 		this.cookieConfig = { secure: configService.get<string>('ENV') != 'DEV', httpOnly: true, maxAge: configService.get<number>('JWT_EXPIRES') ?? 0 };
@@ -20,7 +19,7 @@ export class AuthResolver {
 
 	@Mutation(() => Boolean)
 	@UseGuards(LocalAuthGuard)
-	async login(@Args('userId') userId: string, @Args('password') password: string, @User() user: UserDto, @Context() ctx) {
+	async login(@Args('userId') userId: string, @Args('password') password: string, @User() user: CreateUserDto, @Context() ctx) {
 		const access_token = await this.createTokenUseCase.execute(user);
 		ctx.res.cookie('access_token', access_token, this.cookieConfig);
 
