@@ -14,20 +14,20 @@ export class CreateAdvertisingUseCase {
 	constructor(
 		@Inject(ADVERTISING_REPOSITORY) private readonly advertisingRepository: IAdvertising,
 		@Inject(ADVERTISER_REPOSITORY) private readonly advertiserRepository: IAdvertiser,
-		@Inject(TRACKER_REPOSITORY) private readonly trakcerRepository: ITracker
+		@Inject(TRACKER_REPOSITORY) private readonly trackerRepository: ITracker
 	) {}
 
 	async execute(input: CreateAdvertisingInput) {
 		const { name, image, advertiserName, trackerName } = input;
 
 		const advertiser = await this.advertiserRepository.find(advertiserName);
-		const tracker = await this.trakcerRepository.findByName(trackerName);
+		const tracker = await this.trackerRepository.findByName(trackerName);
 		if (!advertiser || !tracker) throw new NotFoundException();
 
 		const advertising = await this.advertisingRepository.findByName(name);
 		if (advertising) throw new ConflictException();
 
-		const createAdvertisingDto = plainToInstance(CreateAdvertisingDto, { name, image, advertiser_name: advertiserName, tracker_name: trackerName });
+		const createAdvertisingDto = plainToInstance(CreateAdvertisingDto, { name, image, advertiserName, trackerName }, { excludeExtraneousValues: true });
 		const result = await this.advertisingRepository.create(createAdvertisingDto);
 
 		return plainToInstance(Advertising, result);

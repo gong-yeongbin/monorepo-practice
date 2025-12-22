@@ -3,7 +3,7 @@ import { CreateAdvertisingUseCase, GetAdvertisingListUseCase, GetAdvertisingUseC
 import { Advertising } from '@advertising/dto/response';
 import { CreateAdvertisingInput, UpdateAdvertisingInput } from '@advertising/dto/request';
 
-@Resolver('advertising')
+@Resolver(() => Advertising)
 export class AdvertisingResolver {
 	constructor(
 		private readonly createAdvertisingUseCase: CreateAdvertisingUseCase,

@@ -10,7 +10,7 @@ export class AdvertisingRepository implements IAdvertising {
 
 	async findById(id: number): Promise<Advertising | null> {
 		try {
-			return await this.prismaService.advertising.findUnique({ where: { id }, include: { campaign: true } });
+			return await this.prismaService.advertising.findUnique({ where: { id } });
 		} catch (e) {
 			throw new InternalServerErrorException(e.message);
 		}
@@ -18,7 +18,7 @@ export class AdvertisingRepository implements IAdvertising {
 
 	async findByName(name: string): Promise<Advertising | null> {
 		try {
-			return await this.prismaService.advertising.findUnique({ where: { name: name }, include: { campaign: { where: { is_active: true } } } });
+			return await this.prismaService.advertising.findUnique({ where: { name: name } });
 		} catch (e) {
 			throw new InternalServerErrorException(e.message);
 		}
@@ -26,7 +26,7 @@ export class AdvertisingRepository implements IAdvertising {
 
 	async findMany(): Promise<Advertising[]> {
 		try {
-			return await this.prismaService.advertising.findMany({ orderBy: { id: 'desc' }, include: { campaign: { where: { is_active: true } } } });
+			return await this.prismaService.advertising.findMany({ orderBy: { id: 'desc' } });
 		} catch (e) {
 			throw new InternalServerErrorException(e.message);
 		}
@@ -34,7 +34,10 @@ export class AdvertisingRepository implements IAdvertising {
 
 	async create(advertising: CreateAdvertisingDto): Promise<Advertising> {
 		try {
-			return await this.prismaService.advertising.create({ data: advertising });
+			const { name, image, tracker_name, advertiser_name } = advertising;
+			return await this.prismaService.advertising.create({
+				data: { name, image, advertiser: { connect: { name: advertiser_name } }, tracker: { connect: { name: tracker_name } } },
+			});
 		} catch (e) {
 			throw new InternalServerErrorException(e.message);
 		}

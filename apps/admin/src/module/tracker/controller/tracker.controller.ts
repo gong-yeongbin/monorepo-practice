@@ -5,7 +5,7 @@ import { CreateTrackerDto, UpdateTrackerDto } from '@module/tracker/dto/request'
 import { TrackerIdDto } from '@module/tracker/dto/tracker-id.dto';
 
 @Controller('tracker')
-@UseGuards(AccessTokenValidatorGuard)
+// @UseGuards(AccessTokenValidatorGuard)
 export class TrackerController {
 	constructor(
 		private readonly createTrackerUseCase: CreateTrackerUseCase,
