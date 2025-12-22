@@ -12,7 +12,6 @@ export class PostbackRepository implements IPostback {
 		try {
 			return await this.prismaService.postback.create({ data: postback });
 		} catch (e) {
-			console.log(e.message);
 			throw new InternalServerErrorException(e.message);
 		}
 	}
