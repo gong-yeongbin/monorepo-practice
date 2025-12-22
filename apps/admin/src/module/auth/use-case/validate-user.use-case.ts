@@ -1,7 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { IUser, USER_REPOSITORY } from '@module/user/domain';
 import { plainToInstance } from 'class-transformer';
-import { UserDto } from '@module/user/dto/user.dto';
+import { CreateUserDto } from '@module/user/dto/create-user.dto';
+import { USER_REPOSITORY } from '@module/user/domain/symbol';
+import { IUser } from '@module/user/domain/repositories';
 
 @Injectable()
 export class ValidateUserUseCase {
@@ -12,6 +13,6 @@ export class ValidateUserUseCase {
 
 		if (user?.password !== password) return null;
 
-		return plainToInstance(UserDto, user);
+		return plainToInstance(CreateUserDto, user);
 	}
 }

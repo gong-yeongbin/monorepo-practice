@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { UserDto } from '@module/user/dto/user.dto';
+import { CreateUserDto } from '@module/user/dto/create-user.dto';
 
 @Injectable()
 export class CreateTokenUseCase {
@@ -10,7 +10,7 @@ export class CreateTokenUseCase {
 		private readonly jwtService: JwtService
 	) {}
 
-	async execute(user: UserDto) {
+	async execute(user: CreateUserDto) {
 		const secret = this.configService.get<string>('JWT_SECRET');
 		const expiresIn = this.configService.get<string>('JWT_EXPIRES');
 
