@@ -1,1 +1,1 @@
-export * from './response-user.dto';
+export * from './user.model';

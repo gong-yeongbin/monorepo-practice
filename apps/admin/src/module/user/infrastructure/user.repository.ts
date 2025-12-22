@@ -1,7 +1,8 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '@repo/prisma';
-import { IUser, User } from '@module/user/domain';
-import { UserDto } from '@module/user/dto/user.dto';
+import { CreateUserDto } from '@module/user/dto/create-user.dto';
+import { IUser } from '@module/user/domain/repositories';
+import { User } from '@module/user/domain/entities';
 
 @Injectable()
 export class UserRepository implements IUser {
@@ -15,7 +16,7 @@ export class UserRepository implements IUser {
 		}
 	}
 
-	async create(user: UserDto): Promise<User> {
+	async create(user: CreateUserDto): Promise<User> {
 		try {
 			return await this.prismaService.user.create({ data: user });
 		} catch (e) {

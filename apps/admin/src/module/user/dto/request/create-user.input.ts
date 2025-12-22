@@ -1,15 +1,16 @@
-import { IsEnum, IsString } from 'class-validator';
+import { Field, InputType } from '@nestjs/graphql';
 import { Role } from '@module/user/enum';
 import { Transform } from 'class-transformer';
 
-export class CreateUserDto {
-	@IsString()
+@InputType()
+export class CreateUserInput {
+	@Field()
 	@Transform(({ value }) => value.replaceAll(' ', ''))
 	userId: string;
 
-	@IsString()
+	@Field()
 	password: string;
 
-	@IsEnum(Role)
+	@Field(() => Role)
 	role: Role;
 }

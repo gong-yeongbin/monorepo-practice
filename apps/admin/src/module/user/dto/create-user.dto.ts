@@ -1,7 +1,7 @@
 import { Expose } from 'class-transformer';
 import { Role } from '@module/user/enum';
 
-export class UserDto {
+export class CreateUserDto {
 	@Expose({ name: 'userId' })
 	user_id: string;
 
