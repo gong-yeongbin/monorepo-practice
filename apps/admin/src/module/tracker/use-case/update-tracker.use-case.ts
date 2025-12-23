@@ -1,10 +1,10 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { TRACKER_REPOSITORY } from '@module/tracker/domain/symbol';
-import { ITracker } from '@module/tracker/domain/repositories';
-import { Tracker } from '@module/tracker/dto/response';
-import { UpdateTrackerDto } from '@module/tracker/dto';
-import { UpdateTrackerInput } from '@module/tracker/dto/request';
+import { TRACKER_REPOSITORY } from '@tracker/domain/symbol';
+import { ITracker } from '@tracker/domain/repositories';
+import { UpdateTrackerInput } from '@tracker/dto/request';
+import { UpdateTrackerDto } from '@tracker/dto';
+import { Tracker } from '@tracker/dto/response';
 
 @Injectable()
 export class UpdateTrackerUseCase {

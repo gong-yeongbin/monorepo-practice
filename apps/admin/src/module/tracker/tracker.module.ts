@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { TrackerResolver } from '@module/tracker/controller';
-import { CreateTrackerUseCase, GetTrackerListUseCase, UpdateTrackerUseCase } from '@module/tracker/use-case';
-import { TrackerRepository } from '@module/tracker/infrastructure';
-import { TRACKER_REPOSITORY } from '@module/tracker/domain/symbol';
+import { TrackerResolver } from '@tracker/controller';
+import { CreateTrackerUseCase, GetTrackerListUseCase, UpdateTrackerUseCase } from '@tracker/use-case';
+import { TRACKER_REPOSITORY } from '@tracker/domain/symbol';
+import { TrackerRepository } from '@tracker/infrastructure';
 
 @Module({
 	providers: [TrackerResolver, CreateTrackerUseCase, UpdateTrackerUseCase, GetTrackerListUseCase, { provide: TRACKER_REPOSITORY, useClass: TrackerRepository }],

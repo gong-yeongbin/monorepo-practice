@@ -1,10 +1,10 @@
 import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { CreateTrackerInput } from '@module/tracker/dto/request';
-import { Tracker } from '@module/tracker/dto/response';
-import { CreateTrackerDto } from '@module/tracker/dto';
-import { TRACKER_REPOSITORY } from '@module/tracker/domain/symbol';
-import { ITracker } from '@module/tracker/domain/repositories';
+import { TRACKER_REPOSITORY } from '@tracker/domain/symbol';
+import { ITracker } from '@tracker/domain/repositories';
+import { CreateTrackerInput } from '@tracker/dto/request';
+import { CreateTrackerDto } from '@tracker/dto';
+import { Tracker } from '@tracker/dto/response';
 
 @Injectable()
 export class CreateTrackerUseCase {

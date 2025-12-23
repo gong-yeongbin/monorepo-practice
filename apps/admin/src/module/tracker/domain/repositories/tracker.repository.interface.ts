@@ -1,5 +1,5 @@
-import { CreateTrackerDto, UpdateTrackerDto } from '@module/tracker/dto';
-import { Tracker } from '@module/tracker/domain/entities';
+import { Tracker } from '@tracker/domain/entities';
+import { CreateTrackerDto, UpdateTrackerDto } from '@tracker/dto';
 
 export interface ITracker {
 	findById(id: number): Promise<Tracker | null>;
