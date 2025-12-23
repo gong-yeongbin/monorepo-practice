@@ -1,19 +1,22 @@
-import { IsBoolean, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { Field, Int } from '@nestjs/graphql';
 
-export class UpdateCampaignConfigDto {
-	@IsBoolean()
+export class UpsertCampaignConfigInput {
+	@Field(() => Int)
+	campaignId: number;
+
+	@Field(() => Boolean)
 	sendMedia: boolean;
 
-	@IsString()
+	@Field()
 	@Transform(({ value }) => value.replaceAll(' ', ''))
 	trackerEventName: string;
 
-	@IsString()
+	@Field()
 	@Transform(({ value }) => value.replaceAll(' ', ''))
 	adminEventName: string;
 
-	@IsString()
+	@Field()
 	@Transform(({ value }) => value.replaceAll(' ', ''))
 	mediaEventName: string;
 }

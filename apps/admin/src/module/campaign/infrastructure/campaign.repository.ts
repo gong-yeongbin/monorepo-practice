@@ -1,8 +1,8 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { ICampaign } from '@module/campaign/domain/repositories';
 import { PrismaService } from '@repo/prisma';
 import { Campaign } from '@campaign/domain/entities';
-import { CampaignDto } from '@campaign/dto/campaign.dto';
+import { CreateCampaignDto, UpdateCampaignDto } from '@campaign/dto';
+import { ICampaign } from '@campaign/domain/repositories';
 
 @Injectable()
 export class CampaignRepository implements ICampaign {
@@ -26,18 +26,32 @@ export class CampaignRepository implements ICampaign {
 
 	async advertising(name: string): Promise<Campaign[]> {
 		try {
-			return await this.prismaService.campaign.findMany({ where: { advertising_name: name } });
+			// return await this.prismaService.campaign.findMany({ where: { advertising_name: name } });
+			return [];
 		} catch (e) {
 			throw new InternalServerErrorException(e.message);
 		}
 	}
 
-	async create(campaign: CampaignDto): Promise<Campaign> {
+	async create(campaign: CreateCampaignDto): Promise<Campaign> {
 		try {
-			return await this.prismaService.$transaction(async (prisma) => {
-				const result = await prisma.campaign.create({ data: campaign });
-				await prisma.campaign_config.create({ data: { token: result.token } });
-				return result;
+			const { name, type, tracker_tracking_url, advertising_name, media_name } = campaign;
+
+			return await this.prismaService.campaign.create({
+				data: { name, type, tracker_tracking_url, advertising: { connect: { name: advertising_name } }, media: { connect: { name: media_name } }, campaign_config: { create: {} } },
+			});
+		} catch (e) {
+			throw new InternalServerErrorException(e.message);
+		}
+	}
+
+	async update(campaign: UpdateCampaignDto): Promise<Campaign> {
+		try {
+			const { id, name, type, tracker_tracking_url } = campaign;
+
+			return await this.prismaService.campaign.update({
+				where: { id },
+				data: { name, type, tracker_tracking_url },
 			});
 		} catch (e) {
 			throw new InternalServerErrorException(e.message);

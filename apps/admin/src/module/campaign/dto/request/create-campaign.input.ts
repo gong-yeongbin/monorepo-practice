@@ -1,33 +1,25 @@
-import { IsEnum, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { Field, InputType } from '@nestjs/graphql';
+import { Type } from '@campaign/enum';
 
-enum Type {
-	CPI,
-	CPA,
-}
-
-export class CreateCampaignDto {
-	@IsString()
+@InputType()
+export class CreateCampaignInput {
+	@Field()
 	@Transform(({ value }) => value.replaceAll(' ', ''))
 	name: string;
 
-	@IsEnum(Type)
-	@Transform(({ value }) => value.replaceAll(' ', ''))
+	@Field(() => Type)
 	type: Type;
 
-	@IsString()
+	@Field()
 	@Transform(({ value }) => value.replaceAll(' ', ''))
 	trackerTrackingUrl: string;
 
-	@IsString()
-	@Transform(({ value }) => value.replaceAll(' ', '').toLowerCase())
-	trackerName: string;
-
-	@IsString()
+	@Field()
 	@Transform(({ value }) => value.replaceAll(' ', ''))
 	advertisingName: string;
 
-	@IsString()
+	@Field()
 	@Transform(({ value }) => value.replaceAll(' ', '').toLowerCase())
 	mediaName: string;
 }

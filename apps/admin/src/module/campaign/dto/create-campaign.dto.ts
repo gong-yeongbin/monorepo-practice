@@ -1,7 +1,7 @@
-import { $Enums } from '@repo/prisma';
 import { Expose } from 'class-transformer';
+import { $Enums } from '@repo/prisma';
 
-export class CampaignDto {
+export class CreateCampaignDto {
 	@Expose()
 	name: string;
 
@@ -10,9 +10,6 @@ export class CampaignDto {
 
 	@Expose({ name: 'trackerTrackingUrl' })
 	tracker_tracking_url: string;
-
-	@Expose({ name: 'trackerName' })
-	tracker_name: string;
 
 	@Expose({ name: 'advertisingName' })
 	advertising_name: string;

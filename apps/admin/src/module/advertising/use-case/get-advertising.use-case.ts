@@ -11,6 +11,8 @@ export class GetAdvertisingUseCase {
 	async execute(id: number) {
 		const advertising = await this.advertisingRepository.findById(id);
 		if (!advertising) throw new NotFoundException();
+
+		console.log(advertising);
 		return plainToInstance(Advertising, advertising, { excludeExtraneousValues: true });
 	}
 }

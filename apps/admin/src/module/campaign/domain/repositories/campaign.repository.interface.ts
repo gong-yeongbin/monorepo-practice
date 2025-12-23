@@ -1,9 +1,10 @@
-import { CampaignDto } from '@module/campaign/dto/campaign.dto';
-import { Campaign } from '@module/campaign/domain/entities';
+import { CreateCampaignDto, UpdateCampaignDto } from '@campaign/dto';
+import { Campaign } from '@campaign/domain/entities';
 
 export interface ICampaign {
 	find(id: number): Promise<Campaign | null>;
-	findMany(): Promise<Campaign[]>;
+	findMany(id: number): Promise<Campaign[]>;
 	advertising(name: string): Promise<Campaign[]>;
-	create(campaign: CampaignDto): Promise<Campaign>;
+	create(campaign: CreateCampaignDto): Promise<Campaign>;
+	update(campaign: UpdateCampaignDto): Promise<Campaign>;
 }

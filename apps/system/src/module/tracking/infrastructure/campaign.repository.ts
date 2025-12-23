@@ -9,7 +9,8 @@ export class CampaignRepository implements ICampaign {
 
 	async findByToken(token: string): Promise<Campaign | null> {
 		try {
-			return await this.prismaService.campaign.findUnique({ where: { token }, include: { campaign_config: true } });
+			// return await this.prismaService.campaign.findUnique({ where: { token }, include: { campaign_config: true } });
+			return null;
 		} catch (error) {
 			throw new InternalServerErrorException(error.message);
 		}

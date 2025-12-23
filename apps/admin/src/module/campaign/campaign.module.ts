@@ -1,19 +1,19 @@
 import { Module } from '@nestjs/common';
-import { CampaignController } from '@module/campaign/controller';
-import { CAMPAIGN_CONFIG_REPOSITORY, CAMPAIGN_REPOSITORY } from '@module/campaign/domain/symbol';
-import { CampaignConfigRepository, CampaignRepository } from '@module/campaign/infrastructure';
-import { AdvertisingModule } from '@module/advertising/advertising.module';
-import { TrackerModule } from '@module/tracker/tracker.module';
-import { MediaModule } from '@module/media/media.module';
-import { CreateCampaignUseCase, GetCampaignUseCase, UpdateCampaignConfigUseCase } from '@module/campaign/use-case';
+import { AdvertisingModule } from '@advertising/advertising.module';
+import { MediaModule } from '@media/media.module';
+import { CampaignResolver } from '@campaign/controller';
+import { CreateCampaignUseCase, GetCampaignUseCase, UpsertCampaignConfigUseCase, UpdateCampaignUseCase } from '@campaign/use-case';
+import { CAMPAIGN_CONFIG_REPOSITORY, CAMPAIGN_REPOSITORY } from '@campaign/domain/symbol';
+import { CampaignConfigRepository, CampaignRepository } from '@campaign/infrastructure';
 
 @Module({
-	imports: [TrackerModule, AdvertisingModule, MediaModule],
-	controllers: [CampaignController],
+	imports: [AdvertisingModule, MediaModule],
 	providers: [
+		CampaignResolver,
 		CreateCampaignUseCase,
+		UpdateCampaignUseCase,
 		GetCampaignUseCase,
-		UpdateCampaignConfigUseCase,
+		UpsertCampaignConfigUseCase,
 		{ provide: CAMPAIGN_REPOSITORY, useClass: CampaignRepository },
 		{ provide: CAMPAIGN_CONFIG_REPOSITORY, useClass: CampaignConfigRepository },
 	],

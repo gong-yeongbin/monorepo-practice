@@ -79,7 +79,7 @@ model media {
 
 model campaign_config {
   id                 Int      @id @default(autoincrement())
-  campaign           campaign @relation(fields: [id], references: [id], onDelete: Cascade)
+  campaign           campaign @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
   campaign_id        Int      @db.Int
   send_media         Boolean  @default(true)
   tracker_event_name String   @default("install") @db.VarChar(30)

@@ -2,6 +2,8 @@ import { $Enums, campaign } from '@repo/prisma';
 import { CampaignConfig } from '@tracking/domain/entities/campaign-config.entity';
 
 export class Campaign implements campaign {
+	advertising_id: number;
+	media_id: number;
 	name: string;
 	id: number;
 	token: string;

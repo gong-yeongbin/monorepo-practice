@@ -1,2 +1,2 @@
-export * from './response-create-campaign.dto';
-export * from './response-get-campaign.dto';
+export * from './campaign.model';
+export * from './campaign-config.model';

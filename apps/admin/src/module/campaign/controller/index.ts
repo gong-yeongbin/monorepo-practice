@@ -1,1 +1,1 @@
-export * from './campaign.controller';
+export * from './campaign.resolver';

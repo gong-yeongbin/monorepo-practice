@@ -11,7 +11,6 @@ import { MediaModule } from '@module/media/media.module';
 import { AdvertisingModule } from '@module/advertising/advertising.module';
 import { AdvertiserModule } from '@module/advertiser/advertiser.module';
 import { CampaignModule } from '@module/campaign/campaign.module';
-import { DashboardModule } from '@dashboard/dashboard.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { AppResolver } from '@src/app.resolver';
@@ -32,8 +31,7 @@ import { AppResolver } from '@src/app.resolver';
 		TrackerModule,
 		MediaModule,
 		AdvertisingModule,
-		// CampaignModule,
-		// DashboardModule,
+		CampaignModule,
 	],
 	controllers: [AppController],
 	providers: [AppResolver, AppService],
