@@ -1,6 +1,6 @@
 import { Expose } from 'class-transformer';
 
-export class MediaDto {
+export class CreateMediaDto {
 	@Expose()
 	name: string;
 

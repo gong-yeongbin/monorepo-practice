@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '@repo/prisma';
 import { IMedia, Media } from '@module/media/domain';
-import { MediaDto } from '@module/media/dto/media.dto';
+import { CreateMediaDto, UpdateMediaDto } from '@module/media/dto';
 
 @Injectable()
 export class MediaRepository implements IMedia {
@@ -23,7 +23,7 @@ export class MediaRepository implements IMedia {
 		}
 	}
 
-	async findMany(): Promise<Media[] | null> {
+	async findMany(): Promise<Media[]> {
 		try {
 			return await this.prismaService.media.findMany();
 		} catch (e) {
@@ -31,7 +31,7 @@ export class MediaRepository implements IMedia {
 		}
 	}
 
-	async create(media: MediaDto): Promise<Media> {
+	async create(media: CreateMediaDto): Promise<Media> {
 		try {
 			return await this.prismaService.media.create({ data: media });
 		} catch (e) {
@@ -39,9 +39,11 @@ export class MediaRepository implements IMedia {
 		}
 	}
 
-	async update(id: number, media: MediaDto): Promise<Media> {
+	async update(media: UpdateMediaDto): Promise<Media> {
 		try {
-			return await this.prismaService.media.update({ where: { id: id }, data: media });
+			const { id, name, install_postback_url, event_postback_url } = media;
+
+			return await this.prismaService.media.update({ where: { id: id }, data: { name, install_postback_url, event_postback_url } });
 		} catch (e) {
 			throw new InternalServerErrorException(e.message);
 		}

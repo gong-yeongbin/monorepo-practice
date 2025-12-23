@@ -28,14 +28,14 @@ import { AppResolver } from '@src/app.resolver';
 		PrismaModule,
 		AuthModule,
 		UserModule,
+		AdvertiserModule,
 		TrackerModule,
 		MediaModule,
 		AdvertisingModule,
-		AdvertiserModule,
-		CampaignModule,
-		DashboardModule,
+		// CampaignModule,
+		// DashboardModule,
 	],
 	controllers: [AppController],
-	providers: [AppService, AppResolver],
+	providers: [AppResolver, AppService],
 })
 export class AppModule {}

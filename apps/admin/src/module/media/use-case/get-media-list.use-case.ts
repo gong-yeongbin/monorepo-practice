@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { IMedia, MEDIA_REPOSITORY } from '@module/media/domain';
 import { plainToInstance } from 'class-transformer';
-import { ResponseGetMediaListDto } from '@module/media/dto/response';
+import { Media } from '@module/media/dto/response';
 
 @Injectable()
 export class GetMediaListUseCase {
@@ -9,6 +9,6 @@ export class GetMediaListUseCase {
 
 	async execute() {
 		const mediaList = await this.mediaRepository.findMany();
-		return mediaList?.map((media) => plainToInstance(ResponseGetMediaListDto, media, { excludeExtraneousValues: true }));
+		return mediaList.map((media) => plainToInstance(Media, media, { excludeExtraneousValues: true }));
 	}
 }

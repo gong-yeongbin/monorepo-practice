@@ -1,16 +1,17 @@
-import { IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { Field, InputType } from '@nestjs/graphql';
 
-export class CreateMediaDto {
-	@IsString()
+@InputType()
+export class CreateMediaInput {
+	@Field()
 	@Transform(({ value }) => value.replaceAll(' ', '').toLowerCase())
 	name: string;
 
-	@IsString()
+	@Field()
 	@Transform(({ value }) => value.replaceAll(' ', ''))
 	installPostbackUrl: string;
 
-	@IsString()
+	@Field()
 	@Transform(({ value }) => value.replaceAll(' ', ''))
 	eventPostbackUrl: string;
 }

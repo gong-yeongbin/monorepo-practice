@@ -1,2 +1,2 @@
-export * from './create-media.dto';
-export * from './update-media.dto';
+export * from './create-media.input';
+export * from './update-media.input';
