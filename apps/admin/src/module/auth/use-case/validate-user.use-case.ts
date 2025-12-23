@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { CreateUserDto } from '@module/user/dto/create-user.dto';
-import { USER_REPOSITORY } from '@module/user/domain/symbol';
-import { IUser } from '@module/user/domain/repositories';
+import { USER_REPOSITORY } from '@user/domain/symbol';
+import { IUser } from '@user/domain/repositories';
+import { CreateUserDto } from '@user/dto';
 
 @Injectable()
 export class ValidateUserUseCase {

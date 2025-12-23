@@ -1,10 +1,10 @@
 import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
-import { CreateTokenUseCase, ValidateUserUseCase } from '@module/auth/use-case';
 import { UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { LocalAuthGuard } from '@common/guard';
-import { User } from '@module/auth/decorator';
-import { CreateUserDto } from '@module/user/dto/create-user.dto';
+import { CreateTokenUseCase } from '@auth/use-case';
+import { User } from '@auth/decorator';
+import { CreateUserDto } from '@user/dto';
 
 @Resolver()
 export class AuthResolver {

@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
-import { CreateTokenUseCase, ValidateUserUseCase } from './use-case';
-import { LocalStrategy } from './strategy';
-import { AuthResolver } from '@module/auth/controller';
-import { UserModule } from '@module/user/user.module';
-import { CookieStrategy } from '@module/auth/strategy/cookie.strategy';
+import { UserModule } from '@user/user.module';
+import { AuthResolver } from '@auth/controller';
+import { CookieStrategy, LocalStrategy } from '@auth/strategy';
+import { CreateTokenUseCase, ValidateUserUseCase } from '@auth/use-case';
 
 @Module({
 	imports: [UserModule],
