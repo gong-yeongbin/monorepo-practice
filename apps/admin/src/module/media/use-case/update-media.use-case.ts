@@ -1,9 +1,10 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { IMedia, MEDIA_REPOSITORY } from '@module/media/domain';
-import { UpdateMediaInput } from '@module/media/dto/request';
-import { UpdateMediaDto } from '@module/media/dto';
-import { Media } from '@module/media/dto/response';
+import { MEDIA_REPOSITORY } from '@media/domain/symbol';
+import { IMedia } from '@media/domain/repositories';
+import { UpdateMediaInput } from '@media/dto/request';
+import { UpdateMediaDto } from '@media/dto';
+import { Media } from '@media/dto/response';
 
 @Injectable()
 export class UpdateMediaUseCase {

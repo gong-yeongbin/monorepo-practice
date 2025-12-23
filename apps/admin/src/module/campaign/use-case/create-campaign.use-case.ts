@@ -1,6 +1,5 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCampaignDto } from '@module/campaign/dto/request/create-campaign.dto';
-import { IMedia, MEDIA_REPOSITORY } from '@module/media/domain';
 import { CAMPAIGN_REPOSITORY } from '@module/campaign/domain/symbol';
 import { ICampaign } from '@module/campaign/domain/repositories';
 import { plainToInstance } from 'class-transformer';
@@ -10,6 +9,8 @@ import { ADVERTISING_REPOSITORY } from '@advertising/domain/symbol';
 import { IAdvertising } from '@advertising/domain/repositories';
 import { TRACKER_REPOSITORY } from '@module/tracker/domain/symbol';
 import { ITracker } from '@module/tracker/domain/repositories';
+import { MEDIA_REPOSITORY } from '@media/domain/symbol';
+import { IMedia } from '@media/domain/repositories';
 
 @Injectable()
 export class CreateCampaignUseCase {

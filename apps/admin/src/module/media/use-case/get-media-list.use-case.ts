@@ -1,7 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { IMedia, MEDIA_REPOSITORY } from '@module/media/domain';
 import { plainToInstance } from 'class-transformer';
-import { Media } from '@module/media/dto/response';
+import { MEDIA_REPOSITORY } from '@media/domain/symbol';
+import { IMedia } from '@media/domain/repositories';
+import { Media } from '@media/dto/response';
 
 @Injectable()
 export class GetMediaListUseCase {

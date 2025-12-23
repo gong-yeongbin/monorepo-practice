@@ -1,7 +1,7 @@
-import { CreateMediaUseCase, GetMediaListUseCase, UpdateMediaUseCase } from '../use-case';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { Media } from '@module/media/dto/response';
-import { CreateMediaInput, UpdateMediaInput } from '@module/media/dto/request';
+import { Media } from '@media/dto/response';
+import { CreateMediaInput, UpdateMediaInput } from '@media/dto/request';
+import { CreateMediaUseCase, GetMediaListUseCase, UpdateMediaUseCase } from '@media/use-case';
 
 @Resolver(() => Media)
 export class MediaResolver {

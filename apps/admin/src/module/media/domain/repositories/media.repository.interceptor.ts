@@ -1,5 +1,5 @@
-import { Media } from './media.entity';
-import { CreateMediaDto, UpdateMediaDto } from '@module/media/dto';
+import { Media } from '@media/domain/entities';
+import { CreateMediaDto, UpdateMediaDto } from '@media/dto';
 
 export interface IMedia {
 	findById(id: number): Promise<Media | null>;
