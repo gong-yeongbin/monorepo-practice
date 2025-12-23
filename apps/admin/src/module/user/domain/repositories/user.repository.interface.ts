@@ -1,5 +1,5 @@
-import { User } from '@module/user/domain/entities';
-import { CreateUserDto } from '@module/user/dto';
+import { User } from '@user/domain/entities';
+import { CreateUserDto } from '@user/dto';
 
 export interface IUser {
 	find(userId: string): Promise<User | null>;

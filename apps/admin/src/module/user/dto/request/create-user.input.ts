@@ -1,6 +1,6 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { Role } from '@module/user/enum';
 import { Transform } from 'class-transformer';
+import { Role } from '@user/enum';
 
 @InputType()
 export class CreateUserInput {
