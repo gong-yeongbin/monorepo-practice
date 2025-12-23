@@ -1,8 +1,8 @@
-import { IAdvertiser } from '@module/advertiser/domain/repositories';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '@repo/prisma';
-import { Advertiser } from '@module/advertiser/domain/entities';
-import { CreateAdvertiserDto } from '@module/advertiser/dto/create-advertiser.dto';
+import { IAdvertiser } from '@advertiser/domain/repositories';
+import { Advertiser } from '@advertiser/domain/entities';
+import { CreateAdvertiserDto } from '@advertiser/dto';
 
 @Injectable()
 export class AdvertiserRepository implements IAdvertiser {

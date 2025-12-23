@@ -7,9 +7,14 @@
       "@src/*": ["src/*"],
       "@common/*": ["src/common/*"],
       "@module/*": ["src/module/*"],
-      "@campaign/*": ["src/module/campaign/*"],
+      "@advertiser/*": ["src/module/advertiser/*"],
       "@advertising/*": ["src/module/advertising/*"],
-      "@dashboard/*": ["src/module/dashboard/*"]
+      "@auth/*": ["src/module/auth/*"],
+      "@campaign/*": ["src/module/campaign/*"],
+      "@dashboard/*": ["src/module/dashboard/*"],
+      "@media/*": ["src/module/media/*"],
+      "@tracker/*": ["src/module/tracker/*"],
+      "@user/*": ["src/module/user/*"]
     }
   }
 }

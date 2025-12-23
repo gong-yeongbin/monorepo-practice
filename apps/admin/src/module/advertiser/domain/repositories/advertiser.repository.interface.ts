@@ -1,5 +1,5 @@
-import { Advertiser } from '@module/advertiser/domain/entities';
-import { CreateAdvertiserDto } from '@module/advertiser/dto/create-advertiser.dto';
+import { Advertiser } from '@advertiser/domain/entities';
+import { CreateAdvertiserDto } from '@advertiser/dto';
 
 export interface IAdvertiser {
 	find(name: string): Promise<Advertiser | null>;

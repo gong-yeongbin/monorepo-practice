@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ADVERTISER_REPOSITORY } from '@module/advertiser/domain/symbol';
-import { IAdvertiser } from '@module/advertiser/domain/repositories';
 import { plainToInstance } from 'class-transformer';
-import { CreateAdvertiserDto } from '@module/advertiser/dto/create-advertiser.dto';
-import { Advertiser } from '@module/advertiser/dto/response';
-import { UpdateAdvertiserInput } from '@module/advertiser/dto/request';
+import { ADVERTISER_REPOSITORY } from '@advertiser/domain/symbol';
+import { IAdvertiser } from '@advertiser/domain/repositories';
+import { CreateAdvertiserDto } from '@advertiser/dto';
+import { UpdateAdvertiserInput } from '@advertiser/dto/request';
+import { Advertiser } from '@advertiser/dto/response';
 
 @Injectable()
 export class UpdateAdvertiserUseCase {

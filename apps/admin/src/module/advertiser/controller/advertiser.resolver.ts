@@ -1,9 +1,9 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { CreateAdvertiserInput, UpdateAdvertiserInput } from '@module/advertiser/dto/request';
-import { Advertiser } from '@module/advertiser/dto/response';
-import { CreateAdvertiserUseCase, GetAdvertisersUseCase, UpdateAdvertiserUseCase } from '@module/advertiser/use-case';
 import { UseGuards } from '@nestjs/common';
 import { GraphqlAuthGuard } from '@common/guard';
+import { CreateAdvertiserUseCase, GetAdvertisersUseCase, UpdateAdvertiserUseCase } from '@advertiser/use-case';
+import { CreateAdvertiserInput, UpdateAdvertiserInput } from '@advertiser/dto/request';
+import { Advertiser } from '@advertiser/dto/response';
 
 @UseGuards(GraphqlAuthGuard)
 @Resolver(() => Advertiser)

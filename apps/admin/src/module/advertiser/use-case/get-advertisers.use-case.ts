@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ADVERTISER_REPOSITORY } from '@module/advertiser/domain/symbol';
-import { IAdvertiser } from '@module/advertiser/domain/repositories';
 import { plainToInstance } from 'class-transformer';
-import { Advertiser } from '@module/advertiser/dto/response';
+import { ADVERTISER_REPOSITORY } from '@advertiser/domain/symbol';
+import { IAdvertiser } from '@advertiser/domain/repositories';
+import { Advertiser } from '@advertiser/dto/response';
 
 @Injectable()
 export class GetAdvertisersUseCase {
