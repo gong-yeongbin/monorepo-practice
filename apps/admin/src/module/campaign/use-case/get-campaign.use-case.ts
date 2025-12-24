@@ -9,7 +9,7 @@ export class GetCampaignUseCase {
 	constructor(@Inject(CAMPAIGN_REPOSITORY) private readonly campaignRepository: ICampaign) {}
 
 	async execute(id: number) {
-		const campaign = await this.campaignRepository.findMany(id);
+		const campaign = await this.campaignRepository.find(id);
 		if (!campaign) throw new NotFoundException();
 
 		return plainToInstance(Campaign, campaign, { excludeExtraneousValues: true });

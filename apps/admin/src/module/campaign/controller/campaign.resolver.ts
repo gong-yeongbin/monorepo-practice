@@ -1,5 +1,5 @@
-import { CreateCampaignUseCase, GetCampaignUseCase, UpdateCampaignUseCase, UpsertCampaignConfigUseCase } from '@campaign/use-case';
-import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { CreateCampaignUseCase, GetCampaignConfigUseCase, GetCampaignUseCase, UpdateCampaignUseCase, UpsertCampaignConfigUseCase } from '@campaign/use-case';
+import { Args, Int, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { Campaign, CampaignConfig } from '@campaign/dto/response';
 import { CreateCampaignInput, UpdateCampaignInput, UpsertCampaignConfigInput } from '@campaign/dto/request';
 
@@ -9,12 +9,18 @@ export class CampaignResolver {
 		private readonly createCampaignUseCase: CreateCampaignUseCase,
 		private readonly updateCampaignUseCase: UpdateCampaignUseCase,
 		private readonly getCampaignUseCase: GetCampaignUseCase,
+		private readonly getCampaignConfigUseCase: GetCampaignConfigUseCase,
 		private readonly upsertCampaignConfigUseCase: UpsertCampaignConfigUseCase
 	) {}
 
 	@Query(() => Campaign, { name: 'campaign' })
 	async findOne(@Args('id', { type: () => Int }) id: number) {
 		return await this.getCampaignUseCase.execute(id);
+	}
+
+	@ResolveField(() => [CampaignConfig])
+	async config(@Parent() campaign: Campaign) {
+		return await this.getCampaignConfigUseCase.execute(campaign.id);
 	}
 
 	@Mutation(() => Campaign)
@@ -25,5 +31,13 @@ export class CampaignResolver {
 	@Mutation(() => Campaign)
 	async updateCampaign(@Args('input') input: UpdateCampaignInput) {
 		return await this.updateCampaignUseCase.execute(input);
+	}
+
+	@Mutation(() => [CampaignConfig])
+	async upsertCampaignConfig(
+		@Args('campaignId', { type: () => Int }) campaignId: number,
+		@Args('input', { type: () => [UpsertCampaignConfigInput] }) input: UpsertCampaignConfigInput[]
+	) {
+		return await this.upsertCampaignConfigUseCase.execute(campaignId, input);
 	}
 }

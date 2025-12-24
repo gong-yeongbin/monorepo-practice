@@ -1,10 +1,8 @@
 import { Transform } from 'class-transformer';
-import { Field, Int } from '@nestjs/graphql';
+import { Field, InputType } from '@nestjs/graphql';
 
+@InputType()
 export class UpsertCampaignConfigInput {
-	@Field(() => Int)
-	campaignId: number;
-
 	@Field(() => Boolean)
 	sendMedia: boolean;
 
