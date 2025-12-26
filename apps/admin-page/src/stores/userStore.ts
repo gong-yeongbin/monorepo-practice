@@ -1,5 +1,12 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
+import { apolloClient } from '@/apollo-client.ts'
+import gql from 'graphql-tag'
+
+const SET_TOKEN = gql`
+  mutation login($userId: String!, $password: String!) {
+    login(userId: $userId, password: $password)
+  }
+`
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -7,16 +14,12 @@ export const useUserStore = defineStore('user', {
   }),
   actions: {
     async login(userId: string, password: string) {
-      const response = await axios.post(
-        'http://localhost:3002/auth/sign-in',
-        { userId, password },
-        { withCredentials: true },
-      )
-      if (response.status === 200) {
-        return (this.isLogin = true)
-      }
+      const { data } = await apolloClient.mutate({
+        mutation: SET_TOKEN,
+        variables: { userId, password },
+      })
 
-      return this.isLogin
+      return (this.isLogin = data.login)
     },
     logout() {
       this.isLogin = false
