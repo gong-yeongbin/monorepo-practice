@@ -1,7 +1,8 @@
-import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { CreateAdvertisingUseCase, GetAdvertisingListUseCase, GetAdvertisingUseCase, UpdateAdvertisingUseCase } from '@module/advertising/use-case';
+import { Args, Int, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { CreateAdvertisingUseCase, GetAdvertisingListUseCase, GetAdvertisingUseCase, GetCampaignListUseCase, UpdateAdvertisingUseCase } from '@module/advertising/use-case';
 import { Advertising } from '@advertising/dto/response';
 import { CreateAdvertisingInput, UpdateAdvertisingInput } from '@advertising/dto/request';
+import { Campaign } from '@campaign/dto/response';
 
 @Resolver(() => Advertising)
 export class AdvertisingResolver {
@@ -9,7 +10,8 @@ export class AdvertisingResolver {
 		private readonly createAdvertisingUseCase: CreateAdvertisingUseCase,
 		private readonly updateAdvertisingUseCase: UpdateAdvertisingUseCase,
 		private readonly getAdvertisingListUseCase: GetAdvertisingListUseCase,
-		private readonly getAdvertisingUseCase: GetAdvertisingUseCase
+		private readonly getAdvertisingUseCase: GetAdvertisingUseCase,
+		private readonly getCampaignListUseCase: GetCampaignListUseCase
 	) {}
 
 	@Query(() => Advertising, { name: 'advertising' })
@@ -20,6 +22,11 @@ export class AdvertisingResolver {
 	@Query(() => [Advertising], { name: 'advertisings' })
 	async findAll() {
 		return await this.getAdvertisingListUseCase.execute();
+	}
+
+	@ResolveField(() => [Campaign])
+	async campaign(@Parent() advertising: Advertising) {
+		return await this.getCampaignListUseCase.execute(advertising.id);
 	}
 
 	@Mutation(() => Advertising)
