@@ -9,4 +9,5 @@ export class Campaign implements campaign {
 	type: $Enums.Type;
 	is_active: boolean;
 	tracker_tracking_url: string;
+	tracker_name: string;
 }

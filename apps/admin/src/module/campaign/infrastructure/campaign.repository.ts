@@ -26,10 +26,18 @@ export class CampaignRepository implements ICampaign {
 
 	async create(campaign: CreateCampaignDto): Promise<Campaign> {
 		try {
-			const { name, type, tracker_tracking_url, advertising_name, media_name } = campaign;
+			const { name, type, tracker_tracking_url, advertising_name, media_name, tracker_name } = campaign;
 
 			return await this.prismaService.campaign.create({
-				data: { name, type, tracker_tracking_url, advertising: { connect: { name: advertising_name } }, media: { connect: { name: media_name } }, campaign_config: { create: {} } },
+				data: {
+					name,
+					type,
+					tracker_tracking_url,
+					tracker_name,
+					advertising: { connect: { name: advertising_name } },
+					media: { connect: { name: media_name } },
+					campaign_config: { create: {} },
+				},
 			});
 		} catch (e) {
 			throw new InternalServerErrorException(e.message);

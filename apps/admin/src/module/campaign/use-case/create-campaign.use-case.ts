@@ -28,7 +28,7 @@ export class CreateCampaignUseCase {
 		if (!advertising) throw new NotFoundException(`${advertisingName} not found`);
 		if (!media) throw new NotFoundException(`${mediaName} not found`);
 
-		const createCampaignDto = plainToInstance(CreateCampaignDto, input);
+		const createCampaignDto = plainToInstance(CreateCampaignDto, { ...input, tracker_name: advertising.tracker?.name });
 		const result = await this.campaignRepository.create(createCampaignDto);
 		return plainToInstance(Campaign, result, { excludeExtraneousValues: true });
 	}

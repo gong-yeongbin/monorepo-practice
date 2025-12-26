@@ -19,7 +19,7 @@ export class AdvertisingRepository implements IAdvertising {
 
 	async findByName(name: string): Promise<Advertising | null> {
 		try {
-			return await this.prismaService.advertising.findUnique({ where: { name: name } });
+			return await this.prismaService.advertising.findUnique({ where: { name: name }, include: { tracker: true } });
 		} catch (e) {
 			throw new InternalServerErrorException(e.message);
 		}
@@ -27,7 +27,7 @@ export class AdvertisingRepository implements IAdvertising {
 
 	async findManyCampaign(id: number): Promise<Campaign[]> {
 		try {
-			return await this.prismaService.campaign.findMany({ where: { advertising_id: id } });
+			return await this.prismaService.campaign.findMany({ where: { advertising_id: id, is_active: true } });
 		} catch (e) {
 			throw new InternalServerErrorException(e.message);
 		}

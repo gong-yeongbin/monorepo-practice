@@ -57,6 +57,7 @@ model campaign {
   name                 String  @db.VarChar(30)
   type                 Type
   is_active            Boolean @default(true)
+  tracker_name         String  @db.Text
   tracker_tracking_url String  @db.Text
 
   advertising    advertising @relation(fields: [advertising_id], references: [id], onUpdate: Cascade)

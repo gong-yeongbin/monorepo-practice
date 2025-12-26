@@ -16,4 +16,7 @@ export class CreateCampaignDto {
 
 	@Expose({ name: 'mediaName' })
 	media_name: string;
+
+	@Expose()
+	tracker_name: string;
 }
