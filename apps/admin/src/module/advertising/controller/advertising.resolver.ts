@@ -1,6 +1,13 @@
 import { Args, Int, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
-import { CreateAdvertisingUseCase, GetAdvertisingListUseCase, GetAdvertisingUseCase, GetCampaignListUseCase, UpdateAdvertisingUseCase } from '@module/advertising/use-case';
-import { Advertising } from '@advertising/dto/response';
+import {
+	CreateAdvertisingUseCase,
+	GetAdvertisingListUseCase,
+	GetAdvertisingUseCase,
+	GetCampaignListUseCase,
+	GetDailyStatisticUseCase,
+	UpdateAdvertisingUseCase,
+} from '@module/advertising/use-case';
+import { Advertising, DailyStatistic } from '@advertising/dto/response';
 import { CreateAdvertisingInput, UpdateAdvertisingInput } from '@advertising/dto/request';
 import { Campaign } from '@campaign/dto/response';
 
@@ -11,7 +18,8 @@ export class AdvertisingResolver {
 		private readonly updateAdvertisingUseCase: UpdateAdvertisingUseCase,
 		private readonly getAdvertisingListUseCase: GetAdvertisingListUseCase,
 		private readonly getAdvertisingUseCase: GetAdvertisingUseCase,
-		private readonly getCampaignListUseCase: GetCampaignListUseCase
+		private readonly getCampaignListUseCase: GetCampaignListUseCase,
+		private readonly getDailyStatisticUseCase: GetDailyStatisticUseCase
 	) {}
 
 	@Query(() => Advertising, { name: 'advertising' })
@@ -27,6 +35,11 @@ export class AdvertisingResolver {
 	@ResolveField(() => [Campaign])
 	async campaign(@Parent() advertising: Advertising) {
 		return await this.getCampaignListUseCase.execute(advertising.id);
+	}
+
+	@ResolveField(() => [DailyStatistic])
+	async dailyStatistic(@Parent() advertising: Advertising, @Args('baseDate', { type: () => Date }) baseDate: Date) {
+		return await this.getDailyStatisticUseCase.execute(advertising.id, baseDate);
 	}
 
 	@Mutation(() => Advertising)

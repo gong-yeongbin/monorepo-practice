@@ -24,6 +24,14 @@ export class CampaignRepository implements ICampaign {
 		}
 	}
 
+	async findManyByAdvertisingId(id: number): Promise<Campaign[]> {
+		try {
+			return await this.prismaService.campaign.findMany({ where: { advertising_id: id, is_active: true } });
+		} catch (e) {
+			throw new InternalServerErrorException(e.message);
+		}
+	}
+
 	async create(campaign: CreateCampaignDto): Promise<Campaign> {
 		try {
 			const { name, type, tracker_tracking_url, advertising_name, media_name, tracker_name } = campaign;

@@ -14,4 +14,12 @@ export class DailyStatisticRepository implements IDailyStatistic {
 			throw new InternalServerErrorException(e.message);
 		}
 	}
+
+	async findManyTokenList(tokenList: string[], baseDate: Date): Promise<DailyStatistic[]> {
+		try {
+			return await this.prismaService.daily_statistic.findMany({ where: { token: { in: tokenList }, created_date: baseDate } });
+		} catch (e) {
+			throw new InternalServerErrorException(e.message);
+		}
+	}
 }

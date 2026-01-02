@@ -5,26 +5,6 @@ import { Expose } from 'class-transformer';
 export class DailyStatistic {
 	@Expose()
 	@Field(() => Int)
-	id: number;
-
-	@Expose({ name: 'view_code' })
-	@Field()
-	viewCode: string;
-
-	@Expose()
-	@Field()
-	token: string;
-
-	@Expose({ name: 'pub_id' })
-	@Field()
-	pubId: string;
-
-	@Expose({ name: 'sub_id' })
-	@Field()
-	subId: string;
-
-	@Expose()
-	@Field(() => Int)
 	click: number;
 
 	@Expose()
@@ -70,8 +50,4 @@ export class DailyStatistic {
 	@Expose()
 	@Field(() => Int)
 	unregistered: number;
-
-	@Expose({ name: 'created_date' })
-	@Field()
-	createdDate: Date;
 }

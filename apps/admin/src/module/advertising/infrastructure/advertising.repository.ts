@@ -3,7 +3,6 @@ import { PrismaService } from '@repo/prisma';
 import { CreateAdvertisingDto, UpdateAdvertisingDto } from '@advertising/dto';
 import { IAdvertising } from '@advertising/domain/repositories';
 import { Advertising } from '@advertising/domain/entities';
-import { Campaign } from '@src/module/campaign/domain/entities';
 
 @Injectable()
 export class AdvertisingRepository implements IAdvertising {
@@ -20,14 +19,6 @@ export class AdvertisingRepository implements IAdvertising {
 	async findByName(name: string): Promise<Advertising | null> {
 		try {
 			return await this.prismaService.advertising.findUnique({ where: { name: name }, include: { tracker: true } });
-		} catch (e) {
-			throw new InternalServerErrorException(e.message);
-		}
-	}
-
-	async findManyCampaign(id: number): Promise<Campaign[]> {
-		try {
-			return await this.prismaService.campaign.findMany({ where: { advertising_id: id, is_active: true } });
 		} catch (e) {
 			throw new InternalServerErrorException(e.message);
 		}

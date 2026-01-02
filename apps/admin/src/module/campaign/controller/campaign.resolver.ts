@@ -1,14 +1,7 @@
-import {
-	CreateCampaignUseCase,
-	GetCampaignConfigUseCase,
-	GetCampaignUseCase,
-	GetDailyStatisticListUseCase,
-	UpdateCampaignUseCase,
-	UpsertCampaignConfigUseCase,
-} from '@campaign/use-case';
+import { CreateCampaignUseCase, GetCampaignConfigUseCase, GetCampaignUseCase, UpdateCampaignUseCase, UpsertCampaignConfigUseCase } from '@campaign/use-case';
 import { Args, Int, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
-import { Campaign, CampaignConfig, DailyStatistic } from '@campaign/dto/response';
-import { CreateCampaignInput, GetDailyStatisticInput, UpdateCampaignInput, UpsertCampaignConfigInput } from '@campaign/dto/request';
+import { Campaign, CampaignConfig } from '@campaign/dto/response';
+import { CreateCampaignInput, UpdateCampaignInput, UpsertCampaignConfigInput } from '@campaign/dto/request';
 
 @Resolver(() => Campaign)
 export class CampaignResolver {
@@ -17,8 +10,7 @@ export class CampaignResolver {
 		private readonly updateCampaignUseCase: UpdateCampaignUseCase,
 		private readonly getCampaignUseCase: GetCampaignUseCase,
 		private readonly getCampaignConfigUseCase: GetCampaignConfigUseCase,
-		private readonly upsertCampaignConfigUseCase: UpsertCampaignConfigUseCase,
-		private readonly getDailyStatisticListUseCase: GetDailyStatisticListUseCase
+		private readonly upsertCampaignConfigUseCase: UpsertCampaignConfigUseCase
 	) {}
 
 	@Query(() => Campaign, { name: 'campaign' })
@@ -29,11 +21,6 @@ export class CampaignResolver {
 	@ResolveField(() => [CampaignConfig])
 	async config(@Parent() campaign: Campaign) {
 		return await this.getCampaignConfigUseCase.execute(campaign.id);
-	}
-
-	@ResolveField(() => [DailyStatistic])
-	async dailyStatistic(@Parent() campaign: Campaign, @Args('input') input: GetDailyStatisticInput) {
-		return await this.getDailyStatisticListUseCase.execute(campaign.token, input);
 	}
 
 	@Mutation(() => Campaign)
