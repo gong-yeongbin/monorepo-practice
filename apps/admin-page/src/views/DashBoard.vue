@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
-import axios from 'axios'
 import DataTable from 'primevue/datatable'
 import DatePicker from 'primevue/datepicker'
 import Column from 'primevue/column'
@@ -9,13 +8,16 @@ import Column from 'primevue/column'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'
+import { useDashboardStore } from '@/stores/dashboardStore.ts'
+const dashboardStore = useDashboardStore()
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
 dayjs.tz.setDefault('Asia/Seoul')
 
 interface AdvertisingStatistic {
-  advertisingName: string
+  id: number
+  name: string
   click: number
   install: number
   registration: number
@@ -33,57 +35,16 @@ interface AdvertisingStatistic {
 const selectedDate = ref<Date>(new Date())
 const advertisingStatistic = ref<AdvertisingStatistic[]>([])
 
-const calcSummary = (rows: AdvertisingStatistic[]): AdvertisingStatistic => {
-  return rows.reduce<AdvertisingStatistic>(
-    (acc, curr) => ({
-      advertisingName: '합계',
-      click: acc.click + curr.click,
-      install: acc.install + curr.install,
-      registration: acc.registration + curr.registration,
-      retention: acc.retention + curr.retention,
-      purchase: acc.purchase + curr.purchase,
-      revenue: acc.revenue + curr.revenue,
-      etc1: acc.etc1 + curr.etc1,
-      etc2: acc.etc2 + curr.etc2,
-      etc3: acc.etc3 + curr.etc3,
-      etc4: acc.etc4 + curr.etc4,
-      etc5: acc.etc5 + curr.etc5,
-      unregistered: acc.unregistered + curr.unregistered,
-    }),
-    {
-      advertisingName: '합계',
-      click: 0,
-      install: 0,
-      registration: 0,
-      retention: 0,
-      purchase: 0,
-      revenue: 0,
-      etc1: 0,
-      etc2: 0,
-      etc3: 0,
-      etc4: 0,
-      etc5: 0,
-      unregistered: 0,
-    },
+onMounted(async () => {
+  advertisingStatistic.value = await dashboardStore.update(
+    dayjs(selectedDate.value).format('YYYY-MM-DD'),
   )
-}
-
-const fetchData = async (baseDate: string) => {
-  const { data } = await axios.get('http://localhost:3002/dashboard/advertising', {
-    params: { baseDate },
-    withCredentials: true,
-  })
-  const rows: AdvertisingStatistic[] = data.data
-  const summary = calcSummary(rows)
-  advertisingStatistic.value = [...rows, summary]
-}
-
-onMounted(() => {
-  fetchData(dayjs(selectedDate.value).format('YYYY-MM-DD'))
 })
 
-watch(selectedDate, (newVal) => {
-  if (newVal) fetchData(dayjs(newVal).format('YYYY-MM-DD'))
+watch(selectedDate, async (newVal) => {
+  if (newVal) {
+    advertisingStatistic.value = await dashboardStore.update(dayjs(newVal).format('YYYY-MM-DD'))
+  }
 })
 </script>
 
@@ -94,20 +55,20 @@ watch(selectedDate, (newVal) => {
     </div>
 
     <DataTable :value="advertisingStatistic">
-      <Column field="advertisingName" header="광고명">
+      <Column field="name" header="광고명">
         <template #body="{ data }">
-          <span v-if="data.advertisingName === '합계'">
-            {{ data.advertisingName }}
+          <span v-if="data.name === '합계'">
+            {{ data.name }}
           </span>
           <router-link
             v-else
             :to="{
               name: 'advertisingCampaign', // 라우터에 정의한 name과 동일
-              params: { name: data.advertisingName },
+              params: { name: data.id },
             }"
             style="color: #007bff; text-decoration: none"
           >
-            {{ data.advertisingName }}
+            {{ data.name }}
           </router-link>
         </template>
       </Column>
