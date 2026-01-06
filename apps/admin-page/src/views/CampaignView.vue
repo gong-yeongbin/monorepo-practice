@@ -53,7 +53,6 @@ onMounted(async () => {
     dayjs(startDate.value).format('YYYY-MM-DD'),
     dayjs(endDate.value).format('YYYY-MM-DD'),
   )
-  console.log(advertising.value)
 })
 
 watch(startDate, async (newVal) => {
