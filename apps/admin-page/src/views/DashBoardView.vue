@@ -57,14 +57,10 @@ watch(selectedDate, async (newVal) => {
     <DataTable :value="advertisingStatistic">
       <Column field="name" header="광고명">
         <template #body="{ data }">
-          <span v-if="data.name === '합계'">
-            {{ data.name }}
-          </span>
           <router-link
-            v-else
             :to="{
-              name: 'advertisingCampaign', // 라우터에 정의한 name과 동일
-              params: { name: data.id },
+              name: 'campaign',
+              params: { id: data.id },
             }"
             style="color: #007bff; text-decoration: none"
           >
