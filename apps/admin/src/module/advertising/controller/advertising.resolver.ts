@@ -1,15 +1,19 @@
 import { Args, Int, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import {
 	CreateAdvertisingUseCase,
+	GetAdvertiserUseCase,
 	GetAdvertisingListUseCase,
 	GetAdvertisingUseCase,
-	GetCampaignListUseCase,
+	GetCampaignUseCase,
 	GetDailyStatisticUseCase,
+	GetTrackerUseCase,
 	UpdateAdvertisingUseCase,
 } from '@module/advertising/use-case';
-import { Advertising, DailyStatistic } from '@advertising/dto/response';
+import { Advertising } from '@advertising/dto/response';
 import { CreateAdvertisingInput, UpdateAdvertisingInput } from '@advertising/dto/request';
-import { Campaign } from '@campaign/dto/response';
+import { Campaign, DailyStatistic } from '@campaign/dto/response';
+import { Advertiser } from '@advertiser/dto/response';
+import { Tracker } from '@tracker/dto/response';
 
 @Resolver(() => Advertising)
 export class AdvertisingResolver {
@@ -17,8 +21,10 @@ export class AdvertisingResolver {
 		private readonly createAdvertisingUseCase: CreateAdvertisingUseCase,
 		private readonly updateAdvertisingUseCase: UpdateAdvertisingUseCase,
 		private readonly getAdvertisingListUseCase: GetAdvertisingListUseCase,
+		private readonly getAdvertiserUseCase: GetAdvertiserUseCase,
+		private readonly getTrackerUseCase: GetTrackerUseCase,
 		private readonly getAdvertisingUseCase: GetAdvertisingUseCase,
-		private readonly getCampaignListUseCase: GetCampaignListUseCase,
+		private readonly getCampaignUseCase: GetCampaignUseCase,
 		private readonly getDailyStatisticUseCase: GetDailyStatisticUseCase
 	) {}
 
@@ -32,16 +38,6 @@ export class AdvertisingResolver {
 		return await this.getAdvertisingListUseCase.execute();
 	}
 
-	@ResolveField(() => [Campaign])
-	async campaign(@Parent() advertising: Advertising) {
-		return await this.getCampaignListUseCase.execute(advertising.id);
-	}
-
-	@ResolveField(() => [DailyStatistic])
-	async dailyStatistic(@Parent() advertising: Advertising, @Args('baseDate', { type: () => Date }) baseDate: Date) {
-		return await this.getDailyStatisticUseCase.execute(advertising.id, baseDate);
-	}
-
 	@Mutation(() => Advertising)
 	async createAdvertising(@Args('input') input: CreateAdvertisingInput) {
 		return await this.createAdvertisingUseCase.execute(input);
@@ -50,5 +46,25 @@ export class AdvertisingResolver {
 	@Mutation(() => Advertising)
 	async updateAdvertising(@Args('input') input: UpdateAdvertisingInput) {
 		return await this.updateAdvertisingUseCase.execute(input);
+	}
+
+	@ResolveField(() => Advertiser)
+	async advertiser(@Parent() advertising: Advertising) {
+		return await this.getAdvertiserUseCase.execute(advertising.advertiserId);
+	}
+
+	@ResolveField(() => Tracker)
+	async tracker(@Parent() advertising: Advertising) {
+		return await this.getTrackerUseCase.execute(advertising.trackerId);
+	}
+
+	@ResolveField(() => [Campaign])
+	async campaign(@Parent() advertising: Advertising) {
+		return await this.getCampaignUseCase.execute(advertising.id);
+	}
+
+	@ResolveField(() => [DailyStatistic])
+	async dailyStatistic(@Parent() advertising: Advertising, @Args('baseDate', { type: () => Date }) baseDate: Date) {
+		return await this.getDailyStatisticUseCase.execute(advertising.id, baseDate);
 	}
 }

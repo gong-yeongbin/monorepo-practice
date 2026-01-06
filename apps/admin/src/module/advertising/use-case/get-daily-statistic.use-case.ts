@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { CAMPAIGN_REPOSITORY, DAILY_STATISTIC_REPOSITORY } from '@campaign/domain/symbol';
 import { ICampaign, IDailyStatistic } from '@campaign/domain/repositories';
-import { DailyStatistic } from '@advertising/dto/response';
+import { DailyStatistic } from '@campaign/dto/response';
 
 @Injectable()
 export class GetDailyStatisticUseCase {

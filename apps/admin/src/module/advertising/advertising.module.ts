@@ -2,10 +2,12 @@ import { Module } from '@nestjs/common';
 import { AdvertisingRepository } from '@module/advertising/infrastructure';
 import {
 	CreateAdvertisingUseCase,
+	GetAdvertiserUseCase,
 	GetAdvertisingListUseCase,
 	GetAdvertisingUseCase,
-	GetCampaignListUseCase,
+	GetCampaignUseCase,
 	GetDailyStatisticUseCase,
+	GetTrackerUseCase,
 	UpdateAdvertisingUseCase,
 } from '@module/advertising/use-case';
 import { AdvertiserModule } from '@module/advertiser/advertiser.module';
@@ -22,8 +24,10 @@ import { CampaignRepository, DailyStatisticRepository } from '@campaign/infrastr
 		CreateAdvertisingUseCase,
 		UpdateAdvertisingUseCase,
 		GetAdvertisingListUseCase,
+		GetAdvertiserUseCase,
+		GetTrackerUseCase,
 		GetAdvertisingUseCase,
-		GetCampaignListUseCase,
+		GetCampaignUseCase,
 		GetDailyStatisticUseCase,
 		{ provide: ADVERTISING_REPOSITORY, useClass: AdvertisingRepository },
 		{ provide: CAMPAIGN_REPOSITORY, useClass: CampaignRepository },

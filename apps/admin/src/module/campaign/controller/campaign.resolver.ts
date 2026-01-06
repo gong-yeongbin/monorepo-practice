@@ -1,6 +1,6 @@
 import { CreateCampaignUseCase, GetCampaignConfigUseCase, GetCampaignUseCase, UpdateCampaignUseCase, UpsertCampaignConfigUseCase } from '@campaign/use-case';
 import { Args, Int, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
-import { Campaign, CampaignConfig } from '@campaign/dto/response';
+import { Campaign, CampaignConfig, DailyStatistic } from '@campaign/dto/response';
 import { CreateCampaignInput, UpdateCampaignInput, UpsertCampaignConfigInput } from '@campaign/dto/request';
 
 @Resolver(() => Campaign)
@@ -39,5 +39,10 @@ export class CampaignResolver {
 		@Args('input', { type: () => [UpsertCampaignConfigInput] }) input: UpsertCampaignConfigInput[]
 	) {
 		return await this.upsertCampaignConfigUseCase.execute(campaignId, input);
+	}
+
+	@ResolveField(() => [DailyStatistic])
+	async dailyStatistic(@Parent() campaign: Campaign, @Args('startDate', { type: () => Date }) startDate: Date, @Args('endDate', { type: () => Date }) endDate: Date) {
+		return;
 	}
 }

@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory, type RouteLocationNormalized } from 'vue-router'
 import LoginView from '@/views/LoginView.vue'
-import DashBoard from '@/views/DashBoard.vue'
+import DashBoardView from '@/views/DashBoardView.vue'
 import Tracker from '@/views/TrackerView.vue'
 import Media from '@/views/MediaView.vue'
 import Advertising from '@/views/AdvertisingView.vue'
-import AdvertisingCampaign from '@/views/AdvertisingCampaign.vue'
+import CampaignView from '@/views/CampaignView.vue'
 
 import { useUserStore } from '@/stores/userStore.ts'
 import CampaignDateStatistic from '@/components/CampaignDateStatistic.vue'
@@ -22,7 +22,7 @@ const routes = [
   {
     path: '/dashboard',
     name: 'dashboard',
-    component: DashBoard,
+    component: DashBoardView,
     meta: { requiresAuth: true },
   },
   {
@@ -32,9 +32,9 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: '/advertising/:name/campaign',
-    name: 'advertisingCampaign',
-    component: AdvertisingCampaign,
+    path: '/advertising/:id/campaign',
+    name: 'campaign',
+    component: CampaignView,
     props: true,
     meta: { requiresAuth: true },
   },

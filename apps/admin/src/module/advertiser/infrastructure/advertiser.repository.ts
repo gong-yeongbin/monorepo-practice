@@ -16,6 +16,14 @@ export class AdvertiserRepository implements IAdvertiser {
 		}
 	}
 
+	async findById(id: number): Promise<Advertiser | null> {
+		try {
+			return await this.prismaService.advertiser.findUnique({ where: { id } });
+		} catch (e) {
+			throw new InternalServerErrorException(e.message);
+		}
+	}
+
 	async findMany(): Promise<Advertiser[]> {
 		try {
 			return await this.prismaService.advertiser.findMany({ orderBy: { name: 'asc' } });
