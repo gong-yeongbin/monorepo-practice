@@ -7,7 +7,6 @@ import Advertising from '@/views/AdvertisingView.vue'
 import CampaignView from '@/views/CampaignView.vue'
 
 import { useUserStore } from '@/stores/userStore.ts'
-import CampaignDateStatistic from '@/components/CampaignDateStatistic.vue'
 
 const routes = [
   {
