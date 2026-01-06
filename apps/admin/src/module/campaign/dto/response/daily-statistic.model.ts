@@ -50,4 +50,8 @@ export class DailyStatistic {
 	@Expose()
 	@Field(() => Int)
 	unregistered: number;
+
+	@Expose({ name: 'created_date' })
+	@Field(() => Date)
+	createdDate: Date;
 }

@@ -48,12 +48,12 @@ export class AdvertisingResolver {
 		return await this.updateAdvertisingUseCase.execute(input);
 	}
 
-	@ResolveField(() => Advertiser)
+	@ResolveField(() => String)
 	async advertiser(@Parent() advertising: Advertising) {
 		return await this.getAdvertiserUseCase.execute(advertising.advertiserId);
 	}
 
-	@ResolveField(() => Tracker)
+	@ResolveField(() => String)
 	async tracker(@Parent() advertising: Advertising) {
 		return await this.getTrackerUseCase.execute(advertising.trackerId);
 	}

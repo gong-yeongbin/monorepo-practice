@@ -1,4 +1,12 @@
-import { CreateCampaignUseCase, GetCampaignConfigUseCase, GetCampaignUseCase, UpdateCampaignUseCase, UpsertCampaignConfigUseCase } from '@campaign/use-case';
+import {
+	CreateCampaignUseCase,
+	GetDailyStatisticsUseCase,
+	GetCampaignConfigUseCase,
+	GetCampaignUseCase,
+	GetMediaUseCase,
+	UpdateCampaignUseCase,
+	UpsertCampaignConfigUseCase,
+} from '@campaign/use-case';
 import { Args, Int, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { Campaign, CampaignConfig, DailyStatistic } from '@campaign/dto/response';
 import { CreateCampaignInput, UpdateCampaignInput, UpsertCampaignConfigInput } from '@campaign/dto/request';
@@ -10,17 +18,14 @@ export class CampaignResolver {
 		private readonly updateCampaignUseCase: UpdateCampaignUseCase,
 		private readonly getCampaignUseCase: GetCampaignUseCase,
 		private readonly getCampaignConfigUseCase: GetCampaignConfigUseCase,
-		private readonly upsertCampaignConfigUseCase: UpsertCampaignConfigUseCase
+		private readonly upsertCampaignConfigUseCase: UpsertCampaignConfigUseCase,
+		private readonly getMediaUseCase: GetMediaUseCase,
+		private readonly getDailyStatisticsUseCase: GetDailyStatisticsUseCase
 	) {}
 
 	@Query(() => Campaign, { name: 'campaign' })
 	async findOne(@Args('id', { type: () => Int }) id: number) {
 		return await this.getCampaignUseCase.execute(id);
-	}
-
-	@ResolveField(() => [CampaignConfig])
-	async config(@Parent() campaign: Campaign) {
-		return await this.getCampaignConfigUseCase.execute(campaign.id);
 	}
 
 	@Mutation(() => Campaign)
@@ -41,8 +46,18 @@ export class CampaignResolver {
 		return await this.upsertCampaignConfigUseCase.execute(campaignId, input);
 	}
 
+	@ResolveField(() => String)
+	async media(@Parent() campaign: Campaign) {
+		return await this.getMediaUseCase.execute(campaign.mediaId);
+	}
+
+	@ResolveField(() => [CampaignConfig])
+	async config(@Parent() campaign: Campaign) {
+		return await this.getCampaignConfigUseCase.execute(campaign.id);
+	}
+
 	@ResolveField(() => [DailyStatistic])
 	async dailyStatistic(@Parent() campaign: Campaign, @Args('startDate', { type: () => Date }) startDate: Date, @Args('endDate', { type: () => Date }) endDate: Date) {
-		return;
+		return await this.getDailyStatisticsUseCase.execute(campaign.token, startDate, endDate);
 	}
 }
