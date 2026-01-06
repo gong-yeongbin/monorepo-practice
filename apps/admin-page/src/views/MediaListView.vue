@@ -1,37 +1,30 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
-import { onMounted, ref } from 'vue'
-import axios from 'axios'
+import { useMediaListStore } from '@/stores/mediaListStore.ts'
 
-interface Tracker {
+const mediaListStore = useMediaListStore()
+
+interface Media {
+  id: number
   name: string
-  trackingUrl: string
   installPostbackUrl: string
   eventPostbackUrl: string
 }
 
-const trackerList = ref<Tracker[]>([])
+const mediaList = ref<Media[]>([])
 
 onMounted(async () => {
-  try {
-    const { data } = await axios.get('http://localhost:3002/tracker', {
-      withCredentials: true,
-    })
-    trackerList.value = data.data
-  } catch (error) {
-    // TODO: 에러 처리 (토스트, 알럿 등)
-    console.error(error)
-  }
+  mediaList.value = await mediaListStore.get()
 })
 </script>
 
 <template>
   <DefaultLayout>
-    <DataTable :value="trackerList">
+    <DataTable :value="mediaList">
       <Column field="name" header="이름" />
-      <Column field="trackingUrl" header="트래킹URL" />
       <Column field="installPostbackUrl" header="인스톨포스트백URL" />
       <Column field="eventPostbackUrl" header="이벤트포스트백URL" />
     </DataTable>

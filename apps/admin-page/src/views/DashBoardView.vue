@@ -55,7 +55,7 @@ watch(selectedDate, async (newVal) => {
     </div>
 
     <DataTable :value="advertisingStatistic">
-      <Column field="name" header="광고명">
+      <Column field="name" header="광고명" style="min-width: 5px; white-space: nowrap">
         <template #body="{ data }">
           <router-link
             :to="{

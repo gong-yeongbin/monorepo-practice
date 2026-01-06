@@ -11,7 +11,7 @@ export class MediaResolver {
 		private readonly getMediaListUseCase: GetMediaListUseCase
 	) {}
 
-	@Query(() => [Media], { name: 'medias' })
+	@Query(() => [Media], { name: 'media' })
 	async findAll() {
 		return await this.getMediaListUseCase.execute();
 	}

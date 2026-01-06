@@ -11,7 +11,7 @@ export class TrackerResolver {
 		private readonly getTrackerListUseCase: GetTrackerListUseCase
 	) {}
 
-	@Query(() => [Tracker], { name: 'trackers' })
+	@Query(() => [Tracker], { name: 'tracker' })
 	async findAll() {
 		return await this.getTrackerListUseCase.execute();
 	}

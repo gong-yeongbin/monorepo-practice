@@ -1,12 +1,12 @@
 import { createRouter, createWebHistory, type RouteLocationNormalized } from 'vue-router'
 import LoginView from '@/views/LoginView.vue'
 import DashBoardView from '@/views/DashBoardView.vue'
-import Tracker from '@/views/TrackerView.vue'
-import Media from '@/views/MediaView.vue'
 import Advertising from '@/views/AdvertisingView.vue'
 import CampaignView from '@/views/CampaignView.vue'
 
 import { useUserStore } from '@/stores/userStore.ts'
+import TrackerListView from '@/views/TrackerListView.vue'
+import MediaListView from '@/views/MediaListView.vue'
 
 const routes = [
   {
@@ -40,13 +40,13 @@ const routes = [
   {
     path: '/tracker',
     name: 'tracker',
-    component: Tracker,
+    component: TrackerListView,
     meta: { requiresAuth: true },
   },
   {
     path: '/media',
     name: 'media',
-    component: Media,
+    component: MediaListView,
     meta: { requiresAuth: true },
   },
 ]
