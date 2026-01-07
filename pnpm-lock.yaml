@@ -435,6 +435,9 @@ importers:
       '@nestjs/common':
         specifier: ^11.1.5
         version: 11.1.5(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@prisma/client':
+        specifier: ^6.11.1
+        version: 6.19.1(prisma@6.11.1(typescript@5.8.3))(typescript@5.8.3)
     devDependencies:
       '@eslint/eslintrc':
         specifier: ^3.2.0
@@ -442,9 +445,6 @@ importers:
       '@eslint/js':
         specifier: ^9.31.0
         version: 9.31.0
-      '@prisma/client':
-        specifier: ^6.11.1
-        version: 6.11.1(prisma@6.11.1(typescript@5.8.3))(typescript@5.8.3)
       '@repo/eslint':
         specifier: workspace:*
         version: link:../eslint
@@ -1850,8 +1850,8 @@ packages:
     resolution: {integrity: sha512-UfDimrIjVdY6EziwieyV4zPKzW6mnKHKhy4Dgyjv2oI6pNeuim+onbJo1ce22PEGXW78vfblG/3/JIzVHFweqQ==}
     engines: {node: '>=12.11.0'}
 
-  '@prisma/client@6.11.1':
-    resolution: {integrity: sha512-5CLFh8QP6KxRm83pJ84jaVCeSVPQr8k0L2SEtOJHwdkS57/VQDcI/wQpGmdyOZi+D9gdNabdo8tj1Uk+w+upsQ==}
+  '@prisma/client@6.19.1':
+    resolution: {integrity: sha512-4SXj4Oo6HyQkLUWT8Ke5R0PTAfVOKip5Roo+6+b2EDTkFg5be0FnBWiuRJc0BC0sRQIWGMLKW1XguhVfW/z3/A==}
     engines: {node: '>=18.18'}
     peerDependencies:
       prisma: '*'
@@ -7899,7 +7899,7 @@ snapshots:
     transitivePeerDependencies:
       - vue
 
-  '@prisma/client@6.11.1(prisma@6.11.1(typescript@5.8.3))(typescript@5.8.3)':
+  '@prisma/client@6.19.1(prisma@6.11.1(typescript@5.8.3))(typescript@5.8.3)':
     optionalDependencies:
       prisma: 6.11.1(typescript@5.8.3)
       typescript: 5.8.3
