@@ -18,13 +18,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@nestjs/common": "^11.1.5"
+    "@nestjs/common": "^11.1.5",
+    "@prisma/client": "^6.11.1"
   },
   "devDependencies": {
-    "@repo/eslint": "workspace:*",
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.31.0",
-    "@prisma/client": "^6.11.1",
+    "@repo/eslint": "workspace:*",
     "@repo/typescript": "workspace:*",
     "@types/node": "^22.10.7",
     "eslint": "^9.31.0",
