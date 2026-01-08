@@ -1,88 +1,111 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watchEffect } from 'vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import DataTable from 'primevue/datatable'
 import DatePicker from 'primevue/datepicker'
 import Column from 'primevue/column'
-
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'
 import { useDashboardStore } from '@/stores/dashboardStore.ts'
-const dashboardStore = useDashboardStore()
 
+// dayjs 플러그인 설정 (한 번만 실행)
 dayjs.extend(utc)
 dayjs.extend(timezone)
 dayjs.tz.setDefault('Asia/Seoul')
 
-interface AdvertisingStatistic {
-  id: number
-  name: string
-  click: number
-  install: number
-  registration: number
-  retention: number
-  purchase: number
-  revenue: number
-  etc1: number
-  etc2: number
-  etc3: number
-  etc4: number
-  etc5: number
-  unregistered: number
-}
+const dashboardStore = useDashboardStore()
+
+// store의 state를 computed로 직접 접근
+const dashboards = computed(() => dashboardStore.dashboards ?? [])
 
 const selectedDate = ref<Date>(new Date())
-const advertisingStatistic = ref<AdvertisingStatistic[]>([])
 
-onMounted(async () => {
-  advertisingStatistic.value = await dashboardStore.update(
-    dayjs(selectedDate.value).format('YYYY-MM-DD'),
-  )
+// 날짜 포맷팅 헬퍼
+const formatDate = (date: Date) => dayjs(date).tz('Asia/Seoul').format('YYYY-MM-DD')
+
+// 데이터 로드 함수
+const loadData = async () => {
+  if (selectedDate.value) {
+    await dashboardStore.update(formatDate(selectedDate.value))
+  }
+}
+
+onMounted(() => {
+  loadData()
 })
 
-watch(selectedDate, async (newVal) => {
-  if (newVal) {
-    advertisingStatistic.value = await dashboardStore.update(dayjs(newVal).format('YYYY-MM-DD'))
+// selectedDate 변경 시 자동으로 데이터 갱신
+watchEffect(() => {
+  if (selectedDate.value) {
+    loadData()
   }
 })
+
+// 통계 필드 정의 (컬럼 렌더링용)
+const statisticFields = [
+  'click',
+  'install',
+  'registration',
+  'retention',
+  'purchase',
+  'revenue',
+  'etc1',
+  'etc2',
+  'etc3',
+  'etc4',
+  'etc5',
+  'unregistered',
+] as const
 </script>
 
 <template>
   <DefaultLayout>
-    <div style="margin-bottom: 1rem; display: flex; gap: 0.5rem; align-items: center">
+    <div class="date-picker-container">
       <DatePicker v-model="selectedDate" dateFormat="yy-mm-dd" showIcon />
     </div>
 
-    <DataTable :value="advertisingStatistic">
-      <Column field="name" header="광고명" style="min-width: 5px; white-space: nowrap">
+    <DataTable :value="dashboards">
+      <Column field="name" header="광고명" class="name-column">
         <template #body="{ data }">
           <router-link
             :to="{
               name: 'campaign',
               params: { id: data.id },
+              query: { baseDate: formatDate(selectedDate) },
             }"
-            style="color: #007bff; text-decoration: none"
+            class="campaign-link"
           >
             {{ data.name }}
           </router-link>
         </template>
       </Column>
 
-      <Column field="click" header="click" />
-      <Column field="install" header="install" />
-      <Column field="registration" header="registration" />
-      <Column field="retention" header="retention" />
-      <Column field="purchase" header="purchase" />
-      <Column field="revenue" header="revenue" />
-      <Column field="etc1" header="etc1" />
-      <Column field="etc2" header="etc2" />
-      <Column field="etc3" header="etc3" />
-      <Column field="etc4" header="etc4" />
-      <Column field="etc5" header="etc5" />
-      <Column field="unregistered" header="unregistered" />
+      <!-- 통계 필드를 반복하여 렌더링 -->
+      <Column v-for="field in statisticFields" :key="field" :field="field" :header="field" />
     </DataTable>
   </DefaultLayout>
 </template>
 
-<style scoped></style>
+<style scoped>
+.date-picker-container {
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.name-column {
+  min-width: 5px;
+  white-space: nowrap;
+}
+
+.campaign-link {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.campaign-link:hover {
+  text-decoration: underline;
+}
+</style>

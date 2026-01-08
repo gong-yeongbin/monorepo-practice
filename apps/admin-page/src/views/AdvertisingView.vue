@@ -1,39 +1,27 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import axios from 'axios'
+import { computed, onMounted } from 'vue'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
+import { useAdvertisingStore } from '@/stores/advertisingStore'
 
-interface Advertising {
-  image: string
-  name: string
-  trackerName: string
-  campaign: number
-}
+const advertisingStore = useAdvertisingStore()
 
-const AdvertisingList = ref<Advertising[]>([])
+// store의 state를 computed로 직접 접근
+const advertisingList = computed(() => advertisingStore.advertisings ?? [])
 
 onMounted(async () => {
-  try {
-    const { data } = await axios.get('http://localhost:3002/advertising', {
-      withCredentials: true,
-    })
-    AdvertisingList.value = data.data
-  } catch (error) {
-    // TODO: 에러 처리 (토스트, 알럿 등)
-    console.error(error)
-  }
+  await advertisingStore.fetchAll()
 })
 </script>
 
 <template>
   <DefaultLayout>
-    <DataTable :value="AdvertisingList">
-      <Column header="">
+    <DataTable :value="advertisingList">
+      <Column header="" class="advertising-name-column">
         <template #body="{ data }">
-          <div class="flex items-center gap-2">
-            <img :src="data.image" alt="" style="width: 32px; height: 32px" />
+          <div class="advertising-item">
+            <img :src="data.image" :alt="data.name" class="advertising-thumb" />
             <span>{{ data.name }}</span>
           </div>
         </template>
@@ -43,4 +31,21 @@ onMounted(async () => {
   </DefaultLayout>
 </template>
 
-<style scoped></style>
+<style scoped>
+.advertising-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.advertising-thumb {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.advertising-name-column {
+  min-width: 200px;
+}
+</style>

@@ -3,7 +3,7 @@ import LoginView from '@/views/LoginView.vue'
 import DashBoardView from '@/views/DashBoardView.vue'
 import Advertising from '@/views/AdvertisingView.vue'
 import CampaignView from '@/views/CampaignView.vue'
-
+import MediaView from '@/views/MediaView.vue'
 import { useUserStore } from '@/stores/userStore.ts'
 import TrackerListView from '@/views/TrackerListView.vue'
 import MediaListView from '@/views/MediaListView.vue'
@@ -38,6 +38,13 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/advertising/:id/campaign/:token',
+    name: 'media',
+    component: MediaView,
+    props: true,
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/tracker',
     name: 'tracker',
     component: TrackerListView,
@@ -45,7 +52,7 @@ const routes = [
   },
   {
     path: '/media',
-    name: 'media',
+    name: 'mediaList',
     component: MediaListView,
     meta: { requiresAuth: true },
   },

@@ -2,12 +2,7 @@ import { defineStore } from 'pinia'
 import { apolloClient } from '@/apollo-client.ts'
 import gql from 'graphql-tag'
 
-type Advertising = {
-  id: number
-  name: string
-  dailyStatistic: DailyStatistic[]
-}
-
+// 타입 정의
 type DailyStatistic = {
   click: number
   install: number
@@ -23,6 +18,12 @@ type DailyStatistic = {
   unregistered: number
 }
 
+type Advertising = {
+  id: number
+  name: string
+  dailyStatistic: DailyStatistic[]
+}
+
 type GetDashboardResult = {
   advertisings: Advertising[]
 }
@@ -30,20 +31,9 @@ type GetDashboardResult = {
 type Dashboard = {
   id: number
   name: string
-  click: number
-  install: number
-  registration: number
-  retention: number
-  purchase: number
-  revenue: number
-  etc1: number
-  etc2: number
-  etc3: number
-  etc4: number
-  etc5: number
-  unregistered: number
-}
+} & DailyStatistic
 
+// GraphQL 쿼리
 const GET_DASHBOARD = gql`
   query dashboard($baseDate: DateTime!) {
     advertisings {
@@ -67,48 +57,71 @@ const GET_DASHBOARD = gql`
   }
 `
 
+// DailyStatistic 필드 목록
+const STATISTIC_FIELDS = [
+  'click',
+  'install',
+  'registration',
+  'retention',
+  'purchase',
+  'revenue',
+  'etc1',
+  'etc2',
+  'etc3',
+  'etc4',
+  'etc5',
+  'unregistered',
+] as const satisfies readonly (keyof DailyStatistic)[]
+
+// 초기값 생성 함수
+const createEmptyStatistic = (): DailyStatistic =>
+  STATISTIC_FIELDS.reduce((acc, field) => ({ ...acc, [field]: 0 }), {} as DailyStatistic)
+
+// 일일 통계 배열을 합산하는 함수
+const sumDailyStatistics = (statistics: DailyStatistic[]): DailyStatistic =>
+  statistics.reduce((acc, curr) => {
+    const summed = { ...acc }
+    STATISTIC_FIELDS.forEach((field) => {
+      summed[field] = acc[field] + curr[field]
+    })
+    return summed
+  }, createEmptyStatistic())
+
 export const useDashboardStore = defineStore('dashboard', {
+  state: () => ({
+    dashboards: null as Dashboard[] | null,
+  }),
+  getters: {
+    // 데이터가 존재하는지 확인
+    hasData: (state) => state.dashboards !== null && state.dashboards.length > 0,
+    // 특정 광고 조회
+    getDashboard: (state) => (id: number) =>
+      state.dashboards?.find((dashboard) => dashboard.id === id),
+  },
   actions: {
-    async update(baseDate: string) {
+    async update(baseDate: string): Promise<Dashboard[]> {
       const { data } = await apolloClient.query<GetDashboardResult>({
         query: GET_DASHBOARD,
         variables: { baseDate },
       })
-      return data.advertisings.map((advertising) => {
-        const sum = advertising.dailyStatistic.reduce(
-          (acc, curr) => {
-            return {
-              click: acc.click + curr.click,
-              install: acc.install + curr.install,
-              registration: acc.registration + curr.registration,
-              retention: acc.retention + curr.retention,
-              purchase: acc.purchase + curr.purchase,
-              revenue: acc.revenue + curr.revenue,
-              etc1: acc.etc1 + curr.etc1,
-              etc2: acc.etc2 + curr.etc2,
-              etc3: acc.etc3 + curr.etc3,
-              etc4: acc.etc4 + curr.etc4,
-              etc5: acc.etc5 + curr.etc5,
-              unregistered: acc.unregistered + curr.unregistered,
-            }
-          },
-          {
-            click: 0,
-            install: 0,
-            registration: 0,
-            retention: 0,
-            purchase: 0,
-            revenue: 0,
-            etc1: 0,
-            etc2: 0,
-            etc3: 0,
-            etc4: 0,
-            etc5: 0,
-            unregistered: 0,
-          },
-        )
-        return { id: advertising.id, name: advertising.name, ...sum } as Dashboard
+
+      const dashboards: Dashboard[] = data.advertisings.map((advertising) => {
+        const sum = sumDailyStatistics(advertising.dailyStatistic)
+        return {
+          id: advertising.id,
+          name: advertising.name,
+          ...sum,
+        }
       })
+
+      // state 업데이트
+      this.dashboards = dashboards
+
+      return dashboards
+    },
+    // state 초기화
+    clear() {
+      this.dashboards = null
     },
   },
 })
