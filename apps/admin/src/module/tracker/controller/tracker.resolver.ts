@@ -2,7 +2,9 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Tracker } from '@tracker/dto/response';
 import { CreateTrackerUseCase, GetTrackerListUseCase, UpdateTrackerUseCase } from '@tracker/use-case';
 import { CreateTrackerInput, UpdateTrackerInput } from '@tracker/dto/request';
-
+import { GraphqlAuthGuard } from '@src/common/guard';
+import { UseGuards } from '@nestjs/common';
+@UseGuards(GraphqlAuthGuard)
 @Resolver(() => Tracker)
 export class TrackerResolver {
 	constructor(

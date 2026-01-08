@@ -2,7 +2,10 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Media } from '@media/dto/response';
 import { CreateMediaInput, UpdateMediaInput } from '@media/dto/request';
 import { CreateMediaUseCase, GetMediaListUseCase, UpdateMediaUseCase } from '@media/use-case';
+import { GraphqlAuthGuard } from '@src/common/guard';
+import { UseGuards } from '@nestjs/common';
 
+@UseGuards(GraphqlAuthGuard)
 @Resolver(() => Media)
 export class MediaResolver {
 	constructor(

@@ -14,7 +14,10 @@ import { CreateAdvertisingInput, UpdateAdvertisingInput } from '@advertising/dto
 import { Campaign, DailyStatistic } from '@campaign/dto/response';
 import { Advertiser } from '@advertiser/dto/response';
 import { Tracker } from '@tracker/dto/response';
+import { GraphqlAuthGuard } from '@src/common/guard';
+import { UseGuards } from '@nestjs/common';
 
+@UseGuards(GraphqlAuthGuard)
 @Resolver(() => Advertising)
 export class AdvertisingResolver {
 	constructor(

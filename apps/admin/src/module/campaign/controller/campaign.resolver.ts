@@ -10,7 +10,10 @@ import {
 import { Args, Int, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { Campaign, CampaignConfig, DailyStatistic } from '@campaign/dto/response';
 import { CreateCampaignInput, UpdateCampaignInput, UpsertCampaignConfigInput } from '@campaign/dto/request';
+import { GraphqlAuthGuard } from '@src/common/guard';
+import { UseGuards } from '@nestjs/common';
 
+@UseGuards(GraphqlAuthGuard)
 @Resolver(() => Campaign)
 export class CampaignResolver {
 	constructor(
