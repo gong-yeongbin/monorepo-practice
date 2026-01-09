@@ -14,7 +14,7 @@ export class AuthResolver {
 		private readonly configService: ConfigService,
 		private readonly createTokenUseCase: CreateTokenUseCase
 	) {
-		this.cookieConfig = { secure: configService.get<string>('ENV') != 'DEV', httpOnly: true, maxAge: configService.get<number>('JWT_EXPIRES') ?? 0 };
+		this.cookieConfig = { secure: true, httpOnly: true, sameSite: 'none', maxAge: configService.get<number>('JWT_EXPIRES') ?? 0 };
 	}
 
 	@Mutation(() => Boolean)
