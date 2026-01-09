@@ -4,6 +4,10 @@ import gql from 'graphql-tag'
 
 // 타입 정의 통합 및 구조화
 type DailyStatistic = {
+  viewCode: string
+  token: string
+  pubId: string | null
+  subId: string | null
   click: number
   install: number
   registration: number
@@ -16,6 +20,7 @@ type DailyStatistic = {
   etc4: number
   etc5: number
   unregistered: number
+  createdDate?: string
 }
 
 type Campaign = {
@@ -24,6 +29,7 @@ type Campaign = {
   token: string
   media: string
   type: string
+  isActive: boolean
   dailyStatistic: DailyStatistic[]
 }
 
@@ -41,14 +47,28 @@ type GetCampaignResult = {
   advertising: Advertising
 }
 
-// 내부 사용 타입 (응답 변환 후)
+// 내부 사용 타입 (응답 변환 후) - 문자열 필드 제외, 숫자 필드만 합산
 type ResponseCampaign = {
   id: number
   name: string
   token: string
   media: string
   type: string
-  dailyStatistic: DailyStatistic
+  isActive: boolean
+  dailyStatistic: {
+    click: number
+    install: number
+    registration: number
+    retention: number
+    purchase: number
+    revenue: number
+    etc1: number
+    etc2: number
+    etc3: number
+    etc4: number
+    etc5: number
+    unregistered: number
+  }
 }
 
 type Response = {
@@ -76,7 +96,12 @@ const GET_CAMPAIGN = gql`
         name
         token
         type
+        isActive
         dailyStatistic(startDate: $startDate, endDate: $endDate) {
+          viewCode
+          token
+          pubId
+          subId
           click
           install
           registration
@@ -96,8 +121,8 @@ const GET_CAMPAIGN = gql`
   }
 `
 
-// DailyStatistic 필드 목록
-const STATISTIC_FIELDS = [
+// 숫자 통계 필드 목록 (합산할 필드만)
+const NUMERIC_STATISTIC_FIELDS = [
   'click',
   'install',
   'registration',
@@ -110,25 +135,48 @@ const STATISTIC_FIELDS = [
   'etc4',
   'etc5',
   'unregistered',
-] as const satisfies readonly (keyof DailyStatistic)[]
+] as const
 
-// 초기값 생성 함수
-const createEmptyStatistic = (): DailyStatistic =>
-  STATISTIC_FIELDS.reduce((acc, field) => ({ ...acc, [field]: 0 }), {} as DailyStatistic)
+// 숫자 필드만 초기값 생성 함수
+const createEmptyStatistic = () => ({
+  click: 0,
+  install: 0,
+  registration: 0,
+  retention: 0,
+  purchase: 0,
+  revenue: 0,
+  etc1: 0,
+  etc2: 0,
+  etc3: 0,
+  etc4: 0,
+  etc5: 0,
+  unregistered: 0,
+})
 
-// 일일 통계 배열을 합산하는 함수
-const sumDailyStatistics = (statistics: DailyStatistic[]): DailyStatistic =>
-  statistics.reduce((acc, curr) => {
-    const summed = { ...acc }
-    STATISTIC_FIELDS.forEach((field) => {
-      summed[field] = acc[field] + curr[field]
-    })
-    return summed
+// 일일 통계 배열을 합산하는 함수 (숫자 필드만 합산)
+const sumDailyStatistics = (statistics: DailyStatistic[]) => {
+  return statistics.reduce((acc, curr) => {
+    return {
+      click: acc.click + curr.click,
+      install: acc.install + curr.install,
+      registration: acc.registration + curr.registration,
+      retention: acc.retention + curr.retention,
+      purchase: acc.purchase + curr.purchase,
+      revenue: acc.revenue + curr.revenue,
+      etc1: acc.etc1 + curr.etc1,
+      etc2: acc.etc2 + curr.etc2,
+      etc3: acc.etc3 + curr.etc3,
+      etc4: acc.etc4 + curr.etc4,
+      etc5: acc.etc5 + curr.etc5,
+      unregistered: acc.unregistered + curr.unregistered,
+    }
   }, createEmptyStatistic())
+}
 
 export const useCampaignStore = defineStore('campaign', {
   state: () => ({
     advertising: null as Response | null,
+    rawDailyStatistics: null as Map<string, DailyStatistic[]> | null, // 캠페인별 원본 dailyStatistic 저장
     currentDateRange: null as { startDate: string; endDate: string } | null,
     currentAdvertisingId: null as number | null,
   }),
@@ -148,12 +196,19 @@ export const useCampaignStore = defineStore('campaign', {
 
       const { advertising } = data
 
+      // 원본 dailyStatistic 저장 (캠페인 token을 키로)
+      const rawStats = new Map<string, DailyStatistic[]>()
+      advertising.campaign.forEach((cp) => {
+        rawStats.set(cp.token, cp.dailyStatistic)
+      })
+
       const campaign: ResponseCampaign[] = advertising.campaign.map((cp) => ({
         id: cp.id,
         name: cp.name,
         token: cp.token,
         media: cp.media,
         type: cp.type,
+        isActive: cp.isActive,
         dailyStatistic: sumDailyStatistics(cp.dailyStatistic),
       }))
 
@@ -169,6 +224,7 @@ export const useCampaignStore = defineStore('campaign', {
 
       // state 업데이트
       this.advertising = response
+      this.rawDailyStatistics = rawStats
       this.currentDateRange = { startDate, endDate }
       this.currentAdvertisingId = id
 
@@ -199,9 +255,30 @@ export const useCampaignStore = defineStore('campaign', {
 
       return this.advertising.campaign.find((cp) => cp.token === token)
     },
+    // 날짜별 원본 데이터 가져오기
+    getDailyStatisticsByToken(
+      token: string,
+      advertisingId: number,
+      startDate: string,
+      endDate: string,
+    ): DailyStatistic[] {
+      // 데이터가 없거나 날짜 범위가 다르면 빈 배열 반환
+      if (
+        !this.rawDailyStatistics ||
+        this.currentAdvertisingId !== advertisingId ||
+        !this.currentDateRange ||
+        this.currentDateRange.startDate !== startDate ||
+        this.currentDateRange.endDate !== endDate
+      ) {
+        return []
+      }
+
+      return this.rawDailyStatistics.get(token) || []
+    },
     // state 초기화
     clear() {
       this.advertising = null
+      this.rawDailyStatistics = null
       this.currentDateRange = null
       this.currentAdvertisingId = null
     },

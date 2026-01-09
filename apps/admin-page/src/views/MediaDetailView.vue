@@ -1,16 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import dayjs from 'dayjs'
 import { useCampaignStore } from '@/stores/campaignStore.ts'
 import DatePicker from 'primevue/datepicker'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import Button from 'primevue/button'
 
 const route = useRoute()
-const router = useRouter()
 const campaignStore = useCampaignStore()
 
 // 타입 정의
@@ -28,6 +26,9 @@ type DailyStatisticWithDate = {
   etc5: number
   unregistered: number
   createdDate: string
+  viewCode?: string
+  pubId?: string | null
+  subId?: string | null
 }
 
 // 라우트에서 파라미터 추출
@@ -47,6 +48,12 @@ const token = computed(() => {
   return (tokenParam as string) || ''
 })
 
+// 쿼리에서 날짜 가져오기 (선택적)
+const queryDate = computed(() => {
+  const date = route.query.date as string
+  return date ? new Date(date) : null
+})
+
 // 날짜 초기값 설정 (쿼리에서 가져오거나 현재 날짜)
 const getInitialDate = () => {
   const baseDate = route.query.baseDate as string
@@ -54,72 +61,19 @@ const getInitialDate = () => {
 }
 
 const baseDateValue = getInitialDate()
-const startDate = ref<Date>(dayjs(baseDateValue).subtract(7, 'day').toDate())
+const startDate = ref<Date>(baseDateValue)
 const endDate = ref<Date>(baseDateValue)
 
 // store의 advertising 데이터 접근
 const advertising = computed(() => campaignStore.advertising)
 const campaign = ref<{ name: string; media: string; token: string } | undefined>(undefined)
 
-// 날짜별 통계 데이터
+// 날짜별 통계 데이터 (원본 그대로, 합치지 않음)
 const dailyStatistics = ref<DailyStatisticWithDate[]>([])
 
 // 날짜 포맷팅 헬퍼
 const formatDate = (date: Date) => dayjs(date).format('YYYY-MM-DD')
 const formatDisplayDate = (date: string) => dayjs(date).format('YYYY-MM-DD')
-
-// 날짜를 키로 사용하여 같은 날짜의 데이터를 합치는 함수
-const mergeDailyStatistics = (statistics: DailyStatisticWithDate[]): DailyStatisticWithDate[] => {
-  const mergedMap = new Map<string, DailyStatisticWithDate>()
-
-  statistics.forEach((stat) => {
-    const dateKey = formatDisplayDate(stat.createdDate)
-
-    if (mergedMap.has(dateKey)) {
-      const existing = mergedMap.get(dateKey)!
-      // 같은 날짜의 데이터를 합산
-      mergedMap.set(dateKey, {
-        click: existing.click + stat.click,
-        install: existing.install + stat.install,
-        registration: existing.registration + stat.registration,
-        retention: existing.retention + stat.retention,
-        purchase: existing.purchase + stat.purchase,
-        revenue: existing.revenue + stat.revenue,
-        etc1: existing.etc1 + stat.etc1,
-        etc2: existing.etc2 + stat.etc2,
-        etc3: existing.etc3 + stat.etc3,
-        etc4: existing.etc4 + stat.etc4,
-        etc5: existing.etc5 + stat.etc5,
-        unregistered: existing.unregistered + stat.unregistered,
-        createdDate: existing.createdDate, // 첫 번째 날짜 사용
-      })
-    } else {
-      mergedMap.set(dateKey, { ...stat })
-    }
-  })
-
-  // 날짜순으로 정렬하여 반환
-  return Array.from(mergedMap.values()).sort(
-    (a, b) => new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime(),
-  )
-}
-
-// 상세 페이지로 이동 (클릭한 row의 날짜 전송)
-const handleDetailClick = (rowData: DailyStatisticWithDate) => {
-  // 클릭한 row의 날짜를 포맷팅하여 전송
-  const selectedDate = formatDisplayDate(rowData.createdDate)
-
-  router.push({
-    name: 'mediaDetail',
-    params: {
-      id: advertisingId.value,
-      token: token.value,
-    },
-    query: {
-      baseDate: selectedDate,
-    },
-  })
-}
 
 // 데이터 로드 함수
 const loadCampaignData = async () => {
@@ -144,8 +98,8 @@ const loadCampaignData = async () => {
     )
 
     if (rawStats && rawStats.length > 0) {
-      // 타입 변환 및 같은 날짜의 데이터 합치기
-      const statsWithDate: DailyStatisticWithDate[] = rawStats.map((stat) => ({
+      // 타입 변환 (합치지 않고 원본 그대로)
+      let statsWithDate: DailyStatisticWithDate[] = rawStats.map((stat) => ({
         click: stat.click,
         install: stat.install,
         registration: stat.registration,
@@ -159,9 +113,23 @@ const loadCampaignData = async () => {
         etc5: stat.etc5,
         unregistered: stat.unregistered,
         createdDate: stat.createdDate || '',
+        viewCode: stat.viewCode,
+        pubId: stat.pubId,
+        subId: stat.subId,
       }))
 
-      dailyStatistics.value = mergeDailyStatistics(statsWithDate)
+      // 쿼리에서 특정 날짜가 있으면 해당 날짜만 필터링
+      if (queryDate.value) {
+        const targetDate = formatDate(queryDate.value)
+        statsWithDate = statsWithDate.filter(
+          (stat) => formatDisplayDate(stat.createdDate) === targetDate,
+        )
+      }
+
+      // 날짜순으로 정렬
+      dailyStatistics.value = statsWithDate.sort(
+        (a, b) => new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime(),
+      )
     } else {
       dailyStatistics.value = []
     }
@@ -243,21 +211,28 @@ const statisticFields = [
           </template>
         </Column>
 
+        <Column v-if="dailyStatistics.some((s) => s.viewCode)" header="viewCode">
+          <template #body="{ data }">
+            {{ data.viewCode || '-' }}
+          </template>
+        </Column>
+
+        <Column v-if="dailyStatistics.some((s) => s.pubId)" header="pubId">
+          <template #body="{ data }">
+            {{ data.pubId || '-' }}
+          </template>
+        </Column>
+
+        <Column v-if="dailyStatistics.some((s) => s.subId)" header="subId">
+          <template #body="{ data }">
+            {{ data.subId || '-' }}
+          </template>
+        </Column>
+
         <!-- 통계 필드를 반복하여 렌더링 -->
         <Column v-for="field in statisticFields" :key="field" :header="field">
           <template #body="{ data }">
             {{ data[field] ?? 0 }}
-          </template>
-        </Column>
-
-        <Column header="">
-          <template #body="{ data }">
-            <Button
-              label="상세"
-              icon="pi pi-external-link"
-              class="p-button-sm p-button-text"
-              @click="handleDetailClick(data)"
-            />
           </template>
         </Column>
       </DataTable>

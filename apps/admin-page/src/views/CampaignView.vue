@@ -39,7 +39,11 @@ const formatDate = (date: Date) => dayjs(date).format('YYYY-MM-DD')
 // 데이터 로드 함수
 const loadData = async () => {
   if (id.value && startDate.value && endDate.value) {
-    await campaignStore.update(id.value, formatDate(startDate.value), formatDate(endDate.value))
+    try {
+      await campaignStore.update(id.value, formatDate(startDate.value), formatDate(endDate.value))
+    } catch (error) {
+      console.error('Failed to load campaign data:', error)
+    }
   }
 }
 
@@ -130,6 +134,12 @@ const statisticFields = [
         <Column v-for="field in statisticFields" :key="field.key" :header="field.header">
           <template #body="{ data }">
             {{ data.dailyStatistic?.[field.key] ?? 0 }}
+          </template>
+        </Column>
+
+        <Column header="상태" style="min-width: 5px; white-space: nowrap">
+          <template #body="{ data }">
+            {{ data.isActive !== undefined ? (data.isActive ? '활성' : '비활성') : '-' }}
           </template>
         </Column>
       </DataTable>

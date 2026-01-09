@@ -3,6 +3,22 @@ import { Expose } from 'class-transformer';
 
 @ObjectType()
 export class DailyStatistic {
+	@Expose({ name: 'view_code' })
+	@Field()
+	viewCode: string;
+
+	@Expose()
+	@Field()
+	token: string;
+
+	@Expose({ name: 'pub_id' })
+	@Field({ nullable: true })
+	pubId: string;
+
+	@Expose({ name: 'sub_id' })
+	@Field({ nullable: true })
+	subId: string;
+
 	@Expose()
 	@Field(() => Int)
 	click: number;

@@ -7,6 +7,7 @@ import MediaView from '@/views/MediaView.vue'
 import { useUserStore } from '@/stores/userStore.ts'
 import TrackerListView from '@/views/TrackerListView.vue'
 import MediaListView from '@/views/MediaListView.vue'
+import MediaDetailView from '@/views/MediaDetailView.vue'
 
 const routes = [
   {
@@ -41,6 +42,13 @@ const routes = [
     path: '/advertising/:id/campaign/:token',
     name: 'media',
     component: MediaView,
+    props: true,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/advertising/:id/campaign/:token/detail',
+    name: 'mediaDetail',
+    component: MediaDetailView,
     props: true,
     meta: { requiresAuth: true },
   },
