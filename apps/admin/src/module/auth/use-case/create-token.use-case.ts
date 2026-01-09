@@ -12,7 +12,7 @@ export class CreateTokenUseCase {
 
 	async execute(user: CreateUserDto) {
 		const secret = this.configService.get<string>('JWT_SECRET');
-		const expiresIn = this.configService.get<string>('JWT_EXPIRES');
+		const expiresIn = this.configService.get<number>('JWT_EXPIRES');
 
 		const payload = { userId: user.user_id };
 

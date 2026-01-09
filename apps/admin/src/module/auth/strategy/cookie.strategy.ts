@@ -10,7 +10,7 @@ export class CookieStrategy extends PassportStrategy(Strategy) {
 		private readonly configService: ConfigService,
 		private readonly jwtService: JwtService
 	) {
-		super({ cookienameField: 'access_token' });
+		super({ cookieNameField: 'access_token' });
 	}
 
 	async validate(token: string, done: (error: any, user?: any, info?: any) => void): Promise<void> {
