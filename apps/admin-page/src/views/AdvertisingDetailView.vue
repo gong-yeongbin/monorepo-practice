@@ -1,198 +1,205 @@
-<template>
-  <div class="page">
-    <!-- 상단 앱 정보 -->
-    <header class="app-header">
-      <div class="app-icon">
-        <!-- 실제로는 <img :src="app.icon" /> 로 교체 -->
-        <div class="icon-placeholder">🐰</div>
-      </div>
-      <div class="app-info">
-        <h1 class="app-title">{{ app.name }}</h1>
-        <div class="app-meta-row">
-          <span class="label">광고주</span>
-          <span class="value">| {{ app.advertiser }}</span>
-        </div>
-        <div class="app-meta-row">
-          <span class="label">트래킹 솔루션</span>
-          <span class="value">| {{ app.trackingSolution }}</span>
-        </div>
-        <div class="app-meta-row">
-          <span class="label">매체사</span>
-          <span class="value">| {{ app.mediaPartner }}</span>
-        </div>
-      </div>
-
-      <button class="campaign-add-btn" type="button" @click="onAddCampaign">+ 캠페인 등록</button>
-    </header>
-
-    <!-- 테이블 -->
-    <section class="campaign-table">
-      <table>
-        <thead>
-          <tr>
-            <th>매체</th>
-            <th>타입</th>
-            <th>캠페인명</th>
-            <th>예약 변경</th>
-            <th>BLOCK</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="row in campaigns" :key="row.id">
-            <td>{{ row.media }}</td>
-            <td>{{ row.type }}</td>
-            <td>{{ row.name }}</td>
-            <td>
-              <label class="switch">
-                <input
-                  type="checkbox"
-                  v-model="row.reservation"
-                  @change="onToggleReservation(row)"
-                />
-                <span class="slider" />
-              </label>
-            </td>
-            <td>
-              <label class="switch">
-                <input type="checkbox" v-model="row.block" @change="onToggleBlock(row)" />
-                <span class="slider" />
-              </label>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import DefaultLayout from '@/layouts/DefaultLayout.vue'
+import dayjs from 'dayjs'
+import { useCampaignStore } from '@/stores/campaignStore.ts'
+import Column from 'primevue/column'
+import DataTable from 'primevue/datatable'
+import Button from 'primevue/button'
 
-const app = reactive({
-  name: 'Fruity Match Mayhem (AOS)',
-  advertiser: 'ad',
-  trackingSolution: 'singular',
-  mediaPartner: 'admile',
+const route = useRoute()
+const router = useRouter()
+const campaignStore = useCampaignStore()
+
+// 라우트 파라미터에서 id 추출
+const advertisingId = computed(() => {
+  const routeId = route.params.id
+  if (Array.isArray(routeId)) {
+    return parseInt(routeId[0] || '0', 10)
+  }
+  return parseInt((routeId as string) || '0', 10)
 })
 
-interface CampaignRow {
-  id: number
-  media: string
-  type: string
-  name: string
-  reservation: boolean
-  block: boolean
+// store의 advertising 데이터 접근
+const advertising = computed(() => campaignStore.advertising)
+
+// 날짜 포맷팅 헬퍼
+const formatDate = (date: Date) => dayjs(date).format('YYYY-MM-DD')
+
+// 오늘 날짜로 초기화 (campaign 목록 조회용)
+const today = new Date()
+const baseDate = formatDate(today)
+
+// 데이터 로드 함수
+const loadData = async () => {
+  if (advertisingId.value) {
+    try {
+      await campaignStore.update(advertisingId.value, baseDate, baseDate)
+    } catch (error) {
+      console.error('Failed to load advertising data:', error)
+    }
+  }
 }
 
-const campaigns = reactive<CampaignRow[]>([
-  {
-    id: 1,
-    media: 'admile',
-    type: 'CPA',
-    name: '리워드',
-    reservation: true,
-    block: false,
-  },
-])
+onMounted(() => {
+  loadData()
+})
 
-function onAddCampaign() {
-  // 실제로는 모달 오픈 / 라우팅 등
-  alert('캠페인 등록 버튼 클릭')
+// 캠페인 상세 페이지로 이동
+const handleCampaignClick = (token: string) => {
+  router.push({
+    name: 'media',
+    params: { token },
+    query: {
+      advertisingId: advertisingId.value.toString(),
+      baseDate,
+    },
+  })
 }
 
-function onToggleReservation(row: CampaignRow) {
-  console.log('예약 변경 토글', row.id, row.reservation)
+// 캠페인 등록 페이지로 이동 (추후 구현)
+const onAddCampaign = () => {
+  // TODO: 캠페인 등록 모달 또는 페이지로 이동
+  console.log('캠페인 등록')
 }
 
-function onToggleBlock(row: CampaignRow) {
-  console.log('BLOCK 토글', row.id, row.block)
+// 예약 변경 토글 (추후 mutation 구현 필요)
+const onToggleReservation = (campaign: any) => {
+  console.log('예약 변경 토글', campaign.id, campaign.reservation)
+  // TODO: mutation 호출
 }
+
+// BLOCK 토글 (isActive 변경, 추후 mutation 구현 필요)
+const onToggleBlock = (campaign: any) => {
+  console.log('BLOCK 토글', campaign.id, campaign.isActive)
+  // TODO: mutation 호출하여 isActive 변경
+}
+
+// 캠페인 목록 (computed)
+const campaigns = computed(() => {
+  return advertising.value?.campaign || []
+})
 </script>
 
-<style scoped>
-.page {
-  font-family:
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    sans-serif;
-  padding: 24px;
-}
+<template>
+  <DefaultLayout>
+    <section class="ad-detail">
+      <div class="ad-detail__left">
+        <img :src="advertising?.image" alt="ad thumbnail" class="ad-detail__thumb" />
+      </div>
 
-/* 상단 영역 */
-.app-header {
+      <div class="ad-detail__right">
+        <h1 class="ad-detail__title">
+          {{ advertising?.name }}
+        </h1>
+
+        <div class="ad-detail__row">
+          <span class="ad-detail__label">광고주</span>
+          <span class="ad-detail__value">| {{ advertising?.advertiser }}</span>
+        </div>
+        <div class="ad-detail__row">
+          <span class="ad-detail__label">트래킹 솔루션</span>
+          <span class="ad-detail__value">| {{ advertising?.tracker }}</span>
+        </div>
+        <div class="ad-detail__row">
+          <span class="ad-detail__label">매체사</span>
+          <span class="ad-detail__value"> | {{ advertising?.media?.join(', ') || '-' }} </span>
+        </div>
+      </div>
+    </section>
+    <section class="button-section">
+      <Button label="예약변경" icon="pi pi-calendar" @click="onAddCampaign" />
+      <Button label="캠페인 등록" icon="pi pi-plus" @click="onAddCampaign" />
+    </section>
+    <section class="campaign-table">
+      <DataTable :value="campaigns">
+        <Column field="media" header="매체" />
+        <Column field="type" header="타입" />
+        <Column field="name" header="캠페인명">
+          <template #body="{ data }">
+            <a href="#" @click.prevent="handleCampaignClick(data.token)" class="campaign-link">
+              {{ data.name }}
+            </a>
+          </template>
+        </Column>
+        <Column header="상태">
+          <template #body="{ data }">
+            <label class="switch">
+              <input type="checkbox" :checked="data.isActive" @change="onToggleBlock(data)" />
+              <span class="slider" />
+            </label>
+          </template>
+        </Column>
+      </DataTable>
+    </section>
+  </DefaultLayout>
+</template>
+
+<style scoped>
+.ad-detail {
   display: flex;
   align-items: center;
   gap: 16px;
   padding: 16px 24px;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 24px;
 }
 
-.app-icon .icon-placeholder {
+.ad-detail__thumb {
   width: 64px;
   height: 64px;
   border-radius: 16px;
-  background: #f3f3ff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32px;
+  object-fit: cover;
+  background: #f3f3f3;
 }
 
-.app-info {
+.ad-detail__right {
   flex: 1;
 }
 
-.app-title {
+.ad-detail__title {
   margin: 0 0 8px;
   font-size: 20px;
   font-weight: 600;
 }
 
-.app-meta-row {
+.ad-detail__row {
   font-size: 13px;
   color: #555;
+  margin-bottom: 4px;
 }
 
-.app-meta-row .label {
+.ad-detail__label {
   font-weight: 500;
 }
 
-.campaign-add-btn {
-  margin-left: auto;
-  padding: 6px 14px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
-  background: #fff;
-  font-size: 13px;
+.ad-detail__value {
+  margin-left: 4px;
+}
+
+.button-section {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 24px;
+  margin-bottom: 16px;
+}
+
+.campaign-table {
+  padding: 0 24px;
+}
+
+.campaign-link {
+  color: #007bff;
+  text-decoration: none;
   cursor: pointer;
 }
 
-/* 테이블 */
-.campaign-table {
-  padding: 16px 24px;
+.campaign-link:hover {
+  text-decoration: underline;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-th,
-td {
-  padding: 10px 8px;
-  border-bottom: 1px solid #eee;
-  text-align: left;
-}
-
-th {
-  font-weight: 600;
-  color: #555;
-}
-
-/* 토글 스위치 (간단 버전) */
+/* 토글 스위치 */
 .switch {
   position: relative;
   display: inline-block;

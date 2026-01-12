@@ -22,7 +22,7 @@ onMounted(async () => {
         <template #body="{ data }">
           <router-link
             :to="{
-              name: 'campaign',
+              name: 'advertisingDetail',
               params: { id: data.id },
             }"
             class="campaign-link"
