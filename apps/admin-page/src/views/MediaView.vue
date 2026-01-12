@@ -32,11 +32,8 @@ type DailyStatisticWithDate = {
 
 // 라우트에서 파라미터 추출
 const advertisingId = computed(() => {
-  const id = route.params.id
-  if (Array.isArray(id)) {
-    return parseInt(id[0] || '0', 10)
-  }
-  return parseInt((id as string) || '0', 10)
+  const advertisingId = route.query.advertisingId as string
+  return parseInt((advertisingId as string) || '0', 10)
 })
 
 const token = computed(() => {
@@ -112,10 +109,10 @@ const handleDetailClick = (rowData: DailyStatisticWithDate) => {
   router.push({
     name: 'mediaDetail',
     params: {
-      id: advertisingId.value,
       token: token.value,
     },
     query: {
+      advertisingId: advertisingId.value,
       baseDate: selectedDate,
     },
   })

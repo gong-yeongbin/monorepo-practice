@@ -71,8 +71,7 @@ const statisticFields = [
           <router-link
             :to="{
               name: 'campaign',
-              params: { id: data.id },
-              query: { baseDate: formatDate(selectedDate) },
+              query: { advertisingId: data.id, baseDate: formatDate(selectedDate) },
             }"
             class="campaign-link"
           >

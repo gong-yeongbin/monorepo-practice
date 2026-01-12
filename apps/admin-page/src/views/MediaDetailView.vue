@@ -31,21 +31,18 @@ type DailyStatisticWithDate = {
   subId?: string | null
 }
 
-// 라우트에서 파라미터 추출
-const advertisingId = computed(() => {
-  const id = route.params.id
-  if (Array.isArray(id)) {
-    return parseInt(id[0] || '0', 10)
-  }
-  return parseInt((id as string) || '0', 10)
-})
-
 const token = computed(() => {
   const tokenParam = route.params.token
   if (Array.isArray(tokenParam)) {
     return tokenParam[0] || ''
   }
   return (tokenParam as string) || ''
+})
+
+// 쿼리에서 파라미터 추출
+const advertisingId = computed(() => {
+  const advertisingId = route.query.advertisingId as string
+  return parseInt((advertisingId as string) || '0', 10)
 })
 
 // 쿼리에서 날짜 가져오기 (선택적)

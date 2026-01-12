@@ -12,8 +12,6 @@ import {
 import { Advertising } from '@advertising/dto/response';
 import { CreateAdvertisingInput, UpdateAdvertisingInput } from '@advertising/dto/request';
 import { Campaign, DailyStatistic } from '@campaign/dto/response';
-import { Advertiser } from '@advertiser/dto/response';
-import { Tracker } from '@tracker/dto/response';
 import { GraphqlAuthGuard } from '@src/common/guard';
 import { UseGuards } from '@nestjs/common';
 

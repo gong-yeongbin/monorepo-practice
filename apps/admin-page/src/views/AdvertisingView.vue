@@ -18,12 +18,17 @@ onMounted(async () => {
 <template>
   <DefaultLayout>
     <DataTable :value="advertisingList">
-      <Column header="" class="advertising-name-column">
+      <Column field="name" header="광고명" class="name-column">
         <template #body="{ data }">
-          <div class="advertising-item">
-            <img :src="data.image" :alt="data.name" class="advertising-thumb" />
-            <span>{{ data.name }}</span>
-          </div>
+          <router-link
+            :to="{
+              name: 'campaign',
+              params: { id: data.id },
+            }"
+            class="campaign-link"
+          >
+            {{ data.name }}
+          </router-link>
         </template>
       </Column>
       <Column field="campaign" header="운영캠페인" />

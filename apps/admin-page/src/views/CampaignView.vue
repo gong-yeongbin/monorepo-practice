@@ -15,12 +15,9 @@ const campaignStore = useCampaignStore()
 const advertising = computed(() => campaignStore.advertising)
 
 // 라우트 파라미터에서 id 추출
-const id = computed(() => {
-  const routeId = route.params.id
-  if (Array.isArray(routeId)) {
-    return parseInt(routeId[0] || '0', 10)
-  }
-  return parseInt((routeId as string) || '0', 10)
+const advertisingId = computed(() => {
+  const advertisingId = route.query.advertisingId as string
+  return parseInt((advertisingId as string) || '0', 10)
 })
 
 // 날짜 초기값 설정 (쿼리에서 가져오거나 현재 날짜)
@@ -38,9 +35,13 @@ const formatDate = (date: Date) => dayjs(date).format('YYYY-MM-DD')
 
 // 데이터 로드 함수
 const loadData = async () => {
-  if (id.value && startDate.value && endDate.value) {
+  if (advertisingId.value && startDate.value && endDate.value) {
     try {
-      await campaignStore.update(id.value, formatDate(startDate.value), formatDate(endDate.value))
+      await campaignStore.update(
+        advertisingId.value,
+        formatDate(startDate.value),
+        formatDate(endDate.value),
+      )
     } catch (error) {
       console.error('Failed to load campaign data:', error)
     }
@@ -118,8 +119,8 @@ const statisticFields = [
             <router-link
               :to="{
                 name: 'media',
-                params: { id: id, token: data.token },
-                query: { baseDate: formatDate(endDate) },
+                params: { token: data.token },
+                query: { advertisingId, baseDate: formatDate(endDate) },
               }"
             >
               {{ data.name }}
