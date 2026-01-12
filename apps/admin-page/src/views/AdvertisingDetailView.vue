@@ -142,7 +142,6 @@ const campaigns = computed(() => {
   align-items: center;
   gap: 16px;
   padding: 16px 24px;
-  margin-bottom: 24px;
 }
 
 .ad-detail__thumb {
