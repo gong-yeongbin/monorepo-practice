@@ -9,6 +9,7 @@ import Column from 'primevue/column'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import InputSwitch from 'primevue/inputswitch'
+import Dropdown from 'primevue/dropdown'
 
 const route = useRoute()
 const router = useRouter()
@@ -46,6 +47,35 @@ const configs = computed(() => {
 // advertising 정보
 const advertising = computed(() => campaignStore.advertising)
 
+// 어드민 적용 항목 선택 옵션
+const adminEventOptions = [
+  { label: 'install', value: 'install' },
+  { label: 'retention', value: 'retention' },
+  { label: 'purchase', value: 'purchase' },
+  { label: 'revenue', value: 'revenue' },
+  { label: 'registration', value: 'registration' },
+  { label: 'etc1', value: 'etc1' },
+  { label: 'etc2', value: 'etc2' },
+  { label: 'etc3', value: 'etc3' },
+  { label: 'etc4', value: 'etc4' },
+  { label: 'etc5', value: 'etc5' },
+]
+
+// 편집 모드 상태
+const isEditMode = ref(false)
+
+// 편집 중인 configs 데이터 (로컬 복사본)
+const editingConfigs = ref<
+  Array<{
+    campaignId: number
+    sendMedia: boolean
+    trackerEventName: string
+    adminEventName: string
+    mediaEventName: string
+    isNew?: boolean
+  }>
+>([])
+
 // 데이터가 필요한지 확인 (기존 데이터가 없거나 다른 advertisingId인 경우)
 const needsDataLoad = computed(() => {
   return (
@@ -68,6 +98,63 @@ const loadData = async () => {
   }
 }
 
+// 편집 모드 시작
+const startEdit = () => {
+  isEditMode.value = true
+  // 현재 configs를 복사하여 편집 데이터로 설정
+  editingConfigs.value = configs.value.map((config) => ({
+    ...config,
+  }))
+}
+
+// 편집 모드 취소
+const cancelEdit = () => {
+  isEditMode.value = false
+  editingConfigs.value = []
+}
+
+// 새 행 추가
+const addRow = () => {
+  editingConfigs.value.push({
+    campaignId: campaignId.value,
+    sendMedia: true,
+    trackerEventName: '',
+    adminEventName: '',
+    mediaEventName: '',
+    isNew: true,
+  })
+}
+
+// 행 삭제
+const removeRow = (index: number) => {
+  editingConfigs.value.splice(index, 1)
+}
+
+// 저장
+const saveChanges = async () => {
+  try {
+    // editingConfigs에서 mutation에 필요한 필드만 추출
+    const input = editingConfigs.value.map((config) => ({
+      sendMedia: config.sendMedia,
+      trackerEventName: config.trackerEventName,
+      adminEventName: config.adminEventName,
+      mediaEventName: config.mediaEventName,
+    }))
+
+    // campaignStore의 upsertCampaignConfig 호출
+    await campaignStore.upsertCampaignConfig(campaignId.value, input)
+
+    // 편집 모드 종료
+    isEditMode.value = false
+    editingConfigs.value = []
+
+    // TODO: 성공 메시지 표시
+  } catch (error) {
+    console.error('Failed to save configs:', error)
+    // TODO: 에러 메시지 표시
+  }
+}
+
 // BLOCK 토글 (isActive 변경, 추후 mutation 구현 필요)
 const onToggleBlock = (campaign: any) => {
   console.log('BLOCK 토글', campaign.id, campaign.isActive)
@@ -81,13 +168,17 @@ onMounted(() => {
   }
 })
 
-// 관리 버튼 클릭 (추후 구현)
+// 관리 버튼 클릭
 const handleManage = () => {
-  console.log('관리 버튼 클릭')
-  // TODO: 관리 기능 구현
+  if (isEditMode.value) {
+    // 편집 모드일 때는 저장
+    saveChanges()
+  } else {
+    // 일반 모드일 때는 편집 시작
+    startEdit()
+  }
 }
 </script>
-
 <template>
   <DefaultLayout>
     <!-- 상단: 캠페인 일반 정보 -->
@@ -158,37 +249,82 @@ const handleManage = () => {
     <section class="config-table-section">
       <div class="config-table-header">
         <h2 class="config-table-title">이벤트 설정</h2>
-        <Button
-          label="관리"
-          icon="pi pi-cog"
-          class="config-table-manage-btn"
-          @click="handleManage"
-        />
+        <div class="config-table-actions">
+          <Button
+            v-if="isEditMode"
+            label="취소"
+            icon="pi pi-times"
+            class="p-button-secondary config-table-btn"
+            @click="cancelEdit"
+          />
+          <Button
+            v-if="isEditMode"
+            label="행 추가"
+            icon="pi pi-plus"
+            class="p-button-success config-table-btn"
+            @click="addRow"
+          />
+          <Button
+            :label="isEditMode ? '저장' : '관리'"
+            :icon="isEditMode ? 'pi pi-check' : 'pi pi-cog'"
+            class="config-table-manage-btn"
+            @click="handleManage"
+          />
+        </div>
       </div>
 
-      <DataTable :value="configs" class="config-table">
-        <Column field="trackerEventName" header="트래커 수신 이벤트 값">
-          <template #body="{ data }">
-            <span>{{ data.trackerEventName || '-' }}</span>
+      <DataTable :value="isEditMode ? editingConfigs : configs" class="config-table">
+        <Column header="트래커 수신 이벤트 값">
+          <template #body="{ data, index }">
+            <InputText
+              v-if="isEditMode"
+              v-model="editingConfigs[index]!.trackerEventName"
+              class="config-input"
+              placeholder="이벤트 값 입력"
+            />
+            <span v-else>{{ data.trackerEventName || '-' }}</span>
           </template>
         </Column>
 
-        <Column field="adminEventName" header="어드민 적용 항목">
-          <template #body="{ data }">
-            <span>{{ data.adminEventName || '-' }}</span>
+        <Column header="어드민 적용 항목">
+          <template #body="{ data, index }">
+            <Dropdown
+              v-if="isEditMode"
+              v-model="editingConfigs[index]!.adminEventName"
+              :options="adminEventOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="선택"
+              class="config-input"
+            />
+            <span v-else>{{ data.adminEventName || '-' }}</span>
           </template>
         </Column>
 
-        <Column field="mediaEventName" header="매체 전송 이벤트 값">
-          <template #body="{ data }">
-            <span>{{ data.mediaEventName || '-' }}</span>
+        <Column header="매체 전송 이벤트 값">
+          <template #body="{ data, index }">
+            <InputText
+              v-if="isEditMode"
+              v-model="editingConfigs[index]!.mediaEventName"
+              class="config-input"
+              placeholder="이벤트 값 입력"
+            />
+            <span v-else>{{ data.mediaEventName || '-' }}</span>
           </template>
         </Column>
 
         <Column header="매체 수신">
-          <template #body="{ data }">
-            <label class="switch">
-              <input type="checkbox" :checked="data.sendMedia" @change="onToggleBlock(data)" />
+          <template #body="{ data, index }">
+            <div v-if="isEditMode" class="config-edit-actions">
+              <InputSwitch v-model="editingConfigs[index]!.sendMedia" />
+              <Button
+                icon="pi pi-trash"
+                class="p-button-text p-button-danger config-delete-btn"
+                @click="removeRow(index)"
+              />
+            </div>
+            <label v-else class="switch">
+              <input type="checkbox" :checked="data.sendMedia" disabled />
               <span class="slider" />
             </label>
           </template>
@@ -284,6 +420,16 @@ const handleManage = () => {
   color: #1a1a1a;
 }
 
+.config-table-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.config-table-btn {
+  padding: 8px 16px;
+}
+
 .config-table-manage-btn {
   padding: 8px 16px;
 }
@@ -292,6 +438,20 @@ const handleManage = () => {
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.config-input {
+  width: 100%;
+}
+
+.config-edit-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.config-delete-btn {
+  padding: 4px;
 }
 
 .config-icon--active {
@@ -345,5 +505,9 @@ const handleManage = () => {
 
 .switch input:checked + .slider::before {
   transform: translateX(18px);
+}
+
+.config-input {
+  width: 100%;
 }
 </style>

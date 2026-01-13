@@ -144,6 +144,32 @@ const GET_CAMPAIGN = gql`
   }
 `
 
+// GraphQL Mutation 추가
+const UPSERT_CAMPAIGN_CONFIG = gql`
+  mutation upsertCampaignConfig($campaignId: Int!, $input: [UpsertCampaignConfigInput!]!) {
+    upsertCampaignConfig(campaignId: $campaignId, input: $input) {
+      campaignId
+      sendMedia
+      trackerEventName
+      adminEventName
+      mediaEventName
+    }
+  }
+`
+
+// Mutation Input 타입
+type UpsertCampaignConfigInput = {
+  sendMedia: boolean
+  trackerEventName: string
+  adminEventName: string
+  mediaEventName: string
+}
+
+// Mutation 응답 타입
+type UpsertCampaignConfigResult = {
+  upsertCampaignConfig: CampaignConfig[]
+}
+
 // 숫자 통계 필드 목록 (합산할 필드만)
 const NUMERIC_STATISTIC_FIELDS = [
   'click',
@@ -316,6 +342,35 @@ export const useCampaignStore = defineStore('campaign', {
       }
 
       return this.rawDailyStatistics.get(token) || []
+    },
+    // campaign config 저장/업데이트
+    async upsertCampaignConfig(
+      campaignId: number,
+      input: UpsertCampaignConfigInput[],
+    ): Promise<CampaignConfig[]> {
+      try {
+        const { data } = await apolloClient.mutate<UpsertCampaignConfigResult>({
+          mutation: UPSERT_CAMPAIGN_CONFIG,
+          variables: { campaignId, input },
+        })
+
+        if (!data?.upsertCampaignConfig) {
+          throw new Error('Failed to upsert campaign config')
+        }
+
+        // state 업데이트: 해당 campaign의 config를 업데이트
+        if (this.advertising) {
+          const campaign = this.advertising.campaign.find((cp) => cp.id === campaignId)
+          if (campaign) {
+            campaign.config = data.upsertCampaignConfig
+          }
+        }
+
+        return data.upsertCampaignConfig
+      } catch (error) {
+        console.error('Failed to upsert campaign config:', error)
+        throw error
+      }
     },
     // state 초기화
     clear() {
