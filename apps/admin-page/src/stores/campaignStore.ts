@@ -23,6 +23,15 @@ type DailyStatistic = {
   createdDate?: string
 }
 
+// CampaignConfig 타입 추가
+type CampaignConfig = {
+  campaignId: number
+  sendMedia: boolean
+  trackerEventName: string
+  adminEventName: string
+  mediaEventName: string
+}
+
 type Campaign = {
   id: number
   name: string
@@ -30,6 +39,9 @@ type Campaign = {
   media: string
   type: string
   isActive: boolean
+  trackerName?: string
+  trackerTrackingUrl?: string
+  config?: CampaignConfig[]
   dailyStatistic: DailyStatistic[]
 }
 
@@ -55,6 +67,9 @@ type ResponseCampaign = {
   media: string
   type: string
   isActive: boolean
+  trackerName?: string
+  trackerTrackingUrl?: string
+  config?: CampaignConfig[]
   dailyStatistic: {
     click: number
     install: number
@@ -92,11 +107,19 @@ const GET_CAMPAIGN = gql`
       tracker
       campaign {
         id
-        media
-        name
         token
+        name
         type
         isActive
+        trackerName
+        trackerTrackingUrl
+        media
+        config {
+          sendMedia
+          trackerEventName
+          adminEventName
+          mediaEventName
+        }
         dailyStatistic(startDate: $startDate, endDate: $endDate) {
           viewCode
           token
@@ -189,46 +212,54 @@ export const useCampaignStore = defineStore('campaign', {
   },
   actions: {
     async update(id: number, startDate: string, endDate: string): Promise<Response> {
-      const { data } = await apolloClient.query<GetCampaignResult>({
-        query: GET_CAMPAIGN,
-        variables: { id, startDate, endDate },
-      })
+      try {
+        const { data } = await apolloClient.query<GetCampaignResult>({
+          query: GET_CAMPAIGN,
+          variables: { id, startDate, endDate },
+        })
 
-      const { advertising } = data
+        const { advertising } = data
 
-      // 원본 dailyStatistic 저장 (캠페인 token을 키로)
-      const rawStats = new Map<string, DailyStatistic[]>()
-      advertising.campaign.forEach((cp) => {
-        rawStats.set(cp.token, cp.dailyStatistic)
-      })
+        // 원본 dailyStatistic 저장 (캠페인 token을 키로)
+        const rawStats = new Map<string, DailyStatistic[]>()
+        advertising.campaign.forEach((cp) => {
+          rawStats.set(cp.token, cp.dailyStatistic)
+        })
 
-      const campaign: ResponseCampaign[] = advertising.campaign.map((cp) => ({
-        id: cp.id,
-        name: cp.name,
-        token: cp.token,
-        media: cp.media,
-        type: cp.type,
-        isActive: cp.isActive,
-        dailyStatistic: sumDailyStatistics(cp.dailyStatistic),
-      }))
+        const campaign: ResponseCampaign[] = advertising.campaign.map((cp) => ({
+          id: cp.id,
+          name: cp.name,
+          token: cp.token,
+          media: cp.media,
+          type: cp.type,
+          isActive: cp.isActive,
+          trackerName: cp.trackerName,
+          trackerTrackingUrl: cp.trackerTrackingUrl,
+          config: cp.config,
+          dailyStatistic: sumDailyStatistics(cp.dailyStatistic),
+        }))
 
-      const response: Response = {
-        id: advertising.id,
-        image: advertising.image,
-        name: advertising.name,
-        tracker: advertising.tracker,
-        advertiser: advertising.advertiser,
-        media: [...new Set(advertising.campaign.map((cp) => cp.media))], // 중복 제거
-        campaign,
+        const response: Response = {
+          id: advertising.id,
+          image: advertising.image,
+          name: advertising.name,
+          tracker: advertising.tracker,
+          advertiser: advertising.advertiser,
+          media: [...new Set(advertising.campaign.map((cp) => cp.media))], // 중복 제거
+          campaign,
+        }
+
+        // state 업데이트
+        this.advertising = response
+        this.rawDailyStatistics = rawStats
+        this.currentDateRange = { startDate, endDate }
+        this.currentAdvertisingId = id
+
+        return response
+      } catch (error) {
+        console.error('Failed to fetch campaign data:', error)
+        throw error
       }
-
-      // state 업데이트
-      this.advertising = response
-      this.rawDailyStatistics = rawStats
-      this.currentDateRange = { startDate, endDate }
-      this.currentAdvertisingId = id
-
-      return response
     },
     // token으로 campaign 조회 action (날짜 범위 조건 추가)
     async getCampaignByToken(
@@ -254,6 +285,17 @@ export const useCampaignStore = defineStore('campaign', {
       }
 
       return this.advertising.campaign.find((cp) => cp.token === token)
+    },
+    // campaign id로 config 조회하는 action 함수 (state에서 조회)
+    getCampaignConfigById(campaignId: number): CampaignConfig[] | null {
+      // state에서 campaign 찾기
+      const campaign = this.advertising?.campaign.find((cp) => cp.id === campaignId)
+
+      if (!campaign) {
+        return null
+      }
+
+      return campaign.config || null
     },
     // 날짜별 원본 데이터 가져오기
     getDailyStatisticsByToken(

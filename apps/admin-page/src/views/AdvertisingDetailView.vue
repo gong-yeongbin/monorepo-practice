@@ -47,10 +47,10 @@ onMounted(() => {
 })
 
 // 캠페인 상세 페이지로 이동
-const handleCampaignClick = (token: string) => {
+const handleCampaignClick = (id: number) => {
   router.push({
-    name: 'media',
-    params: { token },
+    name: 'campaignConfig',
+    params: { id },
     query: {
       advertisingId: advertisingId.value.toString(),
       baseDate,
@@ -118,11 +118,12 @@ const campaigns = computed(() => {
         <Column field="type" header="타입" />
         <Column field="name" header="캠페인명">
           <template #body="{ data }">
-            <a href="#" @click.prevent="handleCampaignClick(data.token)" class="campaign-link">
+            <a href="#" @click.prevent="handleCampaignClick(data.id)" class="campaign-link">
               {{ data.name }}
             </a>
           </template>
         </Column>
+
         <Column header="상태">
           <template #body="{ data }">
             <label class="switch">
@@ -141,7 +142,7 @@ const campaigns = computed(() => {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 16px 24px;
+  margin-bottom: 24px;
 }
 
 .ad-detail__thumb {

@@ -23,6 +23,10 @@ export class Campaign {
 	@Field()
 	isActive: boolean;
 
+	@Expose({ name: 'tracker_name' })
+	@Field()
+	trackerName: string;
+
 	@Expose({ name: 'tracker_tracking_url' })
 	@Field()
 	trackerTrackingUrl: string;
