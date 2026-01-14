@@ -10,6 +10,7 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import InputSwitch from 'primevue/inputswitch'
 import Dropdown from 'primevue/dropdown'
+import Dialog from 'primevue/dialog'
 
 const route = useRoute()
 const router = useRouter()
@@ -75,6 +76,37 @@ const editingConfigs = ref<
     isNew?: boolean
   }>
 >([])
+
+// URL 팝업 관련 상태
+const showUrlDialog = ref(false)
+const dialogTitle = ref('')
+const dialogUrl = ref('')
+
+// URL 팝업 열기
+const openUrlDialog = (title: string, url: string) => {
+  dialogTitle.value = title
+  dialogUrl.value = url || '-'
+  showUrlDialog.value = true
+}
+
+// URL 팝업 닫기
+const closeUrlDialog = () => {
+  showUrlDialog.value = false
+  dialogUrl.value = ''
+  dialogTitle.value = ''
+}
+
+// 텍스트 복사 함수
+const copyToClipboard = async (text: string) => {
+  try {
+    await navigator.clipboard.writeText(text)
+    // TODO: 복사 성공 메시지 표시 (Toast 등)
+    console.log('복사되었습니다:', text)
+  } catch (error) {
+    console.error('복사 실패:', error)
+    // TODO: 복사 실패 메시지 표시
+  }
+}
 
 // 데이터가 필요한지 확인 (기존 데이터가 없거나 다른 advertisingId인 경우)
 const needsDataLoad = computed(() => {
@@ -155,12 +187,6 @@ const saveChanges = async () => {
   }
 }
 
-// BLOCK 토글 (isActive 변경, 추후 mutation 구현 필요)
-const onToggleBlock = (campaign: any) => {
-  console.log('BLOCK 토글', campaign.id, campaign.isActive)
-  // TODO: mutation 호출하여 isActive 변경
-}
-
 onMounted(() => {
   // 기존 데이터가 없거나 필요한 경우에만 로드
   if (needsDataLoad.value) {
@@ -179,6 +205,7 @@ const handleManage = () => {
   }
 }
 </script>
+
 <template>
   <DefaultLayout>
     <!-- 상단: 캠페인 일반 정보 -->
@@ -232,13 +259,23 @@ const handleManage = () => {
             </div>
 
             <div class="ad-detail__row">
-              <span class="ad-detail__label">트래커 트래킹 URL</span>
-              <span class="ad-detail__value">| {{ campaign?.trackerTrackingUrl || '-' }}</span>
+              <Button
+                label="트래커 트래킹 URL"
+                icon="pi pi-external-link"
+                iconPos="right"
+                class="p-button-text p-button-sm url-label-button"
+                @click="openUrlDialog('트래커 트래킹 URL', campaign?.trackerTrackingUrl || '')"
+              />
             </div>
 
             <div class="ad-detail__row">
-              <span class="ad-detail__label">MECROSS 트래킹 URL</span>
-              <span class="ad-detail__value">| {{ campaign?.trackerTrackingUrl || '-' }}</span>
+              <Button
+                label="MECROSS 트래킹 URL"
+                icon="pi pi-external-link"
+                iconPos="right"
+                class="p-button-text p-button-sm url-label-button"
+                @click="openUrlDialog('MECROSS 트래킹 URL', campaign?.trackerTrackingUrl || '')"
+              />
             </div>
           </div>
         </div>
@@ -331,6 +368,28 @@ const handleManage = () => {
         </Column>
       </DataTable>
     </section>
+
+    <!-- URL 팝업 Dialog -->
+    <Dialog
+      v-model:visible="showUrlDialog"
+      :header="dialogTitle"
+      modal
+      :style="{ width: '500px' }"
+      @hide="closeUrlDialog"
+    >
+      <div class="url-dialog-content">
+        <div class="url-display">{{ dialogUrl }}</div>
+        <div class="url-dialog-actions">
+          <Button label="복사" icon="pi pi-copy" @click="copyToClipboard(dialogUrl)" />
+          <Button
+            label="닫기"
+            icon="pi pi-times"
+            class="p-button-secondary"
+            @click="closeUrlDialog"
+          />
+        </div>
+      </div>
+    </Dialog>
   </DefaultLayout>
 </template>
 
@@ -392,6 +451,8 @@ const handleManage = () => {
   font-size: 13px;
   color: #555;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
 }
 
 .ad-detail__label {
@@ -400,6 +461,14 @@ const handleManage = () => {
 
 .ad-detail__value {
   margin-left: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.url-button {
+  padding: 2px 4px;
+  min-width: auto;
 }
 
 .config-table-section {
@@ -464,6 +533,29 @@ const handleManage = () => {
   font-size: 18px;
 }
 
+/* URL Dialog 스타일 */
+.url-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.url-display {
+  padding: 12px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  word-break: break-all;
+  font-size: 14px;
+  color: #333;
+  min-height: 60px;
+}
+
+.url-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 /* 토글 스위치 */
 .switch {
   position: relative;
@@ -507,7 +599,34 @@ const handleManage = () => {
   transform: translateX(18px);
 }
 
-.config-input {
-  width: 100%;
+.url-label-button {
+  padding: 0;
+  font-weight: 500;
+  color: #555;
+  font-size: 13px;
+  margin: 0;
+  border: none;
+  background: transparent;
+  text-align: left;
+  justify-content: flex-start;
+  height: auto;
+  line-height: normal;
+  min-width: auto;
+  display: inline-flex;
+  align-items: center;
+}
+
+.url-label-button:hover {
+  background: transparent;
+}
+
+.url-label-button :deep(.p-button-label) {
+  padding: 0;
+  line-height: normal;
+}
+
+.url-label-button :deep(.p-button-icon) {
+  margin-right: 4px;
+  margin-left: 0;
 }
 </style>

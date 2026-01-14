@@ -64,12 +64,6 @@ const onAddCampaign = () => {
   console.log('캠페인 등록')
 }
 
-// 예약 변경 토글 (추후 mutation 구현 필요)
-const onToggleReservation = (campaign: any) => {
-  console.log('예약 변경 토글', campaign.id, campaign.reservation)
-  // TODO: mutation 호출
-}
-
 // BLOCK 토글 (isActive 변경, 추후 mutation 구현 필요)
 const onToggleBlock = (campaign: any) => {
   console.log('BLOCK 토글', campaign.id, campaign.isActive)
