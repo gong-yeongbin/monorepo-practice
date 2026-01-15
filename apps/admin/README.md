@@ -1,98 +1,224 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Admin API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+관리자용 GraphQL API 서버입니다. 광고주, 광고, 캠페인, 매체, 트래커, 사용자 관리를 위한 GraphQL API를 제공합니다.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 기술 스택
 
-## Description
+- **Framework**: NestJS 11.x
+- **API**: GraphQL (Apollo Server)
+- **Authentication**: Passport.js (Local Strategy, JWT)
+- **Database**: Prisma (공유 패키지 사용)
+- **Language**: TypeScript
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 프로젝트 구조
 
-## Project setup
-
-```bash
-$ pnpm install
+```
+src/
+├── main.ts                    # 애플리케이션 진입점
+├── app.module.ts              # 루트 모듈
+├── common/                    # 공통 모듈
+│   ├── guard/                 # 인증/인가 가드
+│   └── interceptor/           # 인터셉터
+└── module/                    # 기능 모듈
+    ├── advertiser/            # 광고주 관리
+    ├── advertising/           # 광고 관리
+    ├── auth/                  # 인증
+    ├── campaign/              # 캠페인 관리
+    ├── media/                 # 매체 관리
+    ├── tracker/               # 트래커 관리
+    └── user/                  # 사용자 관리
 ```
 
-## Compile and run the project
+## 주요 기능
+
+### 인증 및 인가
+
+- 로컬 인증 (Passport Local Strategy)
+- JWT 토큰 기반 인증
+- GraphQL 인증 가드
+- 쿠키 기반 세션 관리
+
+### 광고주 관리
+
+- 광고주 생성, 조회, 수정
+- 광고주별 광고 목록 조회
+
+### 광고 관리
+
+- 광고 생성, 조회, 수정
+- 광고별 캠페인 목록 조회
+- 광고 통계 조회
+
+### 캠페인 관리
+
+- 캠페인 생성, 조회, 수정
+- 캠페인별 일일 통계 조회
+- 캠페인 설정 (Config) 관리
+- 캠페인 활성화/비활성화
+
+### 매체 관리
+
+- 매체 목록 조회
+- 매체별 포스트백 URL 관리
+
+### 트래커 관리
+
+- 트래커 목록 조회
+- 트래커별 설정 관리
+
+### 사용자 관리
+
+- 사용자 조회
+- 사용자 권한 관리
+
+## 설치 및 실행
+
+### 의존성 설치
 
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+pnpm install
 ```
 
-## Run tests
+### 개발 환경 실행
 
 ```bash
-# unit tests
-$ pnpm run test
+# 개발 모드 (watch 모드)
+pnpm run dev
 
-# e2e tests
-$ pnpm run test:e2e
+# 디버그 모드
+pnpm run start:debug
 
-# test coverage
-$ pnpm run test:cov
+# 프로덕션 모드
+pnpm run start:prod
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 빌드
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+pnpm run build
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## 환경 변수
 
-## Resources
+`.env` 파일을 생성하고 다음 변수들을 설정하세요:
 
-Check out a few resources that may come in handy when working with NestJS:
+```env
+# 데이터베이스
+DATABASE_URL="postgresql://user:password@localhost:5432/dbname"
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+# JWT
+JWT_SECRET="your-secret-key"
 
-## Support
+# GraphQL
+GRAPHQL_PORT=3000
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## GraphQL API
 
-## Stay in touch
+### 주요 쿼리
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+#### 로그인
 
-## License
+```graphql
+mutation {
+	login(userId: "user@example.com", password: "password")
+}
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+#### 광고 목록 조회
+
+```graphql
+query {
+	advertisings {
+		id
+		name
+		image
+		advertiser
+		tracker
+		campaign {
+			id
+			name
+			token
+		}
+	}
+}
+```
+
+#### 캠페인 상세 조회
+
+```graphql
+query {
+	advertising(id: 1) {
+		id
+		name
+		campaign {
+			id
+			name
+			token
+			type
+			isActive
+			dailyStatistic(startDate: "2024-01-01", endDate: "2024-01-31") {
+				click
+				install
+				registration
+				purchase
+				revenue
+				createdDate
+			}
+		}
+	}
+}
+```
+
+#### 캠페인 설정 업데이트
+
+```graphql
+mutation {
+	upsertCampaignConfig(campaignId: 1, input: [{ sendMedia: true, trackerEventName: "install", adminEventName: "install", mediaEventName: "install_event" }]) {
+		campaignId
+		sendMedia
+		trackerEventName
+		adminEventName
+		mediaEventName
+	}
+}
+```
+
+## 테스트
+
+```bash
+# 단위 테스트
+pnpm run test
+
+# E2E 테스트
+pnpm run test:e2e
+
+# 커버리지
+pnpm run test:cov
+
+# Watch 모드
+pnpm run test:watch
+```
+
+## 코드 포맷팅 및 린트
+
+```bash
+# 코드 포맷팅
+pnpm run format
+
+# 린트
+pnpm run lint
+```
+
+## 아키텍처
+
+이 프로젝트는 Clean Architecture 패턴을 따릅니다:
+
+- **Domain Layer**: 엔티티 및 리포지토리 인터페이스
+- **Infrastructure Layer**: Prisma를 사용한 리포지토리 구현
+- **Use Case Layer**: 비즈니스 로직
+- **Controller Layer**: GraphQL Resolver
+
+## 라이선스
+
+UNLICENSED

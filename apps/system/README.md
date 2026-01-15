@@ -1,98 +1,246 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# System API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+트래킹 및 포스트백 처리를 위한 시스템 API 서버입니다. 다양한 트래킹 솔루션으로부터의 트래킹 데이터를 수신하고, 매체사로 포스트백을 전송합니다.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 기술 스택
 
-## Description
+- **Framework**: NestJS 11.x
+- **Message Queue**: Kafka (KafkaJS)
+- **Cache**: Redis (Keyv)
+- **HTTP Client**: Express
+- **Language**: TypeScript
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 프로젝트 구조
 
-## Project setup
-
-```bash
-$ pnpm install
+```
+src/
+├── main.ts                    # 애플리케이션 진입점
+├── app.module.ts              # 루트 모듈
+├── common/                    # 공통 유틸리티
+│   └── util/                  # 유틸리티 함수
+├── core/                      # 핵심 모듈
+│   ├── cache/                 # 캐시 모듈 (Redis)
+│   └── kafka/                 # Kafka 모듈
+└── module/                    # 기능 모듈
+    ├── postback/              # 포스트백 처리
+    └── tracking/              # 트래킹 처리
 ```
 
-## Compile and run the project
+## 주요 기능
+
+### 트래킹 처리
+다양한 트래킹 솔루션으로부터의 트래킹 데이터를 수신하고 처리합니다:
+
+- **AppsFlyer**: AppsFlyer 트래킹 데이터 처리
+- **Adjust**: Adjust 트래킹 데이터 처리
+- **Airbridge**: Airbridge 트래킹 데이터 처리
+- **AdbrixRemaster**: AdbrixRemaster 트래킹 데이터 처리
+
+### 포스트백 처리
+매체사로 포스트백을 전송합니다:
+
+- **Install Postback**: 설치 이벤트 포스트백
+- **Event Postback**: 커스텀 이벤트 포스트백
+
+### 메시지 큐 처리
+- Kafka를 통한 비동기 메시지 처리
+- Producer: 트래킹 데이터를 Kafka로 전송
+- Consumer: Kafka에서 메시지를 수신하여 처리
+
+### 캐시 관리
+- Redis를 사용한 캐시 관리
+- 트래킹 데이터 임시 저장
+- 성능 최적화
+
+## 설치 및 실행
+
+### 의존성 설치
 
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+pnpm install
 ```
 
-## Run tests
+### 개발 환경 실행
 
 ```bash
-# unit tests
-$ pnpm run test
+# 개발 모드 (watch 모드)
+pnpm run dev
 
-# e2e tests
-$ pnpm run test:e2e
+# 디버그 모드
+pnpm run start:debug
 
-# test coverage
-$ pnpm run test:cov
+# 프로덕션 모드
+pnpm run start:prod
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 빌드
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+pnpm run build
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## 환경 변수
 
-## Resources
+`.env` 파일을 생성하고 다음 변수들을 설정하세요:
 
-Check out a few resources that may come in handy when working with NestJS:
+```env
+# 데이터베이스
+DATABASE_URL="postgresql://user:password@localhost:5432/dbname"
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+# Kafka
+KAFKA_BROKERS="localhost:9092"
+KAFKA_CLIENT_ID="system-api"
+KAFKA_GROUP_ID="system-api-group"
 
-## Support
+# Redis
+REDIS_URL="redis://localhost:6379"
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+# 서버
+PORT=3001
+```
 
-## Stay in touch
+## API 엔드포인트
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### 트래킹 엔드포인트
 
-## License
+#### AppsFlyer
+```
+POST /tracking/appsflyer
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+#### Adjust
+```
+POST /tracking/adjust
+```
+
+#### Airbridge
+```
+POST /tracking/airbridge
+```
+
+#### AdbrixRemaster
+```
+POST /tracking/adbrixremaster
+```
+
+### 포스트백 엔드포인트
+
+#### Install Postback
+```
+POST /postback/install
+```
+
+#### Event Postback
+```
+POST /postback/event
+```
+
+## 아키텍처
+
+### 메시지 흐름
+
+1. **트래킹 데이터 수신**
+   - 외부 트래킹 솔루션에서 HTTP 요청 수신
+   - 데이터 검증 및 정규화
+   - Kafka Producer를 통해 메시지 전송
+
+2. **Kafka Consumer 처리**
+   - Kafka에서 메시지 수신
+   - 비즈니스 로직 처리
+   - 데이터베이스 저장
+   - 포스트백 전송 (필요 시)
+
+3. **포스트백 전송**
+   - 매체사로 HTTP POST 요청
+   - 재시도 로직
+   - 실패 시 큐에 재등록
+
+### 캐시 전략
+
+- 트래킹 데이터 임시 저장 (중복 방지)
+- 자주 조회되는 데이터 캐싱
+- TTL 설정을 통한 자동 만료
+
+## 모듈 상세
+
+### Postback Module
+- Install Postback 처리
+- Event Postback 처리
+- 포스트백 전송 및 재시도 로직
+- Kafka Producer 인터셉터
+
+### Tracking Module
+- 다양한 트래킹 솔루션 지원
+- 트래킹 데이터 정규화
+- 일일 통계 집계
+- Kafka Producer 인터셉터
+
+### Kafka Module
+- Producer: 메시지 전송
+- Consumer: 메시지 수신 및 처리
+- 토픽 관리
+- 에러 핸들링
+
+### Cache Module
+- Redis 캐시 관리
+- Key-value 저장소
+- TTL 관리
+
+## 테스트
+
+```bash
+# 단위 테스트
+pnpm run test
+
+# E2E 테스트
+pnpm run test:e2e
+
+# 커버리지
+pnpm run test:cov
+
+# Watch 모드
+pnpm run test:watch
+```
+
+## 코드 포맷팅 및 린트
+
+```bash
+# 코드 포맷팅
+pnpm run format
+
+# 린트
+pnpm run lint
+```
+
+## 메시지 큐 설정
+
+### Kafka 토픽
+
+시스템에서 사용하는 주요 토픽:
+
+- `tracking` - 트래킹 데이터
+- `postback` - 포스트백 처리 요청
+- `daily-statistic` - 일일 통계 집계
+
+### Consumer Group
+
+- 각 모듈별 독립적인 Consumer Group 사용
+- 수평 확장 지원
+
+## 성능 최적화
+
+- 비동기 메시지 처리로 응답 시간 단축
+- Redis 캐싱으로 데이터베이스 부하 감소
+- Kafka를 통한 분산 처리
+- 배치 처리로 대량 데이터 처리
+
+## 모니터링
+
+- Kafka 메시지 처리 모니터링
+- Redis 캐시 히트율 모니터링
+- 포스트백 전송 성공률 모니터링
+- 에러 로깅 및 알림
+
+## 라이선스
+
+UNLICENSED
