@@ -1,23 +1,16 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted } from 'vue'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
-import { useMediaListStore } from '@/stores/mediaListStore.ts'
+import { useMediaListStore } from '@/stores/mediaListStore'
 
 const mediaListStore = useMediaListStore()
 
-interface Media {
-  id: number
-  name: string
-  installPostbackUrl: string
-  eventPostbackUrl: string
-}
-
-const mediaList = ref<Media[]>([])
+const mediaList = computed(() => mediaListStore.mediaList ?? [])
 
 onMounted(async () => {
-  mediaList.value = await mediaListStore.get()
+  await mediaListStore.fetchAll()
 })
 </script>
 

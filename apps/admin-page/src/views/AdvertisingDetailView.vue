@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import dayjs from 'dayjs'
-import { useCampaignStore } from '@/stores/campaignStore.ts'
+import { useCampaignStore } from '@/stores/campaignStore'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Button from 'primevue/button'
@@ -12,14 +12,16 @@ const route = useRoute()
 const router = useRouter()
 const campaignStore = useCampaignStore()
 
-// 라우트 파라미터에서 id 추출
-const advertisingId = computed(() => {
-  const routeId = route.params.id
-  if (Array.isArray(routeId)) {
-    return parseInt(routeId[0] || '0', 10)
+// 라우트 파라미터 추출 헬퍼
+const extractRouteParamAsInt = (param: string | string[] | undefined, defaultValue: number = 0): number => {
+  if (Array.isArray(param)) {
+    return parseInt(param[0] || String(defaultValue), 10) || defaultValue
   }
-  return parseInt((routeId as string) || '0', 10)
-})
+  return parseInt((param as string) || String(defaultValue), 10) || defaultValue
+}
+
+// 라우트 파라미터에서 id 추출
+const advertisingId = computed(() => extractRouteParamAsInt(route.params.id))
 
 // store의 advertising 데이터 접근
 const advertising = computed(() => campaignStore.advertising)
@@ -65,7 +67,7 @@ const onAddCampaign = () => {
 }
 
 // BLOCK 토글 (isActive 변경, 추후 mutation 구현 필요)
-const onToggleBlock = (campaign: any) => {
+const onToggleBlock = (campaign: { id: number; isActive?: boolean }) => {
   console.log('BLOCK 토글', campaign.id, campaign.isActive)
   // TODO: mutation 호출하여 isActive 변경
 }

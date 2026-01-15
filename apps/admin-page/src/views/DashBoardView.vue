@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watchEffect } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import DataTable from 'primevue/datatable'
 import DatePicker from 'primevue/datepicker'
@@ -7,7 +7,7 @@ import Column from 'primevue/column'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'
-import { useDashboardStore } from '@/stores/dashboardStore.ts'
+import { useDashboardStore } from '@/stores/dashboardStore'
 
 // dayjs 플러그인 설정 (한 번만 실행)
 dayjs.extend(utc)
@@ -30,10 +30,6 @@ const loadData = async () => {
     await dashboardStore.update(formatDate(selectedDate.value))
   }
 }
-
-onMounted(() => {
-  loadData()
-})
 
 // selectedDate 변경 시 자동으로 데이터 갱신
 watchEffect(() => {

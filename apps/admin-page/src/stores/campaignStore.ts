@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { apolloClient } from '@/apollo-client.ts'
+import { apolloClient } from '@/apollo-client'
 import gql from 'graphql-tag'
 
 // 타입 정의 통합 및 구조화
@@ -202,22 +202,46 @@ const createEmptyStatistic = () => ({
   unregistered: 0,
 })
 
+// DailyStatistic 데이터 정규화 함수 (null/undefined 값 처리)
+const normalizeDailyStatistic = (stat: DailyStatistic): DailyStatistic => {
+  return {
+    viewCode: stat.viewCode ?? '',
+    token: stat.token ?? '',
+    pubId: stat.pubId ?? null,
+    subId: stat.subId ?? null,
+    click: stat.click ?? 0,
+    install: stat.install ?? 0,
+    registration: stat.registration ?? 0,
+    retention: stat.retention ?? 0,
+    purchase: stat.purchase ?? 0,
+    revenue: stat.revenue ?? 0,
+    etc1: stat.etc1 ?? 0,
+    etc2: stat.etc2 ?? 0,
+    etc3: stat.etc3 ?? 0,
+    etc4: stat.etc4 ?? 0,
+    etc5: stat.etc5 ?? 0,
+    unregistered: stat.unregistered ?? 0,
+    createdDate: stat.createdDate ?? undefined,
+  }
+}
+
 // 일일 통계 배열을 합산하는 함수 (숫자 필드만 합산)
 const sumDailyStatistics = (statistics: DailyStatistic[]) => {
   return statistics.reduce((acc, curr) => {
+    const normalized = normalizeDailyStatistic(curr)
     return {
-      click: acc.click + curr.click,
-      install: acc.install + curr.install,
-      registration: acc.registration + curr.registration,
-      retention: acc.retention + curr.retention,
-      purchase: acc.purchase + curr.purchase,
-      revenue: acc.revenue + curr.revenue,
-      etc1: acc.etc1 + curr.etc1,
-      etc2: acc.etc2 + curr.etc2,
-      etc3: acc.etc3 + curr.etc3,
-      etc4: acc.etc4 + curr.etc4,
-      etc5: acc.etc5 + curr.etc5,
-      unregistered: acc.unregistered + curr.unregistered,
+      click: acc.click + normalized.click,
+      install: acc.install + normalized.install,
+      registration: acc.registration + normalized.registration,
+      retention: acc.retention + normalized.retention,
+      purchase: acc.purchase + normalized.purchase,
+      revenue: acc.revenue + normalized.revenue,
+      etc1: acc.etc1 + normalized.etc1,
+      etc2: acc.etc2 + normalized.etc2,
+      etc3: acc.etc3 + normalized.etc3,
+      etc4: acc.etc4 + normalized.etc4,
+      etc5: acc.etc5 + normalized.etc5,
+      unregistered: acc.unregistered + normalized.unregistered,
     }
   }, createEmptyStatistic())
 }
@@ -246,32 +270,42 @@ export const useCampaignStore = defineStore('campaign', {
 
         const { advertising } = data
 
-        // 원본 dailyStatistic 저장 (캠페인 token을 키로)
+        // 원본 dailyStatistic 저장 (캠페인 token을 키로, null 값 정규화)
         const rawStats = new Map<string, DailyStatistic[]>()
         advertising.campaign.forEach((cp) => {
-          rawStats.set(cp.token, cp.dailyStatistic)
+          const normalizedStats = (cp.dailyStatistic || []).map((stat) =>
+            normalizeDailyStatistic(stat),
+          )
+          rawStats.set(cp.token, normalizedStats)
         })
 
-        const campaign: ResponseCampaign[] = advertising.campaign.map((cp) => ({
-          id: cp.id,
-          name: cp.name,
-          token: cp.token,
-          media: cp.media,
-          type: cp.type,
-          isActive: cp.isActive,
-          trackerName: cp.trackerName,
-          trackerTrackingUrl: cp.trackerTrackingUrl,
-          config: cp.config,
-          dailyStatistic: sumDailyStatistics(cp.dailyStatistic),
-        }))
+        const campaign: ResponseCampaign[] = advertising.campaign.map((cp) => {
+          const normalizedStats = (cp.dailyStatistic || []).map((stat) =>
+            normalizeDailyStatistic(stat),
+          )
+          return {
+            id: cp.id,
+            name: cp.name,
+            token: cp.token,
+            media: cp.media,
+            type: cp.type,
+            isActive: cp.isActive ?? true,
+            trackerName: cp.trackerName,
+            trackerTrackingUrl: cp.trackerTrackingUrl,
+            config: cp.config,
+            dailyStatistic: sumDailyStatistics(normalizedStats),
+          }
+        })
 
         const response: Response = {
           id: advertising.id,
-          image: advertising.image,
-          name: advertising.name,
-          tracker: advertising.tracker,
-          advertiser: advertising.advertiser,
-          media: [...new Set(advertising.campaign.map((cp) => cp.media))], // 중복 제거
+          image: advertising.image ?? '',
+          name: advertising.name ?? '',
+          tracker: advertising.tracker ?? '',
+          advertiser: advertising.advertiser ?? '',
+          media: [
+            ...new Set(advertising.campaign.map((cp) => cp.media).filter(Boolean)),
+          ], // 중복 제거 및 null/undefined 필터링
           campaign,
         }
 
@@ -341,7 +375,8 @@ export const useCampaignStore = defineStore('campaign', {
         return []
       }
 
-      return this.rawDailyStatistics.get(token) || []
+      const stats = this.rawDailyStatistics.get(token)
+      return stats ? stats.map((stat) => normalizeDailyStatistic(stat)) : []
     },
     // campaign config 저장/업데이트
     async upsertCampaignConfig(

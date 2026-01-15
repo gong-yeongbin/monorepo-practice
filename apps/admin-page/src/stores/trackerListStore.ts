@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { apolloClient } from '@/apollo-client.ts'
+import { apolloClient } from '@/apollo-client'
 import gql from 'graphql-tag'
 
 type Tracker = {
@@ -27,12 +27,29 @@ const GET_TRACKER = gql`
 `
 
 export const useTrackerListStore = defineStore('tracker', {
+  state: () => ({
+    trackerList: null as Tracker[] | null,
+  }),
+  getters: {
+    hasData: (state) => state.trackerList !== null && state.trackerList.length > 0,
+    getTracker: (state) => (id: number) => state.trackerList?.find((tracker) => tracker.id === id),
+  },
   actions: {
-    async get() {
-      const { data } = await apolloClient.query<GetTrackerResult>({
-        query: GET_TRACKER,
-      })
-      return data.tracker
+    async fetchAll(): Promise<Tracker[]> {
+      try {
+        const { data } = await apolloClient.query<GetTrackerResult>({
+          query: GET_TRACKER,
+        })
+
+        this.trackerList = data.tracker
+        return data.tracker
+      } catch (error) {
+        console.error('Failed to fetch tracker list:', error)
+        throw error
+      }
+    },
+    clear() {
+      this.trackerList = null
     },
   },
 })

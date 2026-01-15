@@ -1,6 +1,5 @@
-// apps/admin-page/src/stores/advertisingStore.ts
 import { defineStore } from 'pinia'
-import { apolloClient } from '@/apollo-client.ts'
+import { apolloClient } from '@/apollo-client'
 import gql from 'graphql-tag'
 
 type Advertising = {
@@ -52,9 +51,12 @@ export const useAdvertisingStore = defineStore('advertising', {
         // campaign을 배열 길이로 변환 (기존 API와 호환성을 위해)
         const advertisings: Advertising[] = data.advertisings.map((advertising) => ({
           ...advertising,
+          image: advertising.image ?? '',
+          name: advertising.name ?? '',
+          tracker: advertising.tracker ?? '',
           campaign: Array.isArray(advertising.campaign)
             ? advertising.campaign.length
-            : (advertising.campaign ?? 0),
+            : advertising.campaign ?? 0,
         }))
 
         this.advertisings = advertisings

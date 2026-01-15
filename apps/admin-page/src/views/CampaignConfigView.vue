@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
-import { useCampaignStore } from '@/stores/campaignStore.ts'
+import { useCampaignStore } from '@/stores/campaignStore'
 import dayjs from 'dayjs'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -16,20 +16,34 @@ const route = useRoute()
 const router = useRouter()
 const campaignStore = useCampaignStore()
 
-// 라우트 파라미터에서 campaignId 추출
-const campaignId = computed(() => {
-  const routeId = route.params.id
-  if (Array.isArray(routeId)) {
-    return parseInt(routeId[0] || '0', 10)
+// 라우트 파라미터 추출 헬퍼
+const extractRouteParamAsInt = (
+  param: string | string[] | undefined,
+  defaultValue: number = 0,
+): number => {
+  if (Array.isArray(param)) {
+    return parseInt(param[0] || String(defaultValue), 10) || defaultValue
   }
-  return parseInt((routeId as string) || '0', 10)
-})
+  return parseInt((param as string) || String(defaultValue), 10) || defaultValue
+}
+
+const extractQueryParamAsInt = (
+  param: string | string[] | undefined,
+  defaultValue: number = 0,
+): number => {
+  if (Array.isArray(param)) {
+    return parseInt(param[0] || String(defaultValue), 10) || defaultValue
+  }
+  return parseInt((param as string) || String(defaultValue), 10) || defaultValue
+}
+
+// 라우트 파라미터에서 campaignId 추출
+const campaignId = computed(() => extractRouteParamAsInt(route.params.id))
 
 // query에서 advertisingId 가져오기
-const advertisingId = computed(() => {
-  const id = route.query.advertisingId as string
-  return parseInt(id || '0', 10)
-})
+const advertisingId = computed(() =>
+  extractQueryParamAsInt(route.query.advertisingId as string | string[] | undefined),
+)
 
 // campaign 정보
 const campaign = computed(() => {

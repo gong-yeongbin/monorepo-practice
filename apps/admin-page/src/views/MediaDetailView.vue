@@ -3,7 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import dayjs from 'dayjs'
-import { useCampaignStore } from '@/stores/campaignStore.ts'
+import { useCampaignStore } from '@/stores/campaignStore'
 import DatePicker from 'primevue/datepicker'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
@@ -11,7 +11,7 @@ import DataTable from 'primevue/datatable'
 const route = useRoute()
 const campaignStore = useCampaignStore()
 
-// 타입 정의
+// 타입 정의 (store의 DailyStatistic 확장)
 type DailyStatisticWithDate = {
   click: number
   install: number
@@ -31,19 +31,30 @@ type DailyStatisticWithDate = {
   subId?: string | null
 }
 
-const token = computed(() => {
-  const tokenParam = route.params.token
-  if (Array.isArray(tokenParam)) {
-    return tokenParam[0] || ''
+// 라우트 파라미터 추출 헬퍼
+const extractRouteParam = (
+  param: string | string[] | undefined,
+  defaultValue: string = '',
+): string => {
+  if (Array.isArray(param)) {
+    return param[0] || defaultValue
   }
-  return (tokenParam as string) || ''
-})
+  return (param as string) || defaultValue
+}
 
-// 쿼리에서 파라미터 추출
-const advertisingId = computed(() => {
-  const advertisingId = route.query.advertisingId as string
-  return parseInt((advertisingId as string) || '0', 10)
-})
+const extractQueryParamAsInt = (
+  param: string | string[] | undefined,
+  defaultValue: number = 0,
+): number => {
+  const value = extractRouteParam(param)
+  return parseInt(value, 10) || defaultValue
+}
+
+// 라우트 파라미터 추출
+const advertisingId = computed(() =>
+  extractQueryParamAsInt(route.query.advertisingId as string | string[] | undefined),
+)
+const token = computed(() => extractRouteParam(route.params.token))
 
 // 쿼리에서 날짜 가져오기 (선택적)
 const queryDate = computed(() => {
@@ -63,7 +74,12 @@ const endDate = ref<Date>(baseDateValue)
 
 // store의 advertising 데이터 접근
 const advertising = computed(() => campaignStore.advertising)
-const campaign = ref<{ name: string; media: string; token: string } | undefined>(undefined)
+const campaign = computed(() => {
+  if (!token.value || !advertising.value) {
+    return undefined
+  }
+  return campaignStore.getCampaign(token.value)
+})
 
 // 날짜별 통계 데이터 (원본 그대로, 합치지 않음)
 const dailyStatistics = ref<DailyStatisticWithDate[]>([])
@@ -74,17 +90,18 @@ const formatDisplayDate = (date: string) => dayjs(date).format('YYYY-MM-DD')
 
 // 데이터 로드 함수
 const loadCampaignData = async () => {
-  if (advertisingId.value && token.value && startDate.value && endDate.value) {
-    // 캠페인 기본 정보 가져오기
-    const campaignData = await campaignStore.getCampaignByToken(
+  if (!advertisingId.value || !token.value || !startDate.value || !endDate.value) {
+    return
+  }
+
+  try {
+    // 캠페인 기본 정보 및 통계 데이터 가져오기
+    await campaignStore.getCampaignByToken(
       token.value,
       advertisingId.value,
       formatDate(startDate.value),
       formatDate(endDate.value),
     )
-    if (campaignData) {
-      campaign.value = campaignData
-    }
 
     // 날짜별 통계 데이터 가져오기 (store에서)
     const rawStats = campaignStore.getDailyStatisticsByToken(
@@ -130,6 +147,9 @@ const loadCampaignData = async () => {
     } else {
       dailyStatistics.value = []
     }
+  } catch (error) {
+    console.error('Failed to load campaign data:', error)
+    dailyStatistics.value = []
   }
 }
 

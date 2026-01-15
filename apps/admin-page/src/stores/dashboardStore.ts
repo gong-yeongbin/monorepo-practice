@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { apolloClient } from '@/apollo-client.ts'
+import { apolloClient } from '@/apollo-client'
 import gql from 'graphql-tag'
 
 // 타입 정의
@@ -100,24 +100,29 @@ export const useDashboardStore = defineStore('dashboard', {
   },
   actions: {
     async update(baseDate: string): Promise<Dashboard[]> {
-      const { data } = await apolloClient.query<GetDashboardResult>({
-        query: GET_DASHBOARD,
-        variables: { baseDate },
-      })
+      try {
+        const { data } = await apolloClient.query<GetDashboardResult>({
+          query: GET_DASHBOARD,
+          variables: { baseDate },
+        })
 
-      const dashboards: Dashboard[] = data.advertisings.map((advertising) => {
-        const sum = sumDailyStatistics(advertising.dailyStatistic)
-        return {
-          id: advertising.id,
-          name: advertising.name,
-          ...sum,
-        }
-      })
+        const dashboards: Dashboard[] = data.advertisings.map((advertising) => {
+          const sum = sumDailyStatistics(advertising.dailyStatistic || [])
+          return {
+            id: advertising.id,
+            name: advertising.name ?? '',
+            ...sum,
+          }
+        })
 
-      // state 업데이트
-      this.dashboards = dashboards
+        // state 업데이트
+        this.dashboards = dashboards
 
-      return dashboards
+        return dashboards
+      } catch (error) {
+        console.error('Failed to fetch dashboard data:', error)
+        throw error
+      }
     },
     // state 초기화
     clear() {

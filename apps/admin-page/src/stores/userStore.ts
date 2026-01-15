@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { apolloClient } from '@/apollo-client.ts'
+import { apolloClient } from '@/apollo-client'
 import gql from 'graphql-tag'
 
 const SET_TOKEN = gql`
@@ -13,13 +13,24 @@ export const useUserStore = defineStore('user', {
     isLogin: false,
   }),
   actions: {
-    async login(userId: string, password: string) {
-      const { data } = await apolloClient.mutate({
-        mutation: SET_TOKEN,
-        variables: { userId, password },
-      })
+    async login(userId: string, password: string): Promise<boolean> {
+      try {
+        const { data } = await apolloClient.mutate<{ login: boolean }>({
+          mutation: SET_TOKEN,
+          variables: { userId, password },
+        })
 
-      return (this.isLogin = data.login)
+        if (!data?.login) {
+          return false
+        }
+
+        this.isLogin = data.login
+        return data.login
+      } catch (error) {
+        console.error('Failed to login:', error)
+        this.isLogin = false
+        throw error
+      }
     },
     logout() {
       this.isLogin = false

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import { useAdvertisingStore } from '@/stores/advertisingStore'
 
+const route = useRoute()
 const advertisingStore = useAdvertisingStore()
 
 // store의 state를 computed로 직접 접근
@@ -37,20 +39,17 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.advertising-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.name-column {
+  min-width: 5px;
+  white-space: nowrap;
 }
 
-.advertising-thumb {
-  width: 32px;
-  height: 32px;
-  object-fit: cover;
-  border-radius: 4px;
+.campaign-link {
+  color: #007bff;
+  text-decoration: none;
 }
 
-.advertising-name-column {
-  min-width: 200px;
+.campaign-link:hover {
+  text-decoration: underline;
 }
 </style>

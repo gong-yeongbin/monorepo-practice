@@ -1,24 +1,16 @@
 <script setup lang="ts">
+import { computed, onMounted } from 'vue'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
-import { onMounted, ref } from 'vue'
-import { useTrackerListStore } from '@/stores/trackerListStore.ts'
+import { useTrackerListStore } from '@/stores/trackerListStore'
 
 const trackerListStore = useTrackerListStore()
 
-interface Tracker {
-  id: number
-  name: string
-  trackingUrl: string
-  installPostbackUrl: string
-  eventPostbackUrl: string
-}
-
-const trackerList = ref<Tracker[]>([])
+const trackerList = computed(() => trackerListStore.trackerList ?? [])
 
 onMounted(async () => {
-  trackerList.value = await trackerListStore.get()
+  await trackerListStore.fetchAll()
 })
 </script>
 

@@ -3,7 +3,7 @@ import { useRoute } from 'vue-router'
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import dayjs from 'dayjs'
-import { useCampaignStore } from '@/stores/campaignStore.ts'
+import { useCampaignStore } from '@/stores/campaignStore'
 import DatePicker from 'primevue/datepicker'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
@@ -14,11 +14,21 @@ const campaignStore = useCampaignStore()
 // store의 state를 computed로 직접 접근
 const advertising = computed(() => campaignStore.advertising)
 
+// 라우트 파라미터 추출 헬퍼
+const extractQueryParamAsInt = (
+  param: string | string[] | undefined,
+  defaultValue: number = 0,
+): number => {
+  if (Array.isArray(param)) {
+    return parseInt(param[0] || String(defaultValue), 10) || defaultValue
+  }
+  return parseInt((param as string) || String(defaultValue), 10) || defaultValue
+}
+
 // 라우트 파라미터에서 id 추출
-const advertisingId = computed(() => {
-  const advertisingId = route.query.advertisingId as string
-  return parseInt((advertisingId as string) || '0', 10)
-})
+const advertisingId = computed(() =>
+  extractQueryParamAsInt(route.query.advertisingId as string | string[] | undefined),
+)
 
 // 날짜 초기값 설정 (쿼리에서 가져오거나 현재 날짜)
 const getInitialDate = () => {
