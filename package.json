@@ -11,15 +11,12 @@
     "docker:down": "docker compose -f ./docker-compose.yml down"
   },
   "devDependencies": {
-    "prettier": "^3.6.2",
-    "turbo": "^2.5.4",
-    "typescript": "5.8.3"
+    "prettier": "^3.9.4",
+    "turbo": "^2.10.4",
+    "typescript": "6.0.3"
   },
   "packageManager": "pnpm@9.0.0",
   "engines": {
     "node": ">=18"
-  },
-  "dependencies": {
-    "@aws-sdk/client-ssm": "^3.908.0"
   }
 }

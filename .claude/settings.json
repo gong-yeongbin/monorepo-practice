@@ -1,0 +1,11 @@
+{
+	"permissions": {
+		"deny": [
+			"Bash(git *)",
+			"Read(**/.env)",
+			"Read(**/.env.*)",
+			"Edit(**/.env)",
+			"Edit(**/.env.*)"
+		]
+	}
+}

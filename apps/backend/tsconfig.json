@@ -1,0 +1,15 @@
+{
+  "extends": "@repo/typescript/nestjs.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "types": ["node", "jest"],
+    "paths": {
+      "@src/*": ["./src/*"],
+      "@core/*": ["./src/core/*"],
+      "@tracker/*": ["./src/tracker/*"],
+      "@campaign/*": ["./src/module/campaign/*"],
+      "@tracking/*": ["./src/module/tracking/*"],
+      "@postback/*": ["./src/module/postback/*"]
+    }
+  }
+}

@@ -21,7 +21,7 @@
 ├─────────────────────────────────────────────────────────────┤
 │                                                               │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │  admin-page  │  │    admin     │  │    system    │      │
+│  │  admin-page  │  │    admin     │  │   backend    │      │
 │  │  (Vue 3)     │  │  (NestJS)    │  │  (NestJS)    │      │
 │  │  :5173       │  │  :3000       │  │  :3001       │      │
 │  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘      │
@@ -95,12 +95,13 @@ monorepo-practice/
 │   │   │   └── router/            # 라우팅 설정
 │   │   └── README.md
 │   │
-│   ├── system/                    # 트래킹 시스템
+│   ├── backend/                   # 트래킹 시스템
 │   │   ├── src/
-│   │   │   ├── module/
-│   │   │   │   ├── tracking/      # 트래킹 처리
-│   │   │   │   └── postback/      # 포스트백 처리
-│   │   │   ├── core/
+│   │   │   ├── module/            # 기능 모듈 (모듈별 클린 아키텍처 레이어)
+│   │   │   │   ├── tracking/      # 트래킹 처리 (application/presentation)
+│   │   │   │   ├── postback/      # 포스트백 처리 (application/infrastructure/presentation)
+│   │   │   │   └── campaign/      # 공유 캠페인 도메인 (domain/infrastructure)
+│   │   │   ├── core/              # 공유 인프라 (포트 + 어댑터)
 │   │   │   │   ├── kafka/         # Kafka 모듈
 │   │   │   │   └── cache/         # Redis 캐시
 │   │   │   └── main.ts
@@ -196,7 +197,7 @@ JWT_SECRET="your-secret-key"
 VITE_GRAPHQL_URL="http://localhost:3000/graphql"
 ```
 
-#### `apps/system/.env`
+#### `apps/backend/.env`
 
 ```env
 DATABASE_URL="mysql://root:1234@localhost:3306/mecross"
@@ -236,8 +237,8 @@ pnpm turbo dev --filter=admin
 # Admin Page만 실행
 pnpm turbo dev --filter=admin-page
 
-# System만 실행
-pnpm turbo dev --filter=system
+# Backend만 실행
+pnpm turbo dev --filter=backend
 ```
 
 개별 애플리케이션 디렉토리에서도 실행 가능:
@@ -249,7 +250,7 @@ pnpm dev
 cd apps/admin-page
 pnpm dev
 
-cd apps/system
+cd apps/backend
 pnpm dev
 ```
 
@@ -273,13 +274,13 @@ Vue 3 기반 관리자 대시보드입니다.
 - **주요 기능**: 대시보드, 통계 시각화, 설정 관리
 - [상세 문서](./apps/admin-page/README.md)
 
-### System (`apps/system`)
+### Backend (`apps/backend`)
 
 트래킹 및 포스트백 처리 시스템입니다.
 
 - **포트**: 3001
 - **주요 기능**: 트래킹 데이터 수신, 포스트백 전송, 메시지 큐 처리
-- [상세 문서](./apps/system/README.md)
+- [상세 문서](./apps/backend/README.md)
 
 ## 🔧 공유 패키지
 
@@ -353,7 +354,7 @@ pnpm turbo build --filter=admin
 pnpm turbo dev --filter=admin-page
 
 # 여러 앱 동시 작업
-pnpm turbo build --filter=admin --filter=system
+pnpm turbo build --filter=admin --filter=backend
 ```
 
 ## 🧪 테스트
@@ -386,14 +387,14 @@ pnpm turbo build --filter=admin-page
 
 - `apps/admin/dist/`: NestJS 빌드 결과
 - `apps/admin-page/dist/`: Vue 정적 파일
-- `apps/system/dist/`: NestJS 빌드 결과
+- `apps/backend/dist/`: NestJS 빌드 결과
 
 ## 📚 문서
 
 - [Apps 개요](./apps/README.md) - 애플리케이션 전체 개요
 - [Admin API 문서](./apps/admin/README.md) - GraphQL API 상세
 - [Admin Page 문서](./apps/admin-page/README.md) - 프론트엔드 상세
-- [System 문서](./apps/system/README.md) - 트래킹 시스템 상세
+- [Backend 문서](./apps/backend/README.md) - 트래킹 시스템 상세
 
 ## 🔐 인증 및 보안
 
@@ -465,7 +466,7 @@ pnpm start:prod
 
 - **admin**: NestJS 애플리케이션 (Node.js 환경)
 - **admin-page**: 정적 파일 (CDN 또는 웹 서버)
-- **system**: NestJS 애플리케이션 (Node.js 환경)
+- **backend**: NestJS 애플리케이션 (Node.js 환경)
 
 ## 🤝 기여 가이드
 

@@ -1,1 +1,0 @@
-export const POSTBACK_REPOSITORY = Symbol('POSTBACK_REPOSITORY');

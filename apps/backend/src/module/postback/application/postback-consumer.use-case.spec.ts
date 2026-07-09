@@ -1,0 +1,62 @@
+import { Test } from '@nestjs/testing';
+import { PostbackConsumerUseCase } from './postback-consumer.use-case';
+import { POSTBACK_REPOSITORY } from '@postback/application/port/postback.repository';
+import { CAMPAIGN_REPOSITORY } from '@campaign/domain/campaign.repository';
+import { DAILY_STATISTIC_REPOSITORY } from '@campaign/domain/daily-statistic.repository';
+import { CONSUMER_PORT } from '@core/kafka/consumer.port';
+
+describe('PostbackConsumerUseCase', () => {
+	const postbackRepository = { createMany: jest.fn() };
+	const campaignRepository = { findByToken: jest.fn() };
+	const dailyStatisticRepository = { upsert: jest.fn() };
+	let handler: (messages: string[]) => Promise<void>;
+	const consumer = {
+		register: jest.fn((_topic: string, h: (messages: string[]) => Promise<void>) => {
+			handler = h;
+		}),
+	};
+
+	beforeEach(async () => {
+		jest.clearAllMocks();
+
+		const module = await Test.createTestingModule({
+			providers: [
+				PostbackConsumerUseCase,
+				{ provide: POSTBACK_REPOSITORY, useValue: postbackRepository },
+				{ provide: CAMPAIGN_REPOSITORY, useValue: campaignRepository },
+				{ provide: DAILY_STATISTIC_REPOSITORY, useValue: dailyStatisticRepository },
+				{ provide: CONSUMER_PORT, useValue: consumer },
+			],
+		}).compile();
+
+		module.get(PostbackConsumerUseCase).onModuleInit();
+	});
+
+	it('배치 내 postback을 view_code 기준으로 집계해 저장하고 캠페인 조회는 token당 1회만 수행한다', async () => {
+		campaignRepository.findByToken.mockResolvedValue({
+			token: 'token-1',
+			campaign_config: [{ tracker_event_name: 'purchase_done', admin_event_name: 'purchase' }],
+		});
+
+		const message = JSON.stringify({ token: 'token-1', view_code: 'vc-1', event_name: 'purchase_done', revenue: '1000.5' });
+		await handler([message, message]);
+
+		expect(campaignRepository.findByToken).toHaveBeenCalledTimes(1);
+		expect(postbackRepository.createMany).toHaveBeenCalledTimes(1);
+		expect(postbackRepository.createMany.mock.calls[0][0]).toHaveLength(2);
+		expect(dailyStatisticRepository.upsert).toHaveBeenCalledTimes(1);
+
+		const dailyStatistic = dailyStatisticRepository.upsert.mock.calls[0][0];
+		expect(dailyStatistic.purchase).toBe(2);
+		expect(dailyStatistic.revenue).toBe(2000);
+	});
+
+	it('깨진 JSON, token 없는 메시지, 캠페인 없는 메시지는 건너뛴다', async () => {
+		campaignRepository.findByToken.mockResolvedValue(null);
+
+		await handler(['not-json', JSON.stringify({ view_code: 'vc-1' }), JSON.stringify({ token: 'no-campaign', view_code: 'vc-1' })]);
+
+		expect(postbackRepository.createMany).not.toHaveBeenCalled();
+		expect(dailyStatisticRepository.upsert).not.toHaveBeenCalled();
+	});
+});
