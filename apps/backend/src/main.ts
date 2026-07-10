@@ -16,7 +16,7 @@ async function bootstrap() {
 		})
 	);
 
-	// SIGTERM/SIGINT에서 OnApplicationShutdown(Kafka disconnect 등)이 실행되도록 한다
+	// SIGTERM/SIGINT에서 OnApplicationShutdown(Redis Stream 연결 종료 등)이 실행되도록 한다
 	app.enableShutdownHooks();
 
 	await app.listen(port ? port : 3000);

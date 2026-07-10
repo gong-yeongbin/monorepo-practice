@@ -1,12 +1,12 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Postback } from '@postback/domain/postback.entity';
 import { TRACKERS } from '@trackers/tracker.registry';
-import { PRODUCER_PORT, ProducerPort } from '@infra/messaging/producer.port';
+import { StreamProducer } from '@infra/stream/stream-producer.service';
 import { viewCodeCodec } from '@common/utils/view-code.util';
 
 @Injectable()
 export class InstallPostbackUseCase {
-	constructor(@Inject(PRODUCER_PORT) private readonly producer: ProducerPort) {}
+	constructor(private readonly producer: StreamProducer) {}
 
 	async execute(name: string, query: Record<string, string>): Promise<void> {
 		// name은 컨트롤러에서 @IsIn(TRACKER_NAMES)로 검증된다

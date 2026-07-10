@@ -4,7 +4,7 @@ import { plainToInstance } from 'class-transformer';
 import { TrackingUseCase } from './tracking.use-case';
 import { CAMPAIGN_REPOSITORY } from '@tracking/domain/campaign.repository';
 import { CACHE_PORT } from '@infra/cache/cache.port';
-import { PRODUCER_PORT } from '@infra/messaging/producer.port';
+import { StreamProducer } from '@infra/stream/stream-producer.service';
 import { QueryDto } from '@tracking/application/dto/query.dto';
 
 describe('TrackingUseCase', () => {
@@ -23,7 +23,7 @@ describe('TrackingUseCase', () => {
 				TrackingUseCase,
 				{ provide: CAMPAIGN_REPOSITORY, useValue: campaignRepository },
 				{ provide: CACHE_PORT, useValue: cache },
-				{ provide: PRODUCER_PORT, useValue: producer },
+				{ provide: StreamProducer, useValue: producer },
 			],
 		}).compile();
 

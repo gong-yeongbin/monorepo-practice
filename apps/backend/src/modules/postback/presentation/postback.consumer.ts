@@ -1,13 +1,13 @@
-// postback 토픽 메시지를 수신해 use-case로 전달하는 Kafka consumer 어댑터
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { CONSUMER_PORT, ConsumerPort } from '@infra/messaging/consumer.port';
+// postback 스트림 메시지를 수신해 use-case로 전달하는 Redis Stream consumer 어댑터
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { StreamConsumer } from '@infra/stream/stream-consumer.service';
 import { PostbackConsumerUseCase } from '@postback/application/postback-consumer.use-case';
 
 @Injectable()
 export class PostbackConsumer implements OnModuleInit {
 	constructor(
 		private readonly postbackConsumerUseCase: PostbackConsumerUseCase,
-		@Inject(CONSUMER_PORT) private readonly consumer: ConsumerPort
+		private readonly consumer: StreamConsumer
 	) {}
 
 	onModuleInit() {

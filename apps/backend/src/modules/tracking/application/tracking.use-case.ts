@@ -3,7 +3,7 @@ import { CAMPAIGN_REPOSITORY, CampaignRepository } from '@tracking/domain/campai
 import { QueryDto } from '@tracking/application/dto/query.dto';
 import { TRACKERS } from '@trackers/tracker.registry';
 import { CACHE_PORT, CachePort } from '@infra/cache/cache.port';
-import { PRODUCER_PORT, ProducerPort } from '@infra/messaging/producer.port';
+import { StreamProducer } from '@infra/stream/stream-producer.service';
 import { viewCodeCodec } from '@common/utils/view-code.util';
 
 const TRACKING_URL_CACHE_TTL = 1000 * 60 * 30;
@@ -13,7 +13,7 @@ export class TrackingUseCase {
 	constructor(
 		@Inject(CAMPAIGN_REPOSITORY) private readonly campaignRepository: CampaignRepository,
 		@Inject(CACHE_PORT) private readonly cache: CachePort,
-		@Inject(PRODUCER_PORT) private readonly producer: ProducerPort
+		private readonly producer: StreamProducer
 	) {}
 
 	async execute(query: QueryDto): Promise<string> {

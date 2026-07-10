@@ -8,10 +8,10 @@ import { DAILY_REPORT_REPOSITORY } from '@tracking/domain/daily-report.repositor
 import { PrismaCampaignRepository } from '@tracking/infrastructure/prisma-campaign.repository';
 import { PrismaDailyReportRepository } from '@tracking/infrastructure/prisma-daily-report.repository';
 import { CacheModule } from '@infra/cache/cache.module';
-import { MessagingModule } from '@infra/messaging/messaging.module';
+import { StreamModule } from '@infra/stream/stream.module';
 
 @Module({
-	imports: [CacheModule, MessagingModule],
+	imports: [CacheModule, StreamModule],
 	controllers: [TrackingController],
 	providers: [
 		TrackingConsumer,
