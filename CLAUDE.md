@@ -21,12 +21,12 @@ NestJS 앱(admin, backend) 테스트는 Jest: `pnpm test`, `pnpm test:e2e`(`./te
 - `apps/backend` — NestJS 11 트래킹·포스트백 마이크로서비스, 포트 3001. KafkaJS + cache-manager/Redis.
 - `apps/admin-page` — Vue 3.5 + Vite(rolldown-vite) + PrimeVue + Pinia + Apollo Client, dev 5173.
 - `packages/prisma` (`@repo/prisma`) — 공유 Prisma 클라이언트(MySQL), NestJS `PrismaModule`/`PrismaService`. 스키마: `packages/prisma/prisma/schema.prisma`.
-- `packages/typescript-config`, `packages/eslint` — 공유 tsconfig / ESLint 설정 (`@repo/*`).
+- `packages/typescript-config`, `packages/eslint-config` — 공유 tsconfig / ESLint 설정 (`@repo/*`).
 
 ## 코드 스타일 (주의)
 
 Prettier 설정이 앱마다 다르므로 **루트 `pnpm format`을 무분별하게 돌리지 말고 수정하는 앱의 설정을 따를 것**:
-- NestJS 앱 + prisma (`@repo/eslint/prettier-base.js`): 탭 들여쓰기, `printWidth: 180`, 세미콜론 있음, single quote.
+- NestJS 앱 + prisma (`@repo/eslint-config/prettier`): 탭 들여쓰기, `printWidth: 180`, 세미콜론 있음, single quote.
 - admin-page (`.prettierrc.json`): 스페이스, `printWidth: 100`, **세미콜론 없음**, single quote.
 
 TypeScript strict. `admin-page`는 eslint + oxlint 둘 다 사용(`pnpm lint`가 순차 실행).

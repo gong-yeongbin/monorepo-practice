@@ -301,12 +301,13 @@ pnpm migrate
 pnpm deploy
 ```
 
-### ESLint (`packages/eslint`)
+### ESLint (`packages/eslint-config`)
 
-공유 ESLint 설정을 제공합니다.
+공유 ESLint / Prettier 설정을 제공합니다.
 
-- `@repo/eslint/base`: 기본 설정
-- `@repo/eslint/nest`: NestJS 설정
+- `@repo/eslint-config/base`: 기본 설정
+- `@repo/eslint-config/nestjs`: NestJS 설정 (type-checked)
+- `@repo/eslint-config/prettier`: 공유 Prettier 설정
 
 ### TypeScript (`packages/typescript-config`)
 

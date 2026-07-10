@@ -5,13 +5,13 @@ import tseslint from "typescript-eslint";
 import onlyWarn from "eslint-plugin-only-warn";
 
 /**
- * A shared ESLint configuration for the repository.
+ * 레포 전체에서 공유하는 기본 ESLint 설정.
+ * eslint-config-prettier는 포매팅 규칙을 비활성화해야 하므로 마지막에 둔다.
  *
  * @type {import("eslint").Linter.Config[]}
  * */
-export const config = [
+export const baseConfig = [
   js.configs.recommended,
-  eslintConfigPrettier,
   ...tseslint.configs.recommended,
   {
     plugins: {
@@ -26,6 +26,7 @@ export const config = [
       onlyWarn,
     },
   },
+  eslintConfigPrettier,
   {
     ignores: ["dist/**"],
   },
