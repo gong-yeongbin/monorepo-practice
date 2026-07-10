@@ -1,24 +1,16 @@
-import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { DAILY_REPORT_REPOSITORY, DailyReportRepository } from '@tracking/domain/daily-report.repository';
 import { DailyReport } from '@tracking/domain/daily-report.entity';
-import { CONSUMER_PORT, ConsumerPort } from '@infra/messaging/consumer.port';
 import { viewCodeCodec } from '@common/utils/view-code.util';
 import { kstBaseDate } from '@common/utils/date.util';
 
 @Injectable()
-export class TrackingConsumerUseCase implements OnModuleInit {
+export class TrackingConsumerUseCase {
 	private readonly logger = new Logger(TrackingConsumerUseCase.name);
 
-	constructor(
-		@Inject(DAILY_REPORT_REPOSITORY) private readonly dailyReportRepository: DailyReportRepository,
-		@Inject(CONSUMER_PORT) private readonly consumer: ConsumerPort
-	) {}
+	constructor(@Inject(DAILY_REPORT_REPOSITORY) private readonly dailyReportRepository: DailyReportRepository) {}
 
-	onModuleInit() {
-		this.consumer.register('tracking', (viewCodes) => this.consume(viewCodes));
-	}
-
-	private async consume(viewCodes: string[]) {
+	async execute(viewCodes: string[]) {
 		const baseDate = kstBaseDate();
 		const dailyReportMap = new Map<string, DailyReport>();
 

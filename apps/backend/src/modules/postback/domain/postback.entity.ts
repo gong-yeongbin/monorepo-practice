@@ -1,6 +1,7 @@
+// 포스트백 도메인 엔티티 (postback 테이블 저장 레코드)
 import { TrackerPostback } from '@trackers/tracker.types';
 
-export class PostbackDto {
+export class Postback {
 	tracker_name: string;
 	event_name: string;
 	click_id: string;
@@ -19,8 +20,8 @@ export class PostbackDto {
 	revenue: string | null = null;
 	raw_query_params: string;
 
-	static of(props: TrackerPostback & { trackerName: string; eventName: string; pubId: string | null; subId: string | null; rawQueryParams: string }): PostbackDto {
-		const postback = new PostbackDto();
+	static of(props: TrackerPostback & { trackerName: string; eventName: string; pubId: string | null; subId: string | null; rawQueryParams: string }): Postback {
+		const postback = new Postback();
 		postback.tracker_name = props.trackerName;
 		postback.event_name = props.eventName;
 		postback.click_id = props.clickId;

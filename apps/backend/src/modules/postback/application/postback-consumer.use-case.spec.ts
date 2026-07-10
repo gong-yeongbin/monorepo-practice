@@ -1,20 +1,14 @@
 import { Test } from '@nestjs/testing';
 import { PostbackConsumerUseCase } from './postback-consumer.use-case';
-import { POSTBACK_REPOSITORY } from '@postback/application/port/postback.repository';
+import { POSTBACK_REPOSITORY } from '@postback/domain/postback.repository';
 import { CAMPAIGN_REPOSITORY } from '@postback/domain/campaign.repository';
 import { DAILY_REPORT_REPOSITORY } from '@postback/domain/daily-report.repository';
-import { CONSUMER_PORT } from '@infra/messaging/consumer.port';
 
 describe('PostbackConsumerUseCase', () => {
 	const postbackRepository = { createMany: jest.fn() };
 	const campaignRepository = { findByToken: jest.fn() };
 	const dailyReportRepository = { upsert: jest.fn() };
-	let handler: (messages: string[]) => Promise<void>;
-	const consumer = {
-		register: jest.fn((_topic: string, h: (messages: string[]) => Promise<void>) => {
-			handler = h;
-		}),
-	};
+	let useCase: PostbackConsumerUseCase;
 
 	beforeEach(async () => {
 		jest.clearAllMocks();
@@ -25,11 +19,10 @@ describe('PostbackConsumerUseCase', () => {
 				{ provide: POSTBACK_REPOSITORY, useValue: postbackRepository },
 				{ provide: CAMPAIGN_REPOSITORY, useValue: campaignRepository },
 				{ provide: DAILY_REPORT_REPOSITORY, useValue: dailyReportRepository },
-				{ provide: CONSUMER_PORT, useValue: consumer },
 			],
 		}).compile();
 
-		module.get(PostbackConsumerUseCase).onModuleInit();
+		useCase = module.get(PostbackConsumerUseCase);
 	});
 
 	it('배치 내 postback을 view_code 기준으로 집계해 저장하고 캠페인 조회는 token당 1회만 수행한다', async () => {
@@ -39,7 +32,7 @@ describe('PostbackConsumerUseCase', () => {
 		});
 
 		const message = JSON.stringify({ token: 'token-1', view_code: 'vc-1', event_name: 'purchase_done', revenue: '1000.5' });
-		await handler([message, message]);
+		await useCase.execute([message, message]);
 
 		expect(campaignRepository.findByToken).toHaveBeenCalledTimes(1);
 		expect(postbackRepository.createMany).toHaveBeenCalledTimes(1);
@@ -54,7 +47,7 @@ describe('PostbackConsumerUseCase', () => {
 	it('깨진 JSON, token 없는 메시지, 캠페인 없는 메시지는 건너뛴다', async () => {
 		campaignRepository.findByToken.mockResolvedValue(null);
 
-		await handler(['not-json', JSON.stringify({ view_code: 'vc-1' }), JSON.stringify({ token: 'no-campaign', view_code: 'vc-1' })]);
+		await useCase.execute(['not-json', JSON.stringify({ view_code: 'vc-1' }), JSON.stringify({ token: 'no-campaign', view_code: 'vc-1' })]);
 
 		expect(postbackRepository.createMany).not.toHaveBeenCalled();
 		expect(dailyReportRepository.upsert).not.toHaveBeenCalled();

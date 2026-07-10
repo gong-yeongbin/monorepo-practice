@@ -1,32 +1,26 @@
-import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { PostbackDto } from '@postback/application/dto/postback.dto';
-import { POSTBACK_REPOSITORY, PostbackRepository } from '@postback/application/port/postback.repository';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Postback } from '@postback/domain/postback.entity';
+import { POSTBACK_REPOSITORY, PostbackRepository } from '@postback/domain/postback.repository';
 import { CAMPAIGN_REPOSITORY, CampaignRepository } from '@postback/domain/campaign.repository';
 import { DAILY_REPORT_REPOSITORY, DailyReportRepository } from '@postback/domain/daily-report.repository';
 import { Campaign } from '@postback/domain/campaign.entity';
 import { DailyReport } from '@postback/domain/daily-report.entity';
-import { CONSUMER_PORT, ConsumerPort } from '@infra/messaging/consumer.port';
 import { kstBaseDate } from '@common/utils/date.util';
 
 @Injectable()
-export class PostbackConsumerUseCase implements OnModuleInit {
+export class PostbackConsumerUseCase {
 	private readonly logger = new Logger(PostbackConsumerUseCase.name);
 
 	constructor(
 		@Inject(POSTBACK_REPOSITORY) private readonly postbackRepository: PostbackRepository,
 		@Inject(CAMPAIGN_REPOSITORY) private readonly campaignRepository: CampaignRepository,
-		@Inject(DAILY_REPORT_REPOSITORY) private readonly dailyReportRepository: DailyReportRepository,
-		@Inject(CONSUMER_PORT) private readonly consumer: ConsumerPort
+		@Inject(DAILY_REPORT_REPOSITORY) private readonly dailyReportRepository: DailyReportRepository
 	) {}
 
-	onModuleInit() {
-		this.consumer.register('postback', (messages) => this.consume(messages));
-	}
-
-	private async consume(messages: string[]) {
+	async execute(messages: string[]) {
 		const baseDate = kstBaseDate();
 		const campaigns = new Map<string, Campaign | null>();
-		const postbacks: PostbackDto[] = [];
+		const postbacks: Postback[] = [];
 		const dailyReportMap = new Map<string, DailyReport>();
 
 		for (const message of messages) {
@@ -62,16 +56,16 @@ export class PostbackConsumerUseCase implements OnModuleInit {
 		}
 	}
 
-	private parse(value: string): PostbackDto | null {
+	private parse(value: string): Postback | null {
 		try {
-			return Object.assign(new PostbackDto(), JSON.parse(value) as Partial<PostbackDto>);
+			return Object.assign(new Postback(), JSON.parse(value) as Partial<Postback>);
 		} catch {
 			this.logger.error(`postback 메시지 파싱에 실패해 건너뜁니다: ${value}`);
 			return null;
 		}
 	}
 
-	private accumulate(dailyReportMap: Map<string, DailyReport>, postback: PostbackDto, campaign: Campaign, baseDate: Date) {
+	private accumulate(dailyReportMap: Map<string, DailyReport>, postback: Postback, campaign: Campaign, baseDate: Date) {
 		let dailyReportDto = dailyReportMap.get(postback.view_code);
 		if (!dailyReportDto) {
 			dailyReportDto = new DailyReport({ view_code: postback.view_code, token: postback.token, pub_id: postback.pub_id, sub_id: postback.sub_id, created_date: baseDate });

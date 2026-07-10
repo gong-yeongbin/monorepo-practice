@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TrackingController } from '@tracking/presentation/tracking.controller';
+import { TrackingConsumer } from '@tracking/presentation/tracking.consumer';
 import { TrackingUseCase } from '@tracking/application/tracking.use-case';
 import { TrackingConsumerUseCase } from '@tracking/application/tracking-consumer.use-case';
 import { CAMPAIGN_REPOSITORY } from '@tracking/domain/campaign.repository';
@@ -13,6 +14,7 @@ import { MessagingModule } from '@infra/messaging/messaging.module';
 	imports: [CacheModule, MessagingModule],
 	controllers: [TrackingController],
 	providers: [
+		TrackingConsumer,
 		TrackingUseCase,
 		TrackingConsumerUseCase,
 		{ provide: CAMPAIGN_REPOSITORY, useClass: PrismaCampaignRepository },

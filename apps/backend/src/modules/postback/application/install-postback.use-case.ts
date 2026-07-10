@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { PostbackDto } from '@postback/application/dto/postback.dto';
+import { Postback } from '@postback/domain/postback.entity';
 import { TRACKERS } from '@trackers/tracker.registry';
 import { PRODUCER_PORT, ProducerPort } from '@infra/messaging/producer.port';
 import { viewCodeCodec } from '@common/utils/view-code.util';
@@ -13,7 +13,7 @@ export class InstallPostbackUseCase {
 		const installPostback = TRACKERS[name]!.install(query);
 		const [, pubId, subId] = viewCodeCodec.decode(installPostback.viewCode).split(':');
 
-		const postback = PostbackDto.of({ ...installPostback, trackerName: name, eventName: 'install', pubId: pubId || null, subId: subId || null, rawQueryParams: JSON.stringify(query) });
+		const postback = Postback.of({ ...installPostback, trackerName: name, eventName: 'install', pubId: pubId || null, subId: subId || null, rawQueryParams: JSON.stringify(query) });
 
 		await this.producer.send('postback', JSON.stringify(postback));
 	}
