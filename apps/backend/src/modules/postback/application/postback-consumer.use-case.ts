@@ -6,7 +6,7 @@ import { DAILY_REPORT_REPOSITORY, DailyReportRepository } from '@postback/domain
 import { Campaign } from '@postback/domain/campaign.entity';
 import { DailyReport } from '@postback/domain/daily-report.entity';
 import { CONSUMER_PORT, ConsumerPort } from '@core/kafka/consumer.port';
-import { kstBaseDate } from '@src/common/util/date.util';
+import { kstBaseDate } from '@common/utils/date.util';
 
 @Injectable()
 export class PostbackConsumerUseCase implements OnModuleInit {

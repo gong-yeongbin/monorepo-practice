@@ -74,11 +74,11 @@
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "moduleNameMapper": {
-      "^@src/(.*)$": "<rootDir>/$1",
+      "^@common/(.*)$": "<rootDir>/common/$1",
       "^@core/(.*)$": "<rootDir>/core/$1",
       "^@tracker/(.*)$": "<rootDir>/tracker/$1",
-      "^@tracking/(.*)$": "<rootDir>/module/tracking/$1",
-      "^@postback/(.*)$": "<rootDir>/module/postback/$1"
+      "^@tracking/(.*)$": "<rootDir>/modules/tracking/$1",
+      "^@postback/(.*)$": "<rootDir>/modules/postback/$1"
     },
     "transform": {
       "^.+\\.(t|j)s$": [

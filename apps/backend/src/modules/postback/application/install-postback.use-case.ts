@@ -2,18 +2,18 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PostbackDto } from '@postback/application/dto/postback.dto';
 import { TRACKERS } from '@tracker/tracker.registry';
 import { PRODUCER_PORT, ProducerPort } from '@core/kafka/producer.port';
-import { viewCodeCodec } from '@src/common/util/view-code.util';
+import { viewCodeCodec } from '@common/utils/view-code.util';
 
 @Injectable()
-export class EventPostbackUseCase {
+export class InstallPostbackUseCase {
 	constructor(@Inject(PRODUCER_PORT) private readonly producer: ProducerPort) {}
 
 	async execute(name: string, query: Record<string, string>): Promise<void> {
 		// name은 컨트롤러에서 @IsIn(TRACKER_NAMES)로 검증된다
-		const eventPostback = TRACKERS[name]!.event(query);
-		const [, pubId, subId] = viewCodeCodec.decode(eventPostback.viewCode).split(':');
+		const installPostback = TRACKERS[name]!.install(query);
+		const [, pubId, subId] = viewCodeCodec.decode(installPostback.viewCode).split(':');
 
-		const postback = PostbackDto.of({ ...eventPostback, trackerName: name, pubId: pubId || null, subId: subId || null, rawQueryParams: JSON.stringify(query) });
+		const postback = PostbackDto.of({ ...installPostback, trackerName: name, eventName: 'install', pubId: pubId || null, subId: subId || null, rawQueryParams: JSON.stringify(query) });
 
 		await this.producer.send('postback', JSON.stringify(postback));
 	}

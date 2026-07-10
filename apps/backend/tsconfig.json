@@ -4,11 +4,11 @@
     "outDir": "./dist",
     "types": ["node", "jest"],
     "paths": {
-      "@src/*": ["./src/*"],
+      "@common/*": ["./src/common/*"],
       "@core/*": ["./src/core/*"],
       "@tracker/*": ["./src/tracker/*"],
-      "@tracking/*": ["./src/module/tracking/*"],
-      "@postback/*": ["./src/module/postback/*"]
+      "@tracking/*": ["./src/modules/tracking/*"],
+      "@postback/*": ["./src/modules/postback/*"]
     }
   }
 }

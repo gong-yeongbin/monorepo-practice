@@ -4,7 +4,7 @@ import { QueryDto } from '@tracking/application/dto/query.dto';
 import { TRACKERS } from '@tracker/tracker.registry';
 import { CACHE_PORT, CachePort } from '@core/cache/cache.port';
 import { PRODUCER_PORT, ProducerPort } from '@core/kafka/producer.port';
-import { viewCodeCodec } from '@src/common/util/view-code.util';
+import { viewCodeCodec } from '@common/utils/view-code.util';
 
 const TRACKING_URL_CACHE_TTL = 1000 * 60 * 30;
 
