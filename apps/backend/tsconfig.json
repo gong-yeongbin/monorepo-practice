@@ -5,7 +5,7 @@
     "types": ["node", "jest"],
     "paths": {
       "@common/*": ["./src/common/*"],
-      "@core/*": ["./src/core/*"],
+      "@infra/*": ["./src/infra/*"],
       "@tracker/*": ["./src/tracker/*"],
       "@tracking/*": ["./src/modules/tracking/*"],
       "@postback/*": ["./src/modules/postback/*"]

@@ -1,6 +1,6 @@
 // Prisma로 캠페인을 조회하는 repository 구현체
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@core/prisma/prisma.service';
+import { PrismaService } from '@infra/prisma/prisma.service';
 import { Campaign } from '@postback/domain/campaign.entity';
 import { CampaignConfig } from '@postback/domain/campaign-config.entity';
 import { CampaignRepository } from '@postback/domain/campaign.repository';

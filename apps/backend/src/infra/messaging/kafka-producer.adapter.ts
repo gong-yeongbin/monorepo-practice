@@ -1,7 +1,7 @@
 import { Injectable, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 import { Kafka, Producer } from 'kafkajs';
 import { ConfigService } from '@nestjs/config';
-import { ProducerPort } from '@core/kafka/producer.port';
+import { ProducerPort } from '@infra/messaging/producer.port';
 
 @Injectable()
 export class KafkaProducerAdapter implements ProducerPort, OnModuleInit, OnApplicationShutdown {

@@ -6,11 +6,11 @@ import { CAMPAIGN_REPOSITORY } from '@tracking/domain/campaign.repository';
 import { DAILY_REPORT_REPOSITORY } from '@tracking/domain/daily-report.repository';
 import { PrismaCampaignRepository } from '@tracking/infrastructure/prisma-campaign.repository';
 import { PrismaDailyReportRepository } from '@tracking/infrastructure/prisma-daily-report.repository';
-import { CacheModule } from '@core/cache/cache.module';
-import { KafkaModule } from '@core/kafka/kafka.module';
+import { CacheModule } from '@infra/cache/cache.module';
+import { MessagingModule } from '@infra/messaging/messaging.module';
 
 @Module({
-	imports: [CacheModule, KafkaModule],
+	imports: [CacheModule, MessagingModule],
 	controllers: [TrackingController],
 	providers: [
 		TrackingUseCase,

@@ -3,7 +3,7 @@ import { PostbackConsumerUseCase } from './postback-consumer.use-case';
 import { POSTBACK_REPOSITORY } from '@postback/application/port/postback.repository';
 import { CAMPAIGN_REPOSITORY } from '@postback/domain/campaign.repository';
 import { DAILY_REPORT_REPOSITORY } from '@postback/domain/daily-report.repository';
-import { CONSUMER_PORT } from '@core/kafka/consumer.port';
+import { CONSUMER_PORT } from '@infra/messaging/consumer.port';
 
 describe('PostbackConsumerUseCase', () => {
 	const postbackRepository = { createMany: jest.fn() };

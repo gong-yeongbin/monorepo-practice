@@ -2,8 +2,8 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CAMPAIGN_REPOSITORY, CampaignRepository } from '@tracking/domain/campaign.repository';
 import { QueryDto } from '@tracking/application/dto/query.dto';
 import { TRACKERS } from '@tracker/tracker.registry';
-import { CACHE_PORT, CachePort } from '@core/cache/cache.port';
-import { PRODUCER_PORT, ProducerPort } from '@core/kafka/producer.port';
+import { CACHE_PORT, CachePort } from '@infra/cache/cache.port';
+import { PRODUCER_PORT, ProducerPort } from '@infra/messaging/producer.port';
 import { viewCodeCodec } from '@common/utils/view-code.util';
 
 const TRACKING_URL_CACHE_TTL = 1000 * 60 * 30;

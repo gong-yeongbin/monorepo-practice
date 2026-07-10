@@ -9,10 +9,10 @@ import { CAMPAIGN_REPOSITORY } from '@postback/domain/campaign.repository';
 import { DAILY_REPORT_REPOSITORY } from '@postback/domain/daily-report.repository';
 import { PrismaCampaignRepository } from '@postback/infrastructure/prisma-campaign.repository';
 import { PrismaDailyReportRepository } from '@postback/infrastructure/prisma-daily-report.repository';
-import { KafkaModule } from '@core/kafka/kafka.module';
+import { MessagingModule } from '@infra/messaging/messaging.module';
 
 @Module({
-	imports: [KafkaModule],
+	imports: [MessagingModule],
 	controllers: [PostbackController],
 	providers: [
 		InstallPostbackUseCase,

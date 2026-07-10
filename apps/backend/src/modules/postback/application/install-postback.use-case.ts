@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PostbackDto } from '@postback/application/dto/postback.dto';
 import { TRACKERS } from '@tracker/tracker.registry';
-import { PRODUCER_PORT, ProducerPort } from '@core/kafka/producer.port';
+import { PRODUCER_PORT, ProducerPort } from '@infra/messaging/producer.port';
 import { viewCodeCodec } from '@common/utils/view-code.util';
 
 @Injectable()

@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { CachePort } from '@core/cache/cache.port';
+import { CachePort } from '@infra/cache/cache.port';
 
 @Injectable()
 export class RedisCacheAdapter implements CachePort {

@@ -18,7 +18,7 @@ NestJS 앱(admin, backend) 테스트는 Jest: `pnpm test`, `pnpm test:e2e`(`./te
 ## 구조
 
 - `apps/admin` — NestJS 11 + GraphQL(Apollo), 포트 3000, `/graphql`. Passport local + JWT + 쿠키 인증.
-- `apps/backend` — NestJS 11 트래킹·포스트백 마이크로서비스, 포트 3001. KafkaJS + cache-manager/Redis. Prisma(MySQL)도 여기서 관리: 스키마 `apps/backend/prisma/schema.prisma`, `PrismaModule`/`PrismaService`는 `src/core/prisma/`.
+- `apps/backend` — NestJS 11 트래킹·포스트백 마이크로서비스, 포트 3001. KafkaJS + cache-manager/Redis. Prisma(MySQL)도 여기서 관리: 스키마 `apps/backend/prisma/schema.prisma`, `PrismaModule`/`PrismaService`는 `src/infra/prisma/`.
 - `apps/admin-page` — Vue 3.5 + Vite(rolldown-vite) + PrimeVue + Pinia + Apollo Client, dev 5173.
 - `packages/typescript-config`, `packages/eslint-config` — 공유 tsconfig / ESLint 설정 (`@repo/*`).
 

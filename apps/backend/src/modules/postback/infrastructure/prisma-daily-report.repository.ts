@@ -1,7 +1,7 @@
 // Prisma로 일별 리포트를 upsert하는 repository 구현체
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { PrismaService } from '@core/prisma/prisma.service';
+import { PrismaService } from '@infra/prisma/prisma.service';
 import { DailyReport } from '@postback/domain/daily-report.entity';
 import { DailyReportRepository } from '@postback/domain/daily-report.repository';
 

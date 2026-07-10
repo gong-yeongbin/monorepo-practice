@@ -1,7 +1,7 @@
 import { Injectable, OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
 import { Consumer, Kafka } from 'kafkajs';
 import { ConfigService } from '@nestjs/config';
-import { BatchHandler, ConsumerPort } from '@core/kafka/consumer.port';
+import { BatchHandler, ConsumerPort } from '@infra/messaging/consumer.port';
 
 @Injectable()
 export class KafkaConsumerAdapter implements ConsumerPort, OnApplicationBootstrap, OnApplicationShutdown {

@@ -5,7 +5,7 @@ import { CAMPAIGN_REPOSITORY, CampaignRepository } from '@postback/domain/campai
 import { DAILY_REPORT_REPOSITORY, DailyReportRepository } from '@postback/domain/daily-report.repository';
 import { Campaign } from '@postback/domain/campaign.entity';
 import { DailyReport } from '@postback/domain/daily-report.entity';
-import { CONSUMER_PORT, ConsumerPort } from '@core/kafka/consumer.port';
+import { CONSUMER_PORT, ConsumerPort } from '@infra/messaging/consumer.port';
 import { kstBaseDate } from '@common/utils/date.util';
 
 @Injectable()
