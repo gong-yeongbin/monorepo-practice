@@ -9,7 +9,7 @@ pnpm@9 + Turborepo 모노레포. 광고 관리 플랫폼(광고주/캠페인/매
 루트에서 turbo로 실행:
 - `pnpm dev` — 전체 앱 watch 모드 (`--filter=backend`로 특정 앱만)
 - `pnpm build` / `pnpm lint` / `pnpm check-types`
-- `pnpm docker:up` / `pnpm docker:down` — MySQL + Valkey(Redis) 컨테이너 (compose에 Kafka 컨테이너도 남아있으나 코드는 더 이상 사용하지 않음)
+- `pnpm docker:up` / `pnpm docker:down` — MySQL + Redis 컨테이너
 
 Prisma는 `apps/backend`에서 실행: `pnpm migrate`(--create-only), `pnpm deploy`, `pnpm generate`, `pnpm reset`.
 
@@ -29,5 +29,5 @@ TypeScript strict.
 ## 환경 / 기타
 
 - 각 앱에 `.env` 필요(gitignore됨). 설정값은 README.md 참고.
-- Docker DB: `mysql:8.0`, DB명 `mecross`. Redis 자리는 실제로 valkey 사용.
+- Docker DB: `mysql:8.0`, DB명 `mecross`. Redis는 `redis:alpine` 사용.
 - 커밋 메시지는 **한글**로 작성 (기존 히스토리와 일치).

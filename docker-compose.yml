@@ -1,9 +1,7 @@
-version: '3.8'
-
 services:
   mysql:
     image: mysql:8.0
-    container_name: monorepo_mysql
+    container_name: monorepo-mysql
     environment:
       MYSQL_ROOT_PASSWORD: "1234"
       MYSQL_DATABASE: mecross
@@ -11,39 +9,15 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-    networks:
-      - monorepo_network
 
-  valkey:
-    image: valkey/valkey:latest
-    container_name: monorepo-valkey
+  redis:
+    image: redis:alpine
+    container_name: monorepo-redis
     ports:
       - "6379:6379"
-
-  kafka:
-    image: confluentinc/confluent-local:latest
-    container_name: monorepo-kafka
-    ports:
-      - "9092:9092"    # Kafka broker (PLAINTEXT)
-      - "9021:9021"    # Confluent Control Center
-      - "8081:8081"    # Schema Registry
-    environment:
-      CLUSTER_ID: "monorepo-kafka-cluster" # (클러스터 최초 생성시 필요, random-uuid로 생성)
-      CONFLUENT_LOCAL_LISTENERS: PLAINTEXT://0.0.0.0:9092
-      CONFLUENT_LOCAL_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      CONFLUENT_LOCAL_SCHEMA_REGISTRY_URL: "http://localhost:8081"
-      CONTROL_CENTER_BOOTSTRAP_SERVERS: "monorepo-kafka:9092"
-      CONTROL_CENTER_SCHEMA_REGISTRY_URL: "http://localhost:8081"
-      CONTROL_CENTER_REPLICATION_FACTOR: 1
-      CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
-      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
-      CONFLUENT_METRICS_TOPIC_REPLICATION: 1
-      PORT: 9021
-    restart: unless-stopped
+    volumes:
+      - redis_data:/data
 
 volumes:
   mysql_data:
-
-networks:
-  monorepo_network:
-    driver: bridge
+  redis_data:
