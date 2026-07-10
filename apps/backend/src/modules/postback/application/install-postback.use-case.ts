@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PostbackDto } from '@postback/application/dto/postback.dto';
-import { TRACKERS } from '@tracker/tracker.registry';
+import { TRACKERS } from '@trackers/tracker.registry';
 import { PRODUCER_PORT, ProducerPort } from '@infra/messaging/producer.port';
 import { viewCodeCodec } from '@common/utils/view-code.util';
 

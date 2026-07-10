@@ -1,6 +1,6 @@
 import { Expose, Transform } from 'class-transformer';
 
-export class AdbrixremasterTracking {
+export class AdbrixRemasterTracking {
 	@Expose({ name: 'token' })
 	cb_1: string;
 

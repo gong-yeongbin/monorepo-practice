@@ -76,7 +76,7 @@
     "moduleNameMapper": {
       "^@common/(.*)$": "<rootDir>/common/$1",
       "^@infra/(.*)$": "<rootDir>/infra/$1",
-      "^@tracker/(.*)$": "<rootDir>/tracker/$1",
+      "^@trackers/(.*)$": "<rootDir>/trackers/$1",
       "^@tracking/(.*)$": "<rootDir>/modules/tracking/$1",
       "^@postback/(.*)$": "<rootDir>/modules/postback/$1"
     },

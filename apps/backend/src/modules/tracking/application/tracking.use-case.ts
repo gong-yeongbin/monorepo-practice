@@ -1,7 +1,7 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CAMPAIGN_REPOSITORY, CampaignRepository } from '@tracking/domain/campaign.repository';
 import { QueryDto } from '@tracking/application/dto/query.dto';
-import { TRACKERS } from '@tracker/tracker.registry';
+import { TRACKERS } from '@trackers/tracker.registry';
 import { CACHE_PORT, CachePort } from '@infra/cache/cache.port';
 import { PRODUCER_PORT, ProducerPort } from '@infra/messaging/producer.port';
 import { viewCodeCodec } from '@common/utils/view-code.util';

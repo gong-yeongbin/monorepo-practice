@@ -1,7 +1,7 @@
 import { Expose, Transform } from 'class-transformer';
 import dayjs from 'dayjs';
 
-export class AdbrixremasterInstall {
+export class AdbrixRemasterInstall {
 	@Expose({ name: 'cb_3' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
 	clickId: string;

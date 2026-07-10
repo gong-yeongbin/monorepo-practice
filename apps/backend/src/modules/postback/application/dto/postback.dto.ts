@@ -1,4 +1,4 @@
-import { TrackerPostback } from '@tracker/tracker.registry';
+import { TrackerPostback } from '@trackers/tracker.types';
 
 export class PostbackDto {
 	tracker_name: string;

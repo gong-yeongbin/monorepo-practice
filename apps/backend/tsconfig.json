@@ -6,7 +6,7 @@
     "paths": {
       "@common/*": ["./src/common/*"],
       "@infra/*": ["./src/infra/*"],
-      "@tracker/*": ["./src/tracker/*"],
+      "@trackers/*": ["./src/trackers/*"],
       "@tracking/*": ["./src/modules/tracking/*"],
       "@postback/*": ["./src/modules/postback/*"]
     }
