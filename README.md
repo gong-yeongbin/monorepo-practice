@@ -35,7 +35,7 @@
 │                   └─────────────────┘                        │
 │                                                               │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │   prisma     │  │    eslint    │  │ typescript   │      │
+│  │   prisma     │  │    eslint    │  │  ts-config   │      │
 │  │   (shared)   │  │   (shared)   │  │   (shared)   │      │
 │  └──────────────┘  └──────────────┘  └──────────────┘      │
 │                                                               │
@@ -119,7 +119,7 @@ monorepo-practice/
 │   │   ├── base.js                # 기본 설정
 │   │   └── nest.js                # NestJS 설정
 │   │
-│   └── typescript/                # TypeScript 설정
+│   └── typescript-config/         # TypeScript 설정
 │       ├── base.json              # 기본 설정
 │       └── nestjs.json            # NestJS 설정
 │
@@ -308,12 +308,12 @@ pnpm deploy
 - `@repo/eslint/base`: 기본 설정
 - `@repo/eslint/nest`: NestJS 설정
 
-### TypeScript (`packages/typescript`)
+### TypeScript (`packages/typescript-config`)
 
 공유 TypeScript 설정을 제공합니다.
 
-- `@repo/typescript/base`: 기본 설정
-- `@repo/typescript/nestjs`: NestJS 설정
+- `@repo/typescript-config/base.json`: 기본 설정
+- `@repo/typescript-config/nestjs.json`: NestJS 설정
 
 ## 📝 사용 가능한 스크립트
 

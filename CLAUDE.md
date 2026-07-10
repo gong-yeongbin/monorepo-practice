@@ -21,7 +21,7 @@ NestJS 앱(admin, backend) 테스트는 Jest: `pnpm test`, `pnpm test:e2e`(`./te
 - `apps/backend` — NestJS 11 트래킹·포스트백 마이크로서비스, 포트 3001. KafkaJS + cache-manager/Redis.
 - `apps/admin-page` — Vue 3.5 + Vite(rolldown-vite) + PrimeVue + Pinia + Apollo Client, dev 5173.
 - `packages/prisma` (`@repo/prisma`) — 공유 Prisma 클라이언트(MySQL), NestJS `PrismaModule`/`PrismaService`. 스키마: `packages/prisma/prisma/schema.prisma`.
-- `packages/typescript`, `packages/eslint` — 공유 tsconfig / ESLint 설정 (`@repo/*`).
+- `packages/typescript-config`, `packages/eslint` — 공유 tsconfig / ESLint 설정 (`@repo/*`).
 
 ## 코드 스타일 (주의)
 

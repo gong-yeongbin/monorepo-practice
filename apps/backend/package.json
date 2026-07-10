@@ -42,7 +42,7 @@
     "@nestjs/testing": "^11.1.28",
     "@repo/eslint": "workspace:*",
     "@repo/prisma": "workspace:*",
-    "@repo/typescript": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
     "@swc/cli": "^0.8.1",
     "@swc/core": "^1.15.43",
     "@types/express": "^5.0.6",
@@ -81,7 +81,14 @@
       "^@postback/(.*)$": "<rootDir>/module/postback/$1"
     },
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.(t|j)s$": [
+        "ts-jest",
+        {
+          "diagnostics": {
+            "ignoreCodes": [151002]
+          }
+        }
+      ]
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"

@@ -27,7 +27,7 @@
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^10.0.1",
     "@repo/eslint": "workspace:*",
-    "@repo/typescript": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
     "@types/node": "^26.1.1",
     "eslint": "^10.6.0",
     "eslint-config-prettier": "^10.1.8",

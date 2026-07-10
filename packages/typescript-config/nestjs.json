@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./base.json",
+  "compilerOptions": {
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    // emitDecoratorMetadata(DI 런타임 타입) 와 양립 불가라 끈다
+    "isolatedModules": false,
+    "removeComments": true,
+    "sourceMap": true,
+    "incremental": true,
+    "strictPropertyInitialization": false
+  }
+}

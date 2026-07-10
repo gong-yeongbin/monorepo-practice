@@ -23,7 +23,7 @@ export class TrackingConsumerUseCase implements OnModuleInit {
 		const dailyReportMap = new Map<string, DailyReport>();
 
 		for (const viewCode of viewCodes) {
-			const [token, pubId, subId] = base64.decode(viewCode).split(':');
+			const [token = '', pubId, subId] = base64.decode(viewCode).split(':');
 
 			const dailyReportDto = dailyReportMap.get(viewCode);
 			if (dailyReportDto) {

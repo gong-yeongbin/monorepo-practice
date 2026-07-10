@@ -9,7 +9,8 @@ export class EventPostbackUseCase {
 	constructor(@Inject(PRODUCER_PORT) private readonly producer: ProducerPort) {}
 
 	async execute(name: string, query: Record<string, string>): Promise<void> {
-		const eventPostback = TRACKERS[name].event(query);
+		// name은 컨트롤러에서 @IsIn(TRACKER_NAMES)로 검증된다
+		const eventPostback = TRACKERS[name]!.event(query);
 		const [, pubId, subId] = base64.decode(eventPostback.viewCode).split(':');
 
 		const postback = PostbackDto.of({ ...eventPostback, trackerName: name, pubId: pubId || null, subId: subId || null, rawQueryParams: JSON.stringify(query) });

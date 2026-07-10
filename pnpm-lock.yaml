@@ -81,9 +81,9 @@ importers:
       '@repo/prisma':
         specifier: workspace:*
         version: link:../../packages/prisma
-      '@repo/typescript':
+      '@repo/typescript-config':
         specifier: workspace:*
-        version: link:../../packages/typescript
+        version: link:../../packages/typescript-config
       '@swc/cli':
         specifier: ^0.8.1
         version: 0.8.1(@swc/core@1.15.43)(chokidar@4.0.3)
@@ -196,9 +196,9 @@ importers:
       '@repo/eslint':
         specifier: workspace:*
         version: link:../eslint
-      '@repo/typescript':
+      '@repo/typescript-config':
         specifier: workspace:*
-        version: link:../typescript
+        version: link:../typescript-config
       '@types/node':
         specifier: ^26.1.1
         version: 26.1.1
@@ -221,7 +221,7 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
 
-  packages/typescript: {}
+  packages/typescript-config: {}
 
 packages:
 

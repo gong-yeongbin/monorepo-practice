@@ -67,7 +67,7 @@ export class AdbrixremasterEvent {
 			if (paramJson['abx:item.abx:sales']) {
 				return paramJson['abx:item.abx:sales'];
 			} else if (paramJson['abx:items']) {
-				return paramJson['abx:items'].reduce((acc, curr) => (acc += parseInt(curr['abx:sales']) || 0), 0);
+				return paramJson['abx:items'].reduce((acc: number, curr: Record<string, string>) => acc + (parseInt(curr['abx:sales'] ?? '') || 0), 0);
 			}
 			return null;
 		}
