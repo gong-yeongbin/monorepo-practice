@@ -107,15 +107,15 @@ model postback {
   evented_at       DateTime? @db.DateTime()
   media_sent_at    DateTime? @db.DateTime()
   revenue_currency String?   @db.VarChar(10)
+  // revenue는 트래커 원본 문자열을 손실 없이 보존한다(소수·통화 혼재 가능). 집계용 daily_report.revenue(Int)와 타입이 다른 것은 의도적이다.
   revenue          String?   @db.VarChar(50)
   raw_query_params String    @db.Text
-
-  @@index([token])
 }
 
 model daily_report {
   id           Int      @id @default(autoincrement())
   view_code    String   @db.VarChar(255)
+  // 관계를 campaign_id(PK)가 아니라 token으로 연결한다. tracking consumer가 클릭 집계 시 campaign을 조회하지 않고 viewCode에서 디코드한 token만으로 upsert하기 위한 의도적 설계다(핫패스 DB 조회 회피).
   campaign     campaign @relation(fields: [token], references: [token])
   token        String   @db.VarChar(100)
   pub_id       String?  @db.VarChar(100)
