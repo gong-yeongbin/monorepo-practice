@@ -4,7 +4,7 @@ import { QueryDto } from '@tracking/application/dto/query.dto';
 import { TRACKERS } from '@tracker/tracker.registry';
 import { CACHE_PORT, CachePort } from '@core/cache/cache.port';
 import { PRODUCER_PORT, ProducerPort } from '@core/kafka/producer.port';
-import { base64 } from '@src/common/util/base64.util';
+import { viewCodeCodec } from '@src/common/util/view-code.util';
 
 const TRACKING_URL_CACHE_TTL = 1000 * 60 * 30;
 
@@ -18,7 +18,7 @@ export class TrackingUseCase {
 
 	async execute(query: QueryDto): Promise<string> {
 		const { token } = query;
-		const viewCode = base64.encode(`${token}:${query.pubId ?? ''}:${query.subId ?? ''}`);
+		const viewCode = viewCodeCodec.encode(`${token}:${query.pubId ?? ''}:${query.subId ?? ''}`);
 
 		const cachedUrl = await this.cache.get(viewCode);
 		if (cachedUrl) {

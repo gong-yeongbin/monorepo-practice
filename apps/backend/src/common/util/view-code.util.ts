@@ -1,10 +1,11 @@
+// viewCode를 AES-128-CBC로 암호화/복호화하는 코덱 유틸
 import * as crypto from 'crypto';
 
 const hash = crypto.createHash('sha256').update(`VIEW_CODE_SECRET`).digest('base64');
 const key = hash.slice(0, 16);
 const iv = hash.slice(-16);
 
-export const base64 = {
+export const viewCodeCodec = {
 	encode: (value: string) => {
 		const cipher = crypto.createCipheriv('aes-128-cbc', Buffer.from(key), Buffer.from(iv));
 		let encrypted = cipher.update(value, 'utf-8', 'base64');

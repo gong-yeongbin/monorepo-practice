@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { DAILY_REPORT_REPOSITORY, DailyReportRepository } from '@tracking/domain/daily-report.repository';
 import { DailyReport } from '@tracking/domain/daily-report.entity';
 import { CONSUMER_PORT, ConsumerPort } from '@core/kafka/consumer.port';
-import { base64 } from '@src/common/util/base64.util';
+import { viewCodeCodec } from '@src/common/util/view-code.util';
 import { kstBaseDate } from '@src/common/util/date.util';
 
 @Injectable()
@@ -23,7 +23,7 @@ export class TrackingConsumerUseCase implements OnModuleInit {
 		const dailyReportMap = new Map<string, DailyReport>();
 
 		for (const viewCode of viewCodes) {
-			const [token = '', pubId, subId] = base64.decode(viewCode).split(':');
+			const [token = '', pubId, subId] = viewCodeCodec.decode(viewCode).split(':');
 
 			const dailyReportDto = dailyReportMap.get(viewCode);
 			if (dailyReportDto) {
