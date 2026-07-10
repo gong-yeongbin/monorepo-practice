@@ -1,17 +1,18 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Cache } from 'cache-manager';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Redis } from 'ioredis';
 import { CachePort } from '@infra/cache/cache.port';
+import { REDIS_CACHE_CLIENT } from '@infra/cache/cache.constants';
 
 @Injectable()
 export class RedisCacheAdapter implements CachePort {
-	constructor(@Inject(CACHE_MANAGER) private readonly cache: Cache) {}
+	constructor(@Inject(REDIS_CACHE_CLIENT) private readonly redis: Redis) {}
 
 	async set(key: string, value: string, ttl: number) {
-		await this.cache.set(key, value, ttl);
+		// TTL은 밀리초 단위이므로 PX 옵션을 사용한다
+		await this.redis.set(key, value, 'PX', ttl);
 	}
 
 	async get(key: string) {
-		return await this.cache.get<string>(key);
+		return await this.redis.get(key);
 	}
 }
