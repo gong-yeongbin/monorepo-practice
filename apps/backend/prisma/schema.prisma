@@ -15,8 +15,7 @@ datasource db {
 model user {
   id       Int    @id @default(autoincrement())
   user_id  String @unique
-  password String @db.VarChar(20)
-  salt     String @db.VarChar(50)
+  password String @db.VarChar(60)
   role     Role   @default(ADMIN)
 }
 
