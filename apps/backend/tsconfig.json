@@ -7,7 +7,6 @@
       "@src/*": ["./src/*"],
       "@core/*": ["./src/core/*"],
       "@tracker/*": ["./src/tracker/*"],
-      "@campaign/*": ["./src/module/campaign/*"],
       "@tracking/*": ["./src/module/tracking/*"],
       "@postback/*": ["./src/module/postback/*"]
     }

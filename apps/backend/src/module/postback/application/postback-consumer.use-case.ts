@@ -1,10 +1,10 @@
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { PostbackDto } from '@postback/application/dto/postback.dto';
 import { POSTBACK_REPOSITORY, PostbackRepository } from '@postback/application/port/postback.repository';
-import { CAMPAIGN_REPOSITORY, CampaignRepository } from '@campaign/domain/campaign.repository';
-import { DAILY_REPORT_REPOSITORY, DailyReportRepository } from '@campaign/domain/daily-report.repository';
-import { Campaign } from '@campaign/domain/campaign.entity';
-import { DailyReport } from '@campaign/domain/daily-report.entity';
+import { CAMPAIGN_REPOSITORY, CampaignRepository } from '@postback/domain/campaign.repository';
+import { DAILY_REPORT_REPOSITORY, DailyReportRepository } from '@postback/domain/daily-report.repository';
+import { Campaign } from '@postback/domain/campaign.entity';
+import { DailyReport } from '@postback/domain/daily-report.entity';
 import { CONSUMER_PORT, ConsumerPort } from '@core/kafka/consumer.port';
 import { kstBaseDate } from '@src/common/util/date.util';
 

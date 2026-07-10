@@ -1,3 +1,4 @@
+// 일별 집계 리포트 도메인 엔티티
 export class DailyReport {
 	view_code: string;
 	token: string;

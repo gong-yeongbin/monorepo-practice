@@ -77,7 +77,6 @@
       "^@src/(.*)$": "<rootDir>/$1",
       "^@core/(.*)$": "<rootDir>/core/$1",
       "^@tracker/(.*)$": "<rootDir>/tracker/$1",
-      "^@campaign/(.*)$": "<rootDir>/module/campaign/$1",
       "^@tracking/(.*)$": "<rootDir>/module/tracking/$1",
       "^@postback/(.*)$": "<rootDir>/module/postback/$1"
     },

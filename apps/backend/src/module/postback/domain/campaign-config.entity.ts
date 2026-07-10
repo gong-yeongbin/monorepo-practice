@@ -1,3 +1,4 @@
+// 캠페인 이벤트 매핑 설정 도메인 엔티티
 export class CampaignConfig {
 	id: number;
 	send_media: boolean;

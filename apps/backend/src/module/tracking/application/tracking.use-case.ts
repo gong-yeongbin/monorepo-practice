@@ -1,5 +1,5 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { CAMPAIGN_REPOSITORY, CampaignRepository } from '@campaign/domain/campaign.repository';
+import { CAMPAIGN_REPOSITORY, CampaignRepository } from '@tracking/domain/campaign.repository';
 import { QueryDto } from '@tracking/application/dto/query.dto';
 import { TRACKERS } from '@tracker/tracker.registry';
 import { CACHE_PORT, CachePort } from '@core/cache/cache.port';

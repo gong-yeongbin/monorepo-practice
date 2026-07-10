@@ -1,4 +1,5 @@
-import { CampaignConfig } from '@campaign/domain/campaign-config.entity';
+// 캠페인 도메인 엔티티
+import { CampaignConfig } from '@postback/domain/campaign-config.entity';
 
 export type CampaignType = 'CPI' | 'CPA';
 

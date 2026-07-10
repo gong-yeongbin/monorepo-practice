@@ -1,8 +1,8 @@
 import { Test } from '@nestjs/testing';
 import { PostbackConsumerUseCase } from './postback-consumer.use-case';
 import { POSTBACK_REPOSITORY } from '@postback/application/port/postback.repository';
-import { CAMPAIGN_REPOSITORY } from '@campaign/domain/campaign.repository';
-import { DAILY_REPORT_REPOSITORY } from '@campaign/domain/daily-report.repository';
+import { CAMPAIGN_REPOSITORY } from '@postback/domain/campaign.repository';
+import { DAILY_REPORT_REPOSITORY } from '@postback/domain/daily-report.repository';
 import { CONSUMER_PORT } from '@core/kafka/consumer.port';
 
 describe('PostbackConsumerUseCase', () => {

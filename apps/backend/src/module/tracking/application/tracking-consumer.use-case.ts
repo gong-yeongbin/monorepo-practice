@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { DAILY_REPORT_REPOSITORY, DailyReportRepository } from '@campaign/domain/daily-report.repository';
-import { DailyReport } from '@campaign/domain/daily-report.entity';
+import { DAILY_REPORT_REPOSITORY, DailyReportRepository } from '@tracking/domain/daily-report.repository';
+import { DailyReport } from '@tracking/domain/daily-report.entity';
 import { CONSUMER_PORT, ConsumerPort } from '@core/kafka/consumer.port';
 import { base64 } from '@src/common/util/base64.util';
 import { kstBaseDate } from '@src/common/util/date.util';

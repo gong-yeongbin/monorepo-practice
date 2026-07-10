@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { TrackingUseCase } from './tracking.use-case';
-import { CAMPAIGN_REPOSITORY } from '@campaign/domain/campaign.repository';
+import { CAMPAIGN_REPOSITORY } from '@tracking/domain/campaign.repository';
 import { CACHE_PORT } from '@core/cache/cache.port';
 import { PRODUCER_PORT } from '@core/kafka/producer.port';
 import { QueryDto } from '@tracking/application/dto/query.dto';
