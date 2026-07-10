@@ -1,71 +1,60 @@
 # Monorepo Practice
 
-광고 관리 플랫폼의 모노레포 프로젝트입니다. Turborepo를 기반으로 관리자 API, 관리자 페이지, 트래킹 시스템을 포함한 모노레포 구성입니다.
+광고 관리 플랫폼의 트래킹·포스트백 시스템입니다. Turborepo 기반 모노레포로 구성되어 있으며, 현재 애플리케이션은 `apps/backend` 하나입니다. (과거 `admin` GraphQL API와 `admin-page` Vue 프론트엔드가 있었으나 `f2b1851`에서 제거되었습니다.)
 
 ## 📋 프로젝트 개요
 
-이 프로젝트는 광고주, 광고, 캠페인, 매체, 트래커를 관리하고, 다양한 트래킹 솔루션으로부터의 트래킹 데이터를 처리하는 통합 플랫폼입니다.
+광고주, 광고, 캠페인, 매체, 트래커를 다루는 플랫폼의 트래킹 데이터 처리 백엔드입니다. 다양한 트래킹 솔루션으로부터 클릭·설치·이벤트 데이터를 수신해 집계하고 매체사로 포스트백을 전송합니다.
 
 ### 주요 기능
 
-- **광고 관리**: 광고주, 광고, 캠페인 관리 및 통계 조회
 - **트래킹 처리**: 다양한 트래킹 솔루션 (AppsFlyer, Adjust, Airbridge, AdbrixRemaster) 지원
-- **포스트백 전송**: 매체사로 포스트백 자동 전송
-- **대시보드**: 실시간 통계 시각화 및 관리
+- **포스트백 전송**: 매체사로 포스트백 전송
+- **일별 집계**: `daily_report`로 클릭/설치/이벤트/매출 등을 KST 기준 일별 집계
+- **비동기 메시징**: Redis Stream 기반 consumer group으로 트래킹·포스트백 배치 처리
 
 ## 🏗️ 아키텍처
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Monorepo (Turborepo)                      │
+│                    Monorepo (Turborepo)                       │
 ├─────────────────────────────────────────────────────────────┤
 │                                                               │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │  admin-page  │  │    admin     │  │   backend    │      │
-│  │  (Vue 3)     │  │  (NestJS)    │  │  (NestJS)    │      │
-│  │  :5173       │  │  :3000       │  │  :3001       │      │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘      │
-│         │                  │                  │              │
-│         │ GraphQL          │ Prisma           │ Kafka        │
-│         │                  │                  │ Redis        │
-│         └──────────────────┼──────────────────┘              │
-│                            │                                  │
-│                   ┌────────▼────────┐                        │
-│                   │   MySQL (Prisma)│                        │
-│                   └─────────────────┘                        │
+│                   ┌──────────────┐                            │
+│                   │   backend    │                            │
+│                   │  (NestJS)    │                            │
+│                   │  :3001       │                            │
+│                   └──────┬───────┘                            │
+│                          │                                    │
+│              Prisma ─────┼───── Redis Stream / Cache          │
+│                          │      (ioredis / Valkey)            │
+│                 ┌────────▼────────┐                           │
+│                 │   MySQL (Prisma)│                           │
+│                 └─────────────────┘                           │
 │                                                               │
-│  ┌──────────────┐  ┌──────────────┐                        │
-│  │    eslint    │  │  ts-config   │                        │
-│  │   (shared)   │  │   (shared)   │                        │
-│  └──────────────┘  └──────────────┘                        │
+│  ┌──────────────┐  ┌──────────────┐                          │
+│  │ eslint-config│  │ ts-config    │                          │
+│  │   (shared)   │  │   (shared)   │                          │
+│  └──────────────┘  └──────────────┘                          │
 │                                                               │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ## 🛠️ 기술 스택
 
-### 프론트엔드
-
-- **Vue 3.5**: 컴포넌트 기반 프레임워크
-- **Vite**: 빠른 빌드 도구
-- **PrimeVue**: UI 컴포넌트 라이브러리
-- **Pinia**: 상태 관리
-- **Apollo Client**: GraphQL 클라이언트
-- **Vue Router**: 라우팅
-
-### 백엔드
+### 백엔드 (`apps/backend`)
 
 - **NestJS 11**: Node.js 프레임워크
-- **GraphQL**: API 쿼리 언어 (Apollo Server)
-- **Prisma**: ORM 및 데이터베이스 관리
-- **Passport.js**: 인증 미들웨어
-- **Kafka**: 메시지 큐
-- **Redis (Valkey)**: 캐시 및 세션 저장소
+- **Prisma 7**: ORM 및 데이터베이스 관리 (MySQL/MariaDB driver adapter)
+- **ioredis**: Redis Stream(비동기 메시징) + Redis 캐시 클라이언트
+- **class-transformer / class-validator**: 트래커 파라미터 매핑·검증
+- **dayjs**: KST 기준 날짜 처리
 
 ### 인프라
 
 - **Docker & Docker Compose**: 컨테이너 관리
 - **MySQL**: 관계형 데이터베이스
+- **Valkey**: Redis 호환 캐시·스트림 서버
 - **Turborepo**: 모노레포 빌드 시스템
 - **pnpm**: 패키지 매니저
 
@@ -74,52 +63,31 @@
 ```
 monorepo-practice/
 ├── apps/                          # 애플리케이션
-│   ├── admin/                     # GraphQL API 서버
-│   │   ├── src/
-│   │   │   ├── module/            # 기능 모듈
-│   │   │   │   ├── advertiser/   # 광고주 관리
-│   │   │   │   ├── advertising/   # 광고 관리
-│   │   │   │   ├── campaign/      # 캠페인 관리
-│   │   │   │   ├── media/         # 매체 관리
-│   │   │   │   ├── tracker/       # 트래커 관리
-│   │   │   │   ├── user/          # 사용자 관리
-│   │   │   │   └── auth/          # 인증
-│   │   │   └── main.ts
-│   │   └── README.md
-│   │
-│   ├── admin-page/                # Vue 3 프론트엔드
-│   │   ├── src/
-│   │   │   ├── views/             # 페이지 컴포넌트
-│   │   │   ├── stores/            # Pinia 스토어
-│   │   │   ├── components/        # 재사용 컴포넌트
-│   │   │   └── router/            # 라우팅 설정
-│   │   └── README.md
-│   │
-│   ├── backend/                   # 트래킹 시스템
-│   │   ├── src/
-│   │   │   ├── module/            # 기능 모듈 (모듈별 클린 아키텍처 레이어)
-│   │   │   │   ├── tracking/      # 트래킹 처리 (application/presentation)
-│   │   │   │   ├── postback/      # 포스트백 처리 (application/infrastructure/presentation)
-│   │   │   │   └── campaign/      # 공유 캠페인 도메인 (domain/infrastructure)
-│   │   │   ├── core/              # 공유 인프라 (포트 + 어댑터)
-│   │   │   │   ├── kafka/         # Kafka 모듈
-│   │   │   │   ├── cache/         # Redis 캐시
-│   │   │   │   └── prisma/        # Prisma 모듈/서비스
-│   │   │   └── main.ts
-│   │   ├── prisma/                # Prisma 스키마 및 마이그레이션
-│   │   │   └── schema.prisma
-│   │   └── README.md
-│   │
-│   └── README.md                  # Apps 개요 문서
+│   └── backend/                   # 트래킹·포스트백 시스템
+│       ├── src/
+│       │   ├── common/            # 순수 유틸 (date, view-code)
+│       │   ├── infra/             # 외부 연결 어댑터
+│       │   │   ├── cache/         # Redis 캐시 (포트/어댑터)
+│       │   │   ├── stream/        # Redis Stream 프로듀서/컨슈머
+│       │   │   └── prisma/        # Prisma 모듈/서비스
+│       │   ├── modules/           # 기능 모듈 (모듈별 클린 아키텍처 4계층)
+│       │   │   ├── tracking/      # 트래킹 처리 (domain/application/infrastructure/presentation)
+│       │   │   └── postback/      # 포스트백 처리 (domain/application/infrastructure/presentation)
+│       │   ├── trackers/          # 트래커별 파라미터 매핑 (anti-corruption)
+│       │   └── main.ts
+│       ├── prisma/                # Prisma 스키마 및 마이그레이션
+│       │   └── schema.prisma
+│       └── README.md
 │
 ├── packages/                      # 공유 패키지
-│   ├── eslint/                    # ESLint 설정
-│   │   ├── base.js                # 기본 설정
-│   │   └── nest.js                # NestJS 설정
+│   ├── eslint-config/             # ESLint / Prettier 설정 (@repo/eslint-config)
+│   │   ├── base.js
+│   │   ├── nestjs.js
+│   │   └── prettier.js
 │   │
-│   └── typescript-config/         # TypeScript 설정
-│       ├── base.json              # 기본 설정
-│       └── nestjs.json            # NestJS 설정
+│   └── typescript-config/         # TypeScript 설정 (@repo/typescript-config)
+│       ├── base.json
+│       └── nestjs.json
 │
 ├── docker-compose.yml             # Docker Compose 설정
 ├── turbo.json                     # Turborepo 설정
@@ -160,7 +128,7 @@ cd ../..
 
 ### Docker Compose 실행 (선택사항)
 
-로컬 개발을 위해 MySQL, Redis, Kafka를 Docker로 실행:
+로컬 개발을 위해 MySQL, Valkey를 Docker로 실행:
 
 ```bash
 # Docker Compose로 인프라 시작
@@ -173,37 +141,22 @@ pnpm docker:down
 이 명령은 다음 서비스를 시작합니다:
 
 - **MySQL**: `localhost:3306`
-- **Redis (Valkey)**: `localhost:6379`
-- **Kafka**: `localhost:9092`
+- **Valkey (Redis)**: `localhost:6379`
+
+> compose 파일에는 Kafka 컨테이너도 남아있으나 현재 코드는 사용하지 않습니다(비동기 메시징은 Redis Stream으로 전환됨).
 
 ### 환경 변수 설정
 
-각 애플리케이션 디렉토리에 `.env` 파일을 생성하세요:
-
-#### `apps/admin/.env`
-
-```env
-DATABASE_URL="mysql://root:1234@localhost:3306/mecross"
-PORT=3000
-CLIENT="http://localhost:5173"
-JWT_SECRET="your-secret-key"
-```
-
-#### `apps/admin-page/.env`
-
-```env
-VITE_GRAPHQL_URL="http://localhost:3000/graphql"
-```
+`apps/backend`에 `.env` 파일을 생성하세요:
 
 #### `apps/backend/.env`
 
 ```env
 DATABASE_URL="mysql://root:1234@localhost:3306/mecross"
 PORT=3001
-KAFKA_BROKERS="localhost:9092"
-KAFKA_CLIENT_ID="system-api"
-KAFKA_GROUP_ID="system-api-group"
-REDIS_URL="redis://localhost:6379"
+VALKEY="redis://localhost:6379"
+REDIS_STREAM_GROUP="mecross-system"
+REDIS_STREAM_CONSUMER="consumer-1"
 ```
 
 ### 데이터베이스 마이그레이션
@@ -220,64 +173,30 @@ pnpm deploy
 
 ### 개발 서버 실행
 
-모든 애플리케이션을 동시에 실행:
-
 ```bash
+# 전체 앱 개발 모드
 pnpm dev
-```
 
-특정 애플리케이션만 실행:
-
-```bash
-# Admin API만 실행
-pnpm turbo dev --filter=admin
-
-# Admin Page만 실행
-pnpm turbo dev --filter=admin-page
-
-# Backend만 실행
+# backend만 실행
 pnpm turbo dev --filter=backend
 ```
 
 개별 애플리케이션 디렉토리에서도 실행 가능:
 
 ```bash
-cd apps/admin
-pnpm dev
-
-cd apps/admin-page
-pnpm dev
-
 cd apps/backend
 pnpm dev
 ```
 
 ## 📦 애플리케이션 상세
 
-### Admin API (`apps/admin`)
-
-GraphQL API 서버로 광고 관리 기능을 제공합니다.
-
-- **포트**: 3000
-- **엔드포인트**: `http://localhost:3000/graphql`
-- **주요 기능**: 인증, CRUD 작업, 통계 조회
-- [상세 문서](./apps/admin/README.md)
-
-### Admin Page (`apps/admin-page`)
-
-Vue 3 기반 관리자 대시보드입니다.
-
-- **포트**: 5173 (개발), 4173 (프리뷰)
-- **URL**: `http://localhost:5173`
-- **주요 기능**: 대시보드, 통계 시각화, 설정 관리
-- [상세 문서](./apps/admin-page/README.md)
-
 ### Backend (`apps/backend`)
 
 트래킹 및 포스트백 처리 시스템입니다.
 
 - **포트**: 3001
-- **주요 기능**: 트래킹 데이터 수신, 포스트백 전송, 메시지 큐 처리
+- **주요 기능**: 트래킹 데이터 수신, 일별 집계, 포스트백 전송, Redis Stream 배치 처리
+- **아키텍처**: 클린 아키텍처 4계층 (`domain`/`application`/`infrastructure`/`presentation`). `src/` 각 폴더에 CLAUDE.md 있음.
 - [상세 문서](./apps/backend/README.md)
 
 ## 🔧 공유 패키지
@@ -329,27 +248,25 @@ pnpm docker:down
 특정 앱이나 패키지만 작업:
 
 ```bash
-# 특정 앱 빌드
-pnpm turbo build --filter=admin
+# backend 빌드
+pnpm turbo build --filter=backend
 
-# 특정 앱 개발
-pnpm turbo dev --filter=admin-page
-
-# 여러 앱 동시 작업
-pnpm turbo build --filter=admin --filter=backend
+# backend 개발
+pnpm turbo dev --filter=backend
 ```
 
 ## 🧪 테스트
 
 ```bash
-# 모든 앱 테스트
-pnpm turbo test
+cd apps/backend
 
-# 특정 앱 테스트
-pnpm turbo test --filter=admin
+# 단위 테스트
+pnpm test
+
+# 단일 테스트
+pnpm test -- -t "테스트명"
 
 # E2E 테스트
-cd apps/admin
 pnpm test:e2e
 ```
 
@@ -358,32 +275,16 @@ pnpm test:e2e
 프로덕션 빌드:
 
 ```bash
-# 모든 앱 빌드
+# 전체 빌드
 pnpm build
 
-# 특정 앱만 빌드
-pnpm turbo build --filter=admin-page
+# backend만 빌드
+pnpm turbo build --filter=backend
 ```
 
 빌드 결과물:
 
-- `apps/admin/dist/`: NestJS 빌드 결과
-- `apps/admin-page/dist/`: Vue 정적 파일
 - `apps/backend/dist/`: NestJS 빌드 결과
-
-## 📚 문서
-
-- [Apps 개요](./apps/README.md) - 애플리케이션 전체 개요
-- [Admin API 문서](./apps/admin/README.md) - GraphQL API 상세
-- [Admin Page 문서](./apps/admin-page/README.md) - 프론트엔드 상세
-- [Backend 문서](./apps/backend/README.md) - 트래킹 시스템 상세
-
-## 🔐 인증 및 보안
-
-- **인증 방식**: Passport.js (Local Strategy)
-- **세션 관리**: Cookie 기반
-- **JWT**: 토큰 기반 인증
-- **CORS**: 설정된 Origin만 허용
 
 ## 🔄 데이터베이스 마이그레이션
 
@@ -392,7 +293,7 @@ Prisma 마이그레이션 관리:
 ```bash
 cd apps/backend
 
-# 새 마이그레이션 생성
+# 새 마이그레이션 생성 (--create-only)
 pnpm migrate
 
 # 프로덕션 환경 마이그레이션
@@ -410,8 +311,7 @@ npx prisma studio
 ### Docker Compose 서비스
 
 - **MySQL 8.0**: 관계형 데이터베이스
-- **Valkey**: Redis 호환 캐시 서버
-- **Kafka**: 메시지 큐 브로커
+- **Valkey**: Redis 호환 캐시·스트림 서버
 
 ### 서비스 시작/중지
 
@@ -438,37 +338,26 @@ docker compose up mysql
 pnpm build
 
 # 환경 변수 설정 후 실행
-cd apps/admin
+cd apps/backend
 pnpm start:prod
 ```
-
-### 개별 배포
-
-각 애플리케이션은 독립적으로 배포 가능:
-
-- **admin**: NestJS 애플리케이션 (Node.js 환경)
-- **admin-page**: 정적 파일 (CDN 또는 웹 서버)
-- **backend**: NestJS 애플리케이션 (Node.js 환경)
 
 ## 🤝 기여 가이드
 
 1. 기능 브랜치 생성 (`git checkout -b feature/amazing-feature`)
-2. 변경사항 커밋 (`git commit -m 'Add amazing feature'`)
+2. 변경사항 커밋 (커밋 메시지는 한글로 작성)
 3. 브랜치에 푸시 (`git push origin feature/amazing-feature`)
 4. Pull Request 생성
 
 ### 코드 스타일
 
 - ESLint 규칙 준수
-- Prettier 포맷팅 적용
+- Prettier 포맷팅 적용 (backend: 탭 들여쓰기, `printWidth: 180`, 세미콜론, single quote)
 - TypeScript 타입 안정성 유지
 
 ```bash
 # 린트 확인
 pnpm lint
-
-# 자동 수정
-pnpm lint --fix
 
 # 포맷팅
 pnpm format
@@ -482,9 +371,7 @@ UNLICENSED
 
 - [Turborepo 문서](https://turborepo.org/docs)
 - [NestJS 문서](https://docs.nestjs.com)
-- [Vue 3 문서](https://vuejs.org)
 - [Prisma 문서](https://www.prisma.io/docs)
-- [Apollo GraphQL](https://www.apollographql.com/docs)
 
 ## 📞 지원
 

@@ -4,7 +4,7 @@ import { POSTBACK_REPOSITORY, PostbackRepository } from '@postback/domain/postba
 import { CAMPAIGN_REPOSITORY, CampaignRepository } from '@postback/domain/campaign.repository';
 import { DAILY_REPORT_REPOSITORY, DailyReportRepository } from '@postback/domain/daily-report.repository';
 import { Campaign } from '@postback/domain/campaign.entity';
-import { DailyReport } from '@postback/domain/daily-report.entity';
+import { DailyReport, createDailyReport } from '@postback/domain/daily-report.entity';
 import { kstBaseDate } from '@common/utils/date.util';
 
 @Injectable()
@@ -58,7 +58,7 @@ export class PostbackConsumerUseCase {
 
 	private parse(value: string): Postback | null {
 		try {
-			return Object.assign(new Postback(), JSON.parse(value) as Partial<Postback>);
+			return JSON.parse(value) as Postback;
 		} catch {
 			this.logger.error(`postback 메시지 파싱에 실패해 건너뜁니다: ${value}`);
 			return null;
@@ -68,7 +68,7 @@ export class PostbackConsumerUseCase {
 	private accumulate(dailyReportMap: Map<string, DailyReport>, postback: Postback, campaign: Campaign, baseDate: Date) {
 		let dailyReportDto = dailyReportMap.get(postback.view_code);
 		if (!dailyReportDto) {
-			dailyReportDto = new DailyReport({ view_code: postback.view_code, token: postback.token, pub_id: postback.pub_id, sub_id: postback.sub_id, created_date: baseDate });
+			dailyReportDto = createDailyReport({ view_code: postback.view_code, token: postback.token, pub_id: postback.pub_id, sub_id: postback.sub_id, created_date: baseDate });
 			dailyReportMap.set(postback.view_code, dailyReportDto);
 		}
 

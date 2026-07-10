@@ -2,7 +2,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import { Campaign } from '@tracking/domain/campaign.entity';
-import { CampaignConfig } from '@tracking/domain/campaign-config.entity';
 import { CampaignRepository } from '@tracking/domain/campaign.repository';
 
 @Injectable()
@@ -10,9 +9,6 @@ export class PrismaCampaignRepository implements CampaignRepository {
 	constructor(private readonly prismaService: PrismaService) {}
 
 	async findByToken(token: string): Promise<Campaign | null> {
-		const row = await this.prismaService.campaign.findUnique({ where: { token }, include: { campaign_config: true } });
-		if (!row) return null;
-
-		return new Campaign({ ...row, campaign_config: row.campaign_config.map((config) => new CampaignConfig(config)) });
+		return this.prismaService.campaign.findUnique({ where: { token }, include: { campaign_config: true } });
 	}
 }

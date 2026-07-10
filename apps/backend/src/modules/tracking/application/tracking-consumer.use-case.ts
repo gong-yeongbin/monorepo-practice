@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { DAILY_REPORT_REPOSITORY, DailyReportRepository } from '@tracking/domain/daily-report.repository';
-import { DailyReport } from '@tracking/domain/daily-report.entity';
+import { DailyReport, createDailyReport } from '@tracking/domain/daily-report.entity';
 import { viewCodeCodec } from '@common/utils/view-code.util';
 import { kstBaseDate } from '@common/utils/date.util';
 
@@ -17,12 +17,12 @@ export class TrackingConsumerUseCase {
 		for (const viewCode of viewCodes) {
 			const [token = '', pubId, subId] = viewCodeCodec.decode(viewCode).split(':');
 
-			const dailyReportDto = dailyReportMap.get(viewCode);
-			if (dailyReportDto) {
-				dailyReportDto.click += 1;
-			} else {
-				dailyReportMap.set(viewCode, new DailyReport({ view_code: viewCode, token, pub_id: pubId || null, sub_id: subId || null, click: 1, created_date: baseDate }));
+			let dailyReportDto = dailyReportMap.get(viewCode);
+			if (!dailyReportDto) {
+				dailyReportDto = createDailyReport({ view_code: viewCode, token, pub_id: pubId || null, sub_id: subId || null, created_date: baseDate });
+				dailyReportMap.set(viewCode, dailyReportDto);
 			}
+			dailyReportDto.click += 1;
 		}
 
 		// 개별 upsert 실패가 배치 전체를 무한 재소비시키지 않도록 실패는 로그로 격리한다
