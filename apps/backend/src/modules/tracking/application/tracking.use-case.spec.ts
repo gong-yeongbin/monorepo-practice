@@ -63,6 +63,18 @@ describe('TrackingUseCase', () => {
 		expect(producer.send).not.toHaveBeenCalled();
 	});
 
+	it('캠페인의 tracker_name이 등록된 트래커가 아니면 NotFoundException을 던진다', async () => {
+		cache.get.mockResolvedValue(undefined);
+		campaignRepository.findByToken.mockResolvedValue({
+			tracker_name: 'unknown-tracker',
+			tracker_tracking_url: 'https://example.com',
+			campaign_config: [],
+		});
+
+		await expect(useCase.execute(query)).rejects.toThrow(NotFoundException);
+		expect(producer.send).not.toHaveBeenCalled();
+	});
+
 	it('adbrix-remaster는 adid가 없으면 idfa를 m_adid로 사용한다', async () => {
 		cache.get.mockResolvedValue(undefined);
 		campaignRepository.findByToken.mockResolvedValue({
