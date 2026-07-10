@@ -34,10 +34,10 @@
 │                   │   MySQL (Prisma)│                        │
 │                   └─────────────────┘                        │
 │                                                               │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │   prisma     │  │    eslint    │  │  ts-config   │      │
-│  │   (shared)   │  │   (shared)   │  │   (shared)   │      │
-│  └──────────────┘  └──────────────┘  └──────────────┘      │
+│  ┌──────────────┐  ┌──────────────┐                        │
+│  │    eslint    │  │  ts-config   │                        │
+│  │   (shared)   │  │   (shared)   │                        │
+│  └──────────────┘  └──────────────┘                        │
 │                                                               │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -103,18 +103,16 @@ monorepo-practice/
 │   │   │   │   └── campaign/      # 공유 캠페인 도메인 (domain/infrastructure)
 │   │   │   ├── core/              # 공유 인프라 (포트 + 어댑터)
 │   │   │   │   ├── kafka/         # Kafka 모듈
-│   │   │   │   └── cache/         # Redis 캐시
+│   │   │   │   ├── cache/         # Redis 캐시
+│   │   │   │   └── prisma/        # Prisma 모듈/서비스
 │   │   │   └── main.ts
+│   │   ├── prisma/                # Prisma 스키마 및 마이그레이션
+│   │   │   └── schema.prisma
 │   │   └── README.md
 │   │
 │   └── README.md                  # Apps 개요 문서
 │
 ├── packages/                      # 공유 패키지
-│   ├── prisma/                    # Prisma 스키마 및 클라이언트
-│   │   ├── prisma/
-│   │   │   └── schema.prisma      # 데이터베이스 스키마
-│   │   └── prisma.service.ts
-│   │
 │   ├── eslint/                    # ESLint 설정
 │   │   ├── base.js                # 기본 설정
 │   │   └── nest.js                # NestJS 설정
@@ -155,7 +153,7 @@ pnpm install
 3. Prisma 클라이언트 생성
 
 ```bash
-cd packages/prisma
+cd apps/backend
 pnpm generate
 cd ../..
 ```
@@ -211,7 +209,7 @@ REDIS_URL="redis://localhost:6379"
 ### 데이터베이스 마이그레이션
 
 ```bash
-cd packages/prisma
+cd apps/backend
 
 # 개발 환경 마이그레이션
 pnpm migrate
@@ -283,23 +281,6 @@ Vue 3 기반 관리자 대시보드입니다.
 - [상세 문서](./apps/backend/README.md)
 
 ## 🔧 공유 패키지
-
-### Prisma (`packages/prisma`)
-
-데이터베이스 스키마와 Prisma 클라이언트를 관리합니다.
-
-```bash
-cd packages/prisma
-
-# Prisma 클라이언트 생성
-pnpm generate
-
-# 마이그레이션 생성
-pnpm migrate
-
-# 마이그레이션 적용
-pnpm deploy
-```
 
 ### ESLint (`packages/eslint-config`)
 
@@ -409,7 +390,7 @@ pnpm turbo build --filter=admin-page
 Prisma 마이그레이션 관리:
 
 ```bash
-cd packages/prisma
+cd apps/backend
 
 # 새 마이그레이션 생성
 pnpm migrate

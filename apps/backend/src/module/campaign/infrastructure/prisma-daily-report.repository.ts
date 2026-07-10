@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, PrismaService } from '@repo/prisma';
+import { Prisma } from '@prisma/client';
+import { PrismaService } from '@core/prisma/prisma.service';
 import { DailyReport } from '@campaign/domain/daily-report.entity';
 import { DailyReportRepository } from '@campaign/domain/daily-report.repository';
 

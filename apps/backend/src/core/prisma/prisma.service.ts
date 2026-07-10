@@ -1,3 +1,4 @@
+// Prisma 클라이언트의 연결 수명주기를 관리하는 서비스
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';

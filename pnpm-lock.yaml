@@ -38,6 +38,12 @@ importers:
       '@nestjs/platform-express':
         specifier: ^11.1.28
         version: 11.1.28(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.28)
+      '@prisma/adapter-mariadb':
+        specifier: ^7.8.0
+        version: 7.8.0
+      '@prisma/client':
+        specifier: ^7.8.0
+        version: 7.8.0(prisma@7.8.0(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@6.0.3))(typescript@6.0.3)
       cache-manager:
         specifier: ^7.2.9
         version: 7.2.9
@@ -53,6 +59,9 @@ importers:
       kafkajs:
         specifier: ^2.2.4
         version: 2.2.4
+      mariadb:
+        specifier: ^3.5.3
+        version: 3.5.3
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
@@ -72,9 +81,6 @@ importers:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
-      '@repo/prisma':
-        specifier: workspace:*
-        version: link:../../packages/prisma
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
@@ -105,6 +111,9 @@ importers:
       prettier:
         specifier: ^3.9.4
         version: 3.9.4
+      prisma:
+        specifier: ^7.8.0
+        version: 7.8.0(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@6.0.3)
       source-map-support:
         specifier: ^0.5.21
         version: 0.5.21
@@ -153,43 +162,6 @@ importers:
       typescript-eslint:
         specifier: ^8.63.0
         version: 8.63.0(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3)
-
-  packages/prisma:
-    dependencies:
-      '@nestjs/common':
-        specifier: ^11.1.28
-        version: 11.1.28(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      '@prisma/adapter-mariadb':
-        specifier: ^7.8.0
-        version: 7.8.0
-      '@prisma/client':
-        specifier: ^7.8.0
-        version: 7.8.0(prisma@7.8.0(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@6.0.3))(typescript@6.0.3)
-      mariadb:
-        specifier: ^3.5.3
-        version: 3.5.3
-    devDependencies:
-      '@repo/eslint-config':
-        specifier: workspace:*
-        version: link:../eslint-config
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
-      '@types/node':
-        specifier: ^26.1.1
-        version: 26.1.1
-      eslint:
-        specifier: ^10.6.0
-        version: 10.6.0(jiti@2.7.0)
-      prettier:
-        specifier: ^3.9.4
-        version: 3.9.4
-      prisma:
-        specifier: ^7.8.0
-        version: 7.8.0(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@6.0.3)
-      typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
 
   packages/typescript-config: {}
 

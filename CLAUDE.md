@@ -11,22 +11,21 @@ pnpm@9 + Turborepo 모노레포. 광고 관리 플랫폼(광고주/캠페인/매
 - `pnpm build` / `pnpm lint` / `pnpm check-types`
 - `pnpm docker:up` / `pnpm docker:down` — MySQL + Valkey(Redis) + Kafka 컨테이너
 
-Prisma는 `packages/prisma`에서 실행: `pnpm migrate`(--create-only), `pnpm deploy`, `pnpm generate`, `pnpm reset`.
+Prisma는 `apps/backend`에서 실행: `pnpm migrate`(--create-only), `pnpm deploy`, `pnpm generate`, `pnpm reset`.
 
 NestJS 앱(admin, backend) 테스트는 Jest: `pnpm test`, `pnpm test:e2e`(`./test/jest-e2e.json`). 단일 테스트는 `pnpm test -- -t "테스트명"`.
 
 ## 구조
 
 - `apps/admin` — NestJS 11 + GraphQL(Apollo), 포트 3000, `/graphql`. Passport local + JWT + 쿠키 인증.
-- `apps/backend` — NestJS 11 트래킹·포스트백 마이크로서비스, 포트 3001. KafkaJS + cache-manager/Redis.
+- `apps/backend` — NestJS 11 트래킹·포스트백 마이크로서비스, 포트 3001. KafkaJS + cache-manager/Redis. Prisma(MySQL)도 여기서 관리: 스키마 `apps/backend/prisma/schema.prisma`, `PrismaModule`/`PrismaService`는 `src/core/prisma/`.
 - `apps/admin-page` — Vue 3.5 + Vite(rolldown-vite) + PrimeVue + Pinia + Apollo Client, dev 5173.
-- `packages/prisma` (`@repo/prisma`) — 공유 Prisma 클라이언트(MySQL), NestJS `PrismaModule`/`PrismaService`. 스키마: `packages/prisma/prisma/schema.prisma`.
 - `packages/typescript-config`, `packages/eslint-config` — 공유 tsconfig / ESLint 설정 (`@repo/*`).
 
 ## 코드 스타일 (주의)
 
 Prettier 설정이 앱마다 다르므로 **루트 `pnpm format`을 무분별하게 돌리지 말고 수정하는 앱의 설정을 따를 것**:
-- NestJS 앱 + prisma (`@repo/eslint-config/prettier`): 탭 들여쓰기, `printWidth: 180`, 세미콜론 있음, single quote.
+- NestJS 앱 (`@repo/eslint-config/prettier`): 탭 들여쓰기, `printWidth: 180`, 세미콜론 있음, single quote.
 - admin-page (`.prettierrc.json`): 스페이스, `printWidth: 100`, **세미콜론 없음**, single quote.
 
 TypeScript strict. `admin-page`는 eslint + oxlint 둘 다 사용(`pnpm lint`가 순차 실행).

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@repo/prisma';
+import { PrismaService } from '@core/prisma/prisma.service';
 import { Campaign } from '@campaign/domain/campaign.entity';
 import { CampaignConfig } from '@campaign/domain/campaign-config.entity';
 import { CampaignRepository } from '@campaign/domain/campaign.repository';

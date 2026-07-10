@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { ConfigModule } from '@nestjs/config';
 import { TrackingModule } from '@tracking/tracking.module';
 import { PostbackModule } from '@postback/postback.module';
-import { PrismaModule } from '@repo/prisma';
+import { PrismaModule } from '@core/prisma/prisma.module';
 import { CacheModule } from '@core/cache/cache.module';
 
 @Module({
