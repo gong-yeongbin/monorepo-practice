@@ -1,4 +1,4 @@
-export class DailyStatistic {
+export class DailyReport {
 	view_code: string;
 	token: string;
 	pub_id: string | null;

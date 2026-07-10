@@ -65,7 +65,7 @@ model campaign {
   media_id       Int         @db.Int
 
   campaign_config campaign_config[]
-  daily_statistic daily_statistic[]
+  daily_report    daily_report[]
 }
 
 model media {
@@ -113,7 +113,7 @@ model postback {
   @@index([token])
 }
 
-model daily_statistic {
+model daily_report {
   id           Int      @id @default(autoincrement())
   view_code    String   @db.VarChar(255)
   campaign     campaign @relation(fields: [token], references: [token])

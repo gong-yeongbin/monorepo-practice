@@ -2,13 +2,13 @@ import { Test } from '@nestjs/testing';
 import { PostbackConsumerUseCase } from './postback-consumer.use-case';
 import { POSTBACK_REPOSITORY } from '@postback/application/port/postback.repository';
 import { CAMPAIGN_REPOSITORY } from '@campaign/domain/campaign.repository';
-import { DAILY_STATISTIC_REPOSITORY } from '@campaign/domain/daily-statistic.repository';
+import { DAILY_REPORT_REPOSITORY } from '@campaign/domain/daily-report.repository';
 import { CONSUMER_PORT } from '@core/kafka/consumer.port';
 
 describe('PostbackConsumerUseCase', () => {
 	const postbackRepository = { createMany: jest.fn() };
 	const campaignRepository = { findByToken: jest.fn() };
-	const dailyStatisticRepository = { upsert: jest.fn() };
+	const dailyReportRepository = { upsert: jest.fn() };
 	let handler: (messages: string[]) => Promise<void>;
 	const consumer = {
 		register: jest.fn((_topic: string, h: (messages: string[]) => Promise<void>) => {
@@ -24,7 +24,7 @@ describe('PostbackConsumerUseCase', () => {
 				PostbackConsumerUseCase,
 				{ provide: POSTBACK_REPOSITORY, useValue: postbackRepository },
 				{ provide: CAMPAIGN_REPOSITORY, useValue: campaignRepository },
-				{ provide: DAILY_STATISTIC_REPOSITORY, useValue: dailyStatisticRepository },
+				{ provide: DAILY_REPORT_REPOSITORY, useValue: dailyReportRepository },
 				{ provide: CONSUMER_PORT, useValue: consumer },
 			],
 		}).compile();
@@ -44,11 +44,11 @@ describe('PostbackConsumerUseCase', () => {
 		expect(campaignRepository.findByToken).toHaveBeenCalledTimes(1);
 		expect(postbackRepository.createMany).toHaveBeenCalledTimes(1);
 		expect(postbackRepository.createMany.mock.calls[0][0]).toHaveLength(2);
-		expect(dailyStatisticRepository.upsert).toHaveBeenCalledTimes(1);
+		expect(dailyReportRepository.upsert).toHaveBeenCalledTimes(1);
 
-		const dailyStatistic = dailyStatisticRepository.upsert.mock.calls[0][0];
-		expect(dailyStatistic.purchase).toBe(2);
-		expect(dailyStatistic.revenue).toBe(2000);
+		const dailyReport = dailyReportRepository.upsert.mock.calls[0][0];
+		expect(dailyReport.purchase).toBe(2);
+		expect(dailyReport.revenue).toBe(2000);
 	});
 
 	it('깨진 JSON, token 없는 메시지, 캠페인 없는 메시지는 건너뛴다', async () => {
@@ -57,6 +57,6 @@ describe('PostbackConsumerUseCase', () => {
 		await handler(['not-json', JSON.stringify({ view_code: 'vc-1' }), JSON.stringify({ token: 'no-campaign', view_code: 'vc-1' })]);
 
 		expect(postbackRepository.createMany).not.toHaveBeenCalled();
-		expect(dailyStatisticRepository.upsert).not.toHaveBeenCalled();
+		expect(dailyReportRepository.upsert).not.toHaveBeenCalled();
 	});
 });
