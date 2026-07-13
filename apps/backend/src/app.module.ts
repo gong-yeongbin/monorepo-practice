@@ -12,6 +12,7 @@ import { MediaModule } from '@media/media.module';
 import { TrackerModule } from '@tracker/tracker.module';
 import { CampaignModule } from '@campaign/campaign.module';
 import { PartnerModule } from '@partner/partner.module';
+import { DashboardModule } from '@dashboard/dashboard.module';
 
 @Module({
 	imports: [
@@ -27,6 +28,7 @@ import { PartnerModule } from '@partner/partner.module';
 		TrackerModule,
 		CampaignModule,
 		PartnerModule,
+		DashboardModule,
 	],
 	controllers: [AppController],
 })

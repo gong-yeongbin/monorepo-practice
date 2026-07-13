@@ -1,4 +1,4 @@
-// advertising 통계 조회용 쿼리 DTO들
+// 대시보드 통계 조회용 쿼리 DTO들
 import { IsDateString, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 

@@ -6,11 +6,6 @@ import { BriefAdvertisingUseCase } from '@advertising/application/brief-advertis
 import { InfoAdvertisingUseCase } from '@advertising/application/info-advertising.use-case';
 import { CampaignListUseCase } from '@advertising/application/campaign-list.use-case';
 import { DeactivateAdvertisingUseCase } from '@advertising/application/deactivate-advertising.use-case';
-import { DashboardUseCase } from '@advertising/application/dashboard.use-case';
-import { DailyUseCase } from '@advertising/application/daily.use-case';
-import { DetailUseCase } from '@advertising/application/detail.use-case';
-import { DailyDetailUseCase } from '@advertising/application/daily-detail.use-case';
-import { DailyDetailAllUseCase } from '@advertising/application/daily-detail-all.use-case';
 import { ADVERTISING_REPOSITORY } from '@advertising/domain/advertising.repository';
 import { PrismaAdvertisingRepository } from '@advertising/infrastructure/prisma-advertising.repository';
 import { AuthModule } from '@auth/auth.module';
@@ -25,11 +20,6 @@ import { AuthModule } from '@auth/auth.module';
 		InfoAdvertisingUseCase,
 		CampaignListUseCase,
 		DeactivateAdvertisingUseCase,
-		DashboardUseCase,
-		DailyUseCase,
-		DetailUseCase,
-		DailyDetailUseCase,
-		DailyDetailAllUseCase,
 		{ provide: ADVERTISING_REPOSITORY, useClass: PrismaAdvertisingRepository },
 	],
 })

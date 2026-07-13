@@ -1,4 +1,4 @@
-// advertising 통계 집계 결과 타입(daily_report 합산)
+// 대시보드 통계 집계 결과 타입(daily_report 합산)
 
 // daily_report의 카운터 합계(공통)
 export interface ReportCounters {

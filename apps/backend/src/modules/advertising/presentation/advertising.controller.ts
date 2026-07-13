@@ -6,15 +6,9 @@ import { BriefAdvertisingUseCase } from '@advertising/application/brief-advertis
 import { InfoAdvertisingUseCase } from '@advertising/application/info-advertising.use-case';
 import { CampaignListUseCase } from '@advertising/application/campaign-list.use-case';
 import { DeactivateAdvertisingUseCase } from '@advertising/application/deactivate-advertising.use-case';
-import { DashboardUseCase } from '@advertising/application/dashboard.use-case';
-import { DailyUseCase } from '@advertising/application/daily.use-case';
-import { DetailUseCase } from '@advertising/application/detail.use-case';
-import { DailyDetailUseCase } from '@advertising/application/daily-detail.use-case';
-import { DailyDetailAllUseCase } from '@advertising/application/daily-detail-all.use-case';
 import { CreateAdvertisingDto } from '@advertising/application/dto/create-advertising.dto';
 import { ListAdvertisingDto } from '@advertising/application/dto/list-advertising.dto';
 import { AdvertisingIdDto } from '@advertising/application/dto/advertising-id.dto';
-import { DashboardDto, DailyDto, DetailDto, DailyDetailAllDto } from '@advertising/application/dto/statistics.dto';
 import { JwtAuthGuard } from '@auth/presentation/jwt-auth.guard';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 
@@ -28,12 +22,7 @@ export class AdvertisingController {
 		private readonly briefAdvertisingUseCase: BriefAdvertisingUseCase,
 		private readonly infoAdvertisingUseCase: InfoAdvertisingUseCase,
 		private readonly campaignListUseCase: CampaignListUseCase,
-		private readonly deactivateAdvertisingUseCase: DeactivateAdvertisingUseCase,
-		private readonly dashboardUseCase: DashboardUseCase,
-		private readonly dailyUseCase: DailyUseCase,
-		private readonly detailUseCase: DetailUseCase,
-		private readonly dailyDetailUseCase: DailyDetailUseCase,
-		private readonly dailyDetailAllUseCase: DailyDetailAllUseCase
+		private readonly deactivateAdvertisingUseCase: DeactivateAdvertisingUseCase
 	) {}
 
 	// admin 원본은 @Put이었으나 REST 표준대로 POST로 이관한다.
@@ -52,31 +41,6 @@ export class AdvertisingController {
 	@Get('list')
 	async brief() {
 		return this.briefAdvertisingUseCase.execute();
-	}
-
-	@Get('dashboard')
-	async dashboard(@Query() query: DashboardDto) {
-		return this.dashboardUseCase.execute(query);
-	}
-
-	@Get('daily')
-	async daily(@Query() query: DailyDto) {
-		return this.dailyUseCase.execute(query);
-	}
-
-	@Get('dailydetail')
-	async dailyDetail(@Query() query: DailyDto) {
-		return this.dailyDetailUseCase.execute(query);
-	}
-
-	@Get('dailydetail/excel')
-	async dailyDetailExcel(@Query() query: DailyDetailAllDto) {
-		return this.dailyDetailAllUseCase.execute(query);
-	}
-
-	@Get('detail/:id')
-	async detail(@Param() param: AdvertisingIdDto, @Query() query: DetailDto) {
-		return this.detailUseCase.execute(param.id, query);
 	}
 
 	@Get('campaign/:id')

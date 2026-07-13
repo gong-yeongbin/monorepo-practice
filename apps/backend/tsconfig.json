@@ -17,6 +17,7 @@
       "@tracker/*": ["./src/modules/tracker/*"],
       "@campaign/*": ["./src/modules/campaign/*"],
       "@partner/*": ["./src/modules/partner/*"],
+      "@dashboard/*": ["./src/modules/dashboard/*"],
       "@interceptors/*": ["./src/interceptors/*"]
     }
   }
