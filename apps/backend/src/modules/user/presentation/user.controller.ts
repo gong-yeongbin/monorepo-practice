@@ -1,17 +1,50 @@
-// user 생성을 처리하는 컨트롤러
-import { Body, Controller, Post, UseInterceptors } from '@nestjs/common';
+// user CRUD를 처리하는 컨트롤러
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards, UseInterceptors } from '@nestjs/common';
 import { CreateUserDto } from '@user/application/dto/create-user.dto';
+import { UpdateUserDto } from '@user/application/dto/update-user.dto';
+import { UserIdDto } from '@user/application/dto/user-id.dto';
 import { CreateUserUseCase } from '@user/application/create-user.use-case';
+import { ListUserUseCase } from '@user/application/list-user.use-case';
+import { GetUserUseCase } from '@user/application/get-user.use-case';
+import { UpdateUserUseCase } from '@user/application/update-user.use-case';
+import { DeleteUserUseCase } from '@user/application/delete-user.use-case';
+import { JwtAuthGuard } from '@auth/presentation/jwt-auth.guard';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 
-@Controller()
+@Controller('user')
+@UseGuards(JwtAuthGuard)
 @UseInterceptors(ResponseInterceptor)
 export class UserController {
-	constructor(private readonly createUserUseCase: CreateUserUseCase) {}
+	constructor(
+		private readonly createUserUseCase: CreateUserUseCase,
+		private readonly listUserUseCase: ListUserUseCase,
+		private readonly getUserUseCase: GetUserUseCase,
+		private readonly updateUserUseCase: UpdateUserUseCase,
+		private readonly deleteUserUseCase: DeleteUserUseCase
+	) {}
 
-	// admin 원본과 동일하게 인증 없이 열어 둔다(최초 관리자 계정 부트스트랩 필요). 접근 제어가 필요하면 별도 설계 사안.
-	@Post('user')
-	async addUser(@Body() body: CreateUserDto): Promise<void> {
+	@Post()
+	async create(@Body() body: CreateUserDto): Promise<void> {
 		await this.createUserUseCase.execute(body);
+	}
+
+	@Get()
+	async list() {
+		return this.listUserUseCase.execute();
+	}
+
+	@Get(':id')
+	async get(@Param() param: UserIdDto) {
+		return this.getUserUseCase.execute(param.id);
+	}
+
+	@Patch(':id')
+	async update(@Param() param: UserIdDto, @Body() body: UpdateUserDto) {
+		return this.updateUserUseCase.execute(param.id, body);
+	}
+
+	@Delete(':id')
+	async delete(@Param() param: UserIdDto): Promise<void> {
+		await this.deleteUserUseCase.execute(param.id);
 	}
 }

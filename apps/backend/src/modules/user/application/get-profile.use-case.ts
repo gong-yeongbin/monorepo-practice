@@ -1,9 +1,10 @@
 // user_id로 프로필을 조회하고 password를 제외해 반환하는 use-case
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { User } from '@user/domain/user.entity';
+import { Profile, toProfile } from '@user/domain/user.entity';
 import { USER_REPOSITORY, UserRepository } from '@user/domain/user.repository';
 
-export type Profile = Omit<User, 'password'>;
+// 기존 import 경로(@user/application/get-profile.use-case) 호환을 위해 domain의 Profile을 재노출한다.
+export { Profile };
 
 @Injectable()
 export class GetProfileUseCase {
@@ -15,6 +16,6 @@ export class GetProfileUseCase {
 			throw new UnauthorizedException();
 		}
 
-		return { id: user.id, user_id: user.user_id, role: user.role };
+		return toProfile(user);
 	}
 }

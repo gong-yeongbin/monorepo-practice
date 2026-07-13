@@ -7,3 +7,11 @@ export interface User {
 	password: string;
 	role: UserRole;
 }
+
+// 외부 노출용. password를 제외한다.
+export type Profile = Omit<User, 'password'>;
+
+// User에서 password를 제거해 외부 노출용 Profile로 변환한다.
+export function toProfile(user: User): Profile {
+	return { id: user.id, user_id: user.user_id, role: user.role };
+}
