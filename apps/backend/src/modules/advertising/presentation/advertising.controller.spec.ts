@@ -2,17 +2,17 @@
 import { AdvertisingController } from './advertising.controller';
 import { CreateAdvertisingUseCase } from '@advertising/application/create-advertising.use-case';
 import { ListAdvertisingUseCase } from '@advertising/application/list-advertising.use-case';
-import { BriefAdvertisingUseCase } from '@advertising/application/brief-advertising.use-case';
-import { InfoAdvertisingUseCase } from '@advertising/application/info-advertising.use-case';
-import { DeactivateAdvertisingUseCase } from '@advertising/application/deactivate-advertising.use-case';
+import { GetAdvertisingUseCase } from '@advertising/application/get-advertising.use-case';
+import { UpdateAdvertisingUseCase } from '@advertising/application/update-advertising.use-case';
+import { DeleteAdvertisingUseCase } from '@advertising/application/delete-advertising.use-case';
 
 describe('AdvertisingController', () => {
 	const create = { execute: jest.fn() } as unknown as CreateAdvertisingUseCase;
 	const list = { execute: jest.fn() } as unknown as ListAdvertisingUseCase;
-	const brief = { execute: jest.fn() } as unknown as BriefAdvertisingUseCase;
-	const info = { execute: jest.fn() } as unknown as InfoAdvertisingUseCase;
-	const deactivate = { execute: jest.fn() } as unknown as DeactivateAdvertisingUseCase;
-	const controller = new AdvertisingController(create, list, brief, info, deactivate);
+	const get = { execute: jest.fn() } as unknown as GetAdvertisingUseCase;
+	const update = { execute: jest.fn() } as unknown as UpdateAdvertisingUseCase;
+	const remove = { execute: jest.fn() } as unknown as DeleteAdvertisingUseCase;
+	const controller = new AdvertisingController(create, list, get, update, remove);
 
 	beforeEach(() => jest.clearAllMocks());
 
@@ -30,20 +30,21 @@ describe('AdvertisingController', () => {
 		expect(list.execute).toHaveBeenCalledWith(query);
 	});
 
-	it('brief는 간략 목록 use-case를 호출한다', async () => {
-		(brief.execute as jest.Mock).mockResolvedValue([]);
-		await controller.brief();
-		expect(brief.execute).toHaveBeenCalled();
+	it('get은 조회 use-case에 id를 위임한다', async () => {
+		(get.execute as jest.Mock).mockResolvedValue({});
+		await controller.get({ id: 1 });
+		expect(get.execute).toHaveBeenCalledWith(1);
 	});
 
-	it('info는 조회 use-case에 id를 위임한다', async () => {
-		(info.execute as jest.Mock).mockResolvedValue({});
-		await controller.info({ id: 1 });
-		expect(info.execute).toHaveBeenCalledWith(1);
+	it('update는 수정 use-case에 id와 body를 위임한다', async () => {
+		const body = { name: 'ad', advertiser_id: 1, tracker_id: 2 };
+		(update.execute as jest.Mock).mockResolvedValue({ id: 1 });
+		expect(await controller.update({ id: 1 }, body)).toEqual({ id: 1 });
+		expect(update.execute).toHaveBeenCalledWith(1, body);
 	});
 
-	it('deactivate는 use-case에 id를 위임한다', async () => {
-		await controller.deactivate({ id: 1 });
-		expect(deactivate.execute).toHaveBeenCalledWith(1);
+	it('delete는 삭제 use-case에 id를 위임한다', async () => {
+		await controller.delete({ id: 1 });
+		expect(remove.execute).toHaveBeenCalledWith(1);
 	});
 });

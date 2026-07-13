@@ -7,18 +7,11 @@ export interface Advertising {
 	tracker_id: number;
 }
 
-// 목록 응답: campaign 활성 개수와 파생 status(활성 campaign 1개 이상이면 true)를 덧붙인다
+// 목록 응답: tracker명과 함께 campaign 활성 개수·파생 status(활성 campaign 1개 이상이면 true)를 덧붙인다
 export interface AdvertisingListItem extends Advertising {
+	tracker: string;
 	campaign: number;
 	status: boolean;
-}
-
-// 간략 목록 응답(admin getAdvertisingList): tracker명 포함
-export interface AdvertisingBrief {
-	id: number;
-	name: string;
-	image: string | null;
-	tracker: string;
 }
 
 // 정보 조회(admin getAdvertisingInfo): advertiser·tracker·연결된 media 목록

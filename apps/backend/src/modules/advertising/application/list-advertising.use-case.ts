@@ -1,4 +1,4 @@
-// advertising 목록(검색·페이징, campaign 카운트·파생 status 포함)을 조회하는 use-case
+// advertising 목록(검색·페이징, tracker명·campaign 카운트·파생 status 포함)을 조회하는 use-case
 import { Inject, Injectable } from '@nestjs/common';
 import { AdvertisingListItem } from '@advertising/domain/advertising.entity';
 import { ADVERTISING_REPOSITORY, AdvertisingRepository } from '@advertising/domain/advertising.repository';

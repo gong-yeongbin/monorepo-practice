@@ -1,8 +1,8 @@
 // Prisma로 advertising CRUD를 처리하는 repository 구현체
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@infra/prisma/prisma.service';
-import { Advertising, AdvertisingBrief, AdvertisingInfo, AdvertisingListItem } from '@advertising/domain/advertising.entity';
-import { AdvertisingRepository, CreateAdvertisingProps, ListAdvertisingParams } from '@advertising/domain/advertising.repository';
+import { Advertising, AdvertisingInfo, AdvertisingListItem } from '@advertising/domain/advertising.entity';
+import { AdvertisingRepository, CreateAdvertisingProps, ListAdvertisingParams, UpdateAdvertisingProps } from '@advertising/domain/advertising.repository';
 
 @Injectable()
 export class PrismaAdvertisingRepository implements AdvertisingRepository {
@@ -28,14 +28,25 @@ export class PrismaAdvertisingRepository implements AdvertisingRepository {
 		return this.prismaService.advertising.create({ data: props });
 	}
 
+	async update(id: number, props: UpdateAdvertisingProps): Promise<Advertising> {
+		return this.prismaService.advertising.update({ where: { id }, data: props });
+	}
+
+	async delete(id: number): Promise<void> {
+		await this.prismaService.advertising.delete({ where: { id } });
+	}
+
 	async list(params: ListAdvertisingParams): Promise<AdvertisingListItem[]> {
-		// 이름 검색 + 페이징. 각 advertising의 활성 campaign 개수를 세고, 1개 이상이면 status=true(파생).
+		// 이름 검색 + 페이징. tracker명을 함께 싣고, 각 advertising의 활성 campaign 개수를 세어 1개 이상이면 status=true(파생).
 		const rows = await this.prismaService.advertising.findMany({
 			where: { name: { contains: params.search } },
 			orderBy: { id: 'desc' },
 			skip: params.offset,
 			take: params.limit,
-			include: { _count: { select: { campaign: { where: { is_active: true } } } } },
+			include: {
+				tracker: { select: { name: true } },
+				_count: { select: { campaign: { where: { is_active: true } } } },
+			},
 		});
 
 		return rows.map((row) => ({
@@ -44,17 +55,13 @@ export class PrismaAdvertisingRepository implements AdvertisingRepository {
 			image: row.image,
 			advertiser_id: row.advertiser_id,
 			tracker_id: row.tracker_id,
+			tracker: row.tracker.name,
 			campaign: row._count.campaign,
 			status: row._count.campaign > 0,
 		}));
 	}
 
-	async brief(): Promise<AdvertisingBrief[]> {
-		const rows = await this.prismaService.advertising.findMany({ include: { tracker: { select: { name: true } } } });
-		return rows.map((row) => ({ id: row.id, name: row.name, image: row.image, tracker: row.tracker.name }));
-	}
-
-	async info(id: number): Promise<AdvertisingInfo | null> {
+	async get(id: number): Promise<AdvertisingInfo | null> {
 		const row = await this.prismaService.advertising.findUnique({
 			where: { id },
 			include: {
@@ -72,7 +79,7 @@ export class PrismaAdvertisingRepository implements AdvertisingRepository {
 		return { advertiser: row.advertiser.name, tracker: row.tracker.name, advertising: row.name, image: row.image, media };
 	}
 
-	async deactivateCampaigns(advertising_id: number): Promise<void> {
-		await this.prismaService.campaign.updateMany({ where: { advertising_id }, data: { is_active: false } });
+	async countCampaign(advertising_id: number): Promise<number> {
+		return this.prismaService.campaign.count({ where: { advertising_id } });
 	}
 }
