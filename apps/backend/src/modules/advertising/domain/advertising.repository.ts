@@ -16,15 +16,6 @@ export interface ListAdvertisingParams {
 	limit: number;
 }
 
-export interface CampaignListRow {
-	campaign_id: number;
-	token: string;
-	campaign_name: string;
-	type: string;
-	is_active: boolean;
-	media_name: string;
-}
-
 export interface AdvertisingRepository {
 	exists(id: number): Promise<boolean>;
 	trackerExists(tracker_id: number): Promise<boolean>;
@@ -34,6 +25,5 @@ export interface AdvertisingRepository {
 	list(params: ListAdvertisingParams): Promise<AdvertisingListItem[]>;
 	brief(): Promise<AdvertisingBrief[]>;
 	info(id: number): Promise<AdvertisingInfo | null>;
-	campaignList(advertising_id: number): Promise<CampaignListRow[]>;
 	deactivateCampaigns(advertising_id: number): Promise<void>;
 }

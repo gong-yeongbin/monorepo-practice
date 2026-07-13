@@ -6,7 +6,7 @@ describe('PrismaAdvertisingRepository', () => {
 	const advertising = { findUnique: jest.fn(), findMany: jest.fn(), create: jest.fn() };
 	const tracker = { findUnique: jest.fn() };
 	const advertiser = { findUnique: jest.fn() };
-	const campaign = { findMany: jest.fn(), updateMany: jest.fn() };
+	const campaign = { updateMany: jest.fn() };
 	const prisma = { advertising, tracker, advertiser, campaign } as unknown as PrismaService;
 	const repository = new PrismaAdvertisingRepository(prisma);
 
@@ -86,17 +86,6 @@ describe('PrismaAdvertisingRepository', () => {
 	it('info는 advertising이 없으면 null을 반환한다', async () => {
 		advertising.findUnique.mockResolvedValue(null);
 		expect(await repository.info(1)).toBeNull();
-	});
-
-	it('campaignList는 media명을 평탄화해 매핑한다', async () => {
-		campaign.findMany.mockResolvedValue([
-			{ id: 3, token: 'tok', name: 'c', type: 'CPI', is_active: true, media: { name: 'm1' } },
-		]);
-
-		const result = await repository.campaignList(1);
-
-		expect(result).toEqual([{ campaign_id: 3, token: 'tok', campaign_name: 'c', type: 'CPI', is_active: true, media_name: 'm1' }]);
-		expect(campaign.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { advertising_id: 1 }, orderBy: { id: 'desc' } }));
 	});
 
 	it('deactivateCampaigns는 딸린 campaign을 전부 비활성화한다', async () => {

@@ -1,8 +1,8 @@
-// Prisma로 campaign·campaign_config를 조회·변경하는 repository 구현체
+// Prisma로 campaign을 조회·변경하는 repository 구현체
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@infra/prisma/prisma.service';
-import { Campaign, CampaignConfig } from '@campaign/domain/campaign.entity';
-import { AdvertisingTrackerInfo, CampaignRepository, CreateCampaignProps, UpsertConfigProps } from '@campaign/domain/campaign.repository';
+import { Campaign } from '@campaign/domain/campaign.entity';
+import { AdvertisingTrackerInfo, CampaignListRow, CampaignRepository, CreateCampaignProps, UpdateCampaignProps } from '@campaign/domain/campaign.repository';
 
 @Injectable()
 export class PrismaCampaignRepository implements CampaignRepository {
@@ -10,6 +10,23 @@ export class PrismaCampaignRepository implements CampaignRepository {
 
 	async findById(id: number): Promise<Campaign | null> {
 		return this.prismaService.campaign.findUnique({ where: { id } });
+	}
+
+	async findByAdvertisingId(advertising_id: number): Promise<CampaignListRow[]> {
+		const rows = await this.prismaService.campaign.findMany({
+			where: { advertising_id },
+			orderBy: { id: 'desc' },
+			include: { media: { select: { name: true } } },
+		});
+
+		return rows.map((row) => ({
+			campaign_id: row.id,
+			token: row.token,
+			campaign_name: row.name,
+			type: row.type,
+			is_active: row.is_active,
+			media_name: row.media.name,
+		}));
 	}
 
 	async findAdvertisingTracker(advertising_id: number): Promise<AdvertisingTrackerInfo | null> {
@@ -40,18 +57,7 @@ export class PrismaCampaignRepository implements CampaignRepository {
 		await this.prismaService.campaign.delete({ where: { id } });
 	}
 
-	async setActive(id: number, is_active: boolean): Promise<void> {
-		await this.prismaService.campaign.update({ where: { id }, data: { is_active } });
-	}
-
-	async findConfigs(campaign_id: number): Promise<CampaignConfig[]> {
-		return this.prismaService.campaign_config.findMany({ where: { campaign_id } });
-	}
-
-	async replaceConfigs(campaign_id: number, configs: UpsertConfigProps[]): Promise<void> {
-		await this.prismaService.$transaction([
-			this.prismaService.campaign_config.deleteMany({ where: { campaign_id } }),
-			this.prismaService.campaign_config.createMany({ data: configs.map((config) => ({ ...config, campaign_id })) }),
-		]);
+	async update(id: number, props: UpdateCampaignProps): Promise<Campaign> {
+		return this.prismaService.campaign.update({ where: { id }, data: props });
 	}
 }

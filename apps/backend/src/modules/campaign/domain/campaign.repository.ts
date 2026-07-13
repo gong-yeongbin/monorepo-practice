@@ -1,5 +1,5 @@
-// campaign·campaign_config 조회·변경 repository 인터페이스와 DI 토큰
-import { Campaign, CampaignConfig, CampaignType } from '@campaign/domain/campaign.entity';
+// campaign 조회·변경 repository 인터페이스와 DI 토큰
+import { Campaign, CampaignType } from '@campaign/domain/campaign.entity';
 
 export const CAMPAIGN_REPOSITORY = Symbol('CAMPAIGN_REPOSITORY');
 
@@ -18,20 +18,30 @@ export interface CreateCampaignProps {
 	tracker_tracking_url: string;
 }
 
-export interface UpsertConfigProps {
-	send_media: boolean;
-	tracker_event_name: string;
-	admin_event_name: string;
-	media_event_name: string;
+// advertising_id·tracker 파생 필드는 불변. 나머지만 선택적으로 부분 수정한다.
+export interface UpdateCampaignProps {
+	name?: string;
+	type?: CampaignType;
+	media_id?: number;
+	is_active?: boolean;
+}
+
+// advertising 단위 campaign 목록 조회 결과(연결 media명 포함)
+export interface CampaignListRow {
+	campaign_id: number;
+	token: string;
+	campaign_name: string;
+	type: string;
+	is_active: boolean;
+	media_name: string;
 }
 
 export interface CampaignRepository {
 	findById(id: number): Promise<Campaign | null>;
+	findByAdvertisingId(advertising_id: number): Promise<CampaignListRow[]>;
 	findAdvertisingTracker(advertising_id: number): Promise<AdvertisingTrackerInfo | null>;
 	mediaExists(media_id: number): Promise<boolean>;
 	create(props: CreateCampaignProps): Promise<Campaign>;
+	update(id: number, props: UpdateCampaignProps): Promise<Campaign>;
 	delete(id: number): Promise<void>;
-	setActive(id: number, is_active: boolean): Promise<void>;
-	findConfigs(campaign_id: number): Promise<CampaignConfig[]>;
-	replaceConfigs(campaign_id: number, configs: UpsertConfigProps[]): Promise<void>;
 }

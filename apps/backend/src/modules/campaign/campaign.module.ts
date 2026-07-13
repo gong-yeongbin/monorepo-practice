@@ -2,10 +2,9 @@ import { Module } from '@nestjs/common';
 import { CampaignController } from '@campaign/presentation/campaign.controller';
 import { CreateCampaignUseCase } from '@campaign/application/create-campaign.use-case';
 import { DeleteCampaignUseCase } from '@campaign/application/delete-campaign.use-case';
-import { ToggleCampaignUseCase } from '@campaign/application/toggle-campaign.use-case';
+import { UpdateCampaignUseCase } from '@campaign/application/update-campaign.use-case';
 import { GetCampaignUseCase } from '@campaign/application/get-campaign.use-case';
-import { ListConfigUseCase } from '@campaign/application/list-config.use-case';
-import { ReplaceConfigUseCase } from '@campaign/application/replace-config.use-case';
+import { ListCampaignUseCase } from '@campaign/application/list-campaign.use-case';
 import { CAMPAIGN_REPOSITORY } from '@campaign/domain/campaign.repository';
 import { PrismaCampaignRepository } from '@campaign/infrastructure/prisma-campaign.repository';
 import { AuthModule } from '@auth/auth.module';
@@ -16,10 +15,9 @@ import { AuthModule } from '@auth/auth.module';
 	providers: [
 		CreateCampaignUseCase,
 		DeleteCampaignUseCase,
-		ToggleCampaignUseCase,
+		UpdateCampaignUseCase,
 		GetCampaignUseCase,
-		ListConfigUseCase,
-		ReplaceConfigUseCase,
+		ListCampaignUseCase,
 		{ provide: CAMPAIGN_REPOSITORY, useClass: PrismaCampaignRepository },
 	],
 })

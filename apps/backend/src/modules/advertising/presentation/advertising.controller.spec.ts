@@ -4,7 +4,6 @@ import { CreateAdvertisingUseCase } from '@advertising/application/create-advert
 import { ListAdvertisingUseCase } from '@advertising/application/list-advertising.use-case';
 import { BriefAdvertisingUseCase } from '@advertising/application/brief-advertising.use-case';
 import { InfoAdvertisingUseCase } from '@advertising/application/info-advertising.use-case';
-import { CampaignListUseCase } from '@advertising/application/campaign-list.use-case';
 import { DeactivateAdvertisingUseCase } from '@advertising/application/deactivate-advertising.use-case';
 
 describe('AdvertisingController', () => {
@@ -12,9 +11,8 @@ describe('AdvertisingController', () => {
 	const list = { execute: jest.fn() } as unknown as ListAdvertisingUseCase;
 	const brief = { execute: jest.fn() } as unknown as BriefAdvertisingUseCase;
 	const info = { execute: jest.fn() } as unknown as InfoAdvertisingUseCase;
-	const campaignList = { execute: jest.fn() } as unknown as CampaignListUseCase;
 	const deactivate = { execute: jest.fn() } as unknown as DeactivateAdvertisingUseCase;
-	const controller = new AdvertisingController(create, list, brief, info, campaignList, deactivate);
+	const controller = new AdvertisingController(create, list, brief, info, deactivate);
 
 	beforeEach(() => jest.clearAllMocks());
 
@@ -42,12 +40,6 @@ describe('AdvertisingController', () => {
 		(info.execute as jest.Mock).mockResolvedValue({});
 		await controller.info({ id: 1 });
 		expect(info.execute).toHaveBeenCalledWith(1);
-	});
-
-	it('campaignList는 use-case에 id를 위임한다', async () => {
-		(campaignList.execute as jest.Mock).mockResolvedValue([]);
-		await controller.campaignList({ id: 1 });
-		expect(campaignList.execute).toHaveBeenCalledWith(1);
 	});
 
 	it('deactivate는 use-case에 id를 위임한다', async () => {

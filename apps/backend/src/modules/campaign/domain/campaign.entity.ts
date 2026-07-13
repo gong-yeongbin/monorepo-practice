@@ -12,12 +12,3 @@ export interface Campaign {
 	advertising_id: number;
 	media_id: number;
 }
-
-export interface CampaignConfig {
-	id: number;
-	campaign_id: number;
-	send_media: boolean;
-	tracker_event_name: string;
-	admin_event_name: string;
-	media_event_name: string;
-}

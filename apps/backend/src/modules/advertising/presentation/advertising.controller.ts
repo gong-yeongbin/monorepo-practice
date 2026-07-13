@@ -4,7 +4,6 @@ import { CreateAdvertisingUseCase } from '@advertising/application/create-advert
 import { ListAdvertisingUseCase } from '@advertising/application/list-advertising.use-case';
 import { BriefAdvertisingUseCase } from '@advertising/application/brief-advertising.use-case';
 import { InfoAdvertisingUseCase } from '@advertising/application/info-advertising.use-case';
-import { CampaignListUseCase } from '@advertising/application/campaign-list.use-case';
 import { DeactivateAdvertisingUseCase } from '@advertising/application/deactivate-advertising.use-case';
 import { CreateAdvertisingDto } from '@advertising/application/dto/create-advertising.dto';
 import { ListAdvertisingDto } from '@advertising/application/dto/list-advertising.dto';
@@ -21,7 +20,6 @@ export class AdvertisingController {
 		private readonly listAdvertisingUseCase: ListAdvertisingUseCase,
 		private readonly briefAdvertisingUseCase: BriefAdvertisingUseCase,
 		private readonly infoAdvertisingUseCase: InfoAdvertisingUseCase,
-		private readonly campaignListUseCase: CampaignListUseCase,
 		private readonly deactivateAdvertisingUseCase: DeactivateAdvertisingUseCase
 	) {}
 
@@ -41,11 +39,6 @@ export class AdvertisingController {
 	@Get('list')
 	async brief() {
 		return this.briefAdvertisingUseCase.execute();
-	}
-
-	@Get('campaign/:id')
-	async campaignList(@Param() param: AdvertisingIdDto) {
-		return this.campaignListUseCase.execute(param.id);
 	}
 
 	// ── :id 파라미터 경로 ──

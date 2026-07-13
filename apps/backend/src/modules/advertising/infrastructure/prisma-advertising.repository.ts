@@ -2,7 +2,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import { Advertising, AdvertisingBrief, AdvertisingInfo, AdvertisingListItem } from '@advertising/domain/advertising.entity';
-import { AdvertisingRepository, CampaignListRow, CreateAdvertisingProps, ListAdvertisingParams } from '@advertising/domain/advertising.repository';
+import { AdvertisingRepository, CreateAdvertisingProps, ListAdvertisingParams } from '@advertising/domain/advertising.repository';
 
 @Injectable()
 export class PrismaAdvertisingRepository implements AdvertisingRepository {
@@ -70,23 +70,6 @@ export class PrismaAdvertisingRepository implements AdvertisingRepository {
 		// 연결된 media 이름을 중복 없이 모은다
 		const media = [...new Set(row.campaign.map((campaign) => campaign.media.name))];
 		return { advertiser: row.advertiser.name, tracker: row.tracker.name, advertising: row.name, image: row.image, media };
-	}
-
-	async campaignList(advertising_id: number): Promise<CampaignListRow[]> {
-		const rows = await this.prismaService.campaign.findMany({
-			where: { advertising_id },
-			orderBy: { id: 'desc' },
-			include: { media: { select: { name: true } } },
-		});
-
-		return rows.map((row) => ({
-			campaign_id: row.id,
-			token: row.token,
-			campaign_name: row.name,
-			type: row.type,
-			is_active: row.is_active,
-			media_name: row.media.name,
-		}));
 	}
 
 	async deactivateCampaigns(advertising_id: number): Promise<void> {

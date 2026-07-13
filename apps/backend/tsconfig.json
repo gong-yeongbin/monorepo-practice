@@ -16,6 +16,7 @@
       "@media/*": ["./src/modules/media/*"],
       "@tracker/*": ["./src/modules/tracker/*"],
       "@campaign/*": ["./src/modules/campaign/*"],
+      "@config/*": ["./src/modules/config/*"],
       "@partner/*": ["./src/modules/partner/*"],
       "@dashboard/*": ["./src/modules/dashboard/*"],
       "@interceptors/*": ["./src/interceptors/*"]

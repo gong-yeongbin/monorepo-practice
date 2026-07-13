@@ -92,6 +92,7 @@
       "^@media/(.*)$": "<rootDir>/modules/media/$1",
       "^@tracker/(.*)$": "<rootDir>/modules/tracker/$1",
       "^@campaign/(.*)$": "<rootDir>/modules/campaign/$1",
+      "^@config/(.*)$": "<rootDir>/modules/config/$1",
       "^@partner/(.*)$": "<rootDir>/modules/partner/$1",
       "^@dashboard/(.*)$": "<rootDir>/modules/dashboard/$1",
       "^@interceptors/(.*)$": "<rootDir>/interceptors/$1"
