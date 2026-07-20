@@ -1,36 +1,34 @@
-# 인증 제거 체크리스트
+# 회원가입 + 이메일 인증(AWS SES) 체크리스트
 
-구글 인증 전환 작업(미커밋)을 폐기하고, 인증 자체를 제거한다. 모든 엔드포인트는 인증 없이 열린다.
+가입하면서 메일 인증하는 2단계 정책(사용자 결정). ① `POST /user`에 email·password 제출 → 해시·코드를 가입 대기로 Redis에 저장하고 코드 발송(user 미생성) → ② `POST /user/verify`에 email·code 제출, 검증 통과 시에만 대기 정보의 해시로 user 생성. 로그인(JWT)은 범위 제외.
 
-## auth 모듈 제거
+## 의존성 / 스키마
 
-- [x] `src/modules/auth/` 전체 삭제 (google·jwt strategy, guard, login·validate-google-user use-case, auth.controller 포함)
-- [x] orphan use-case 삭제 — `find-user.use-case.ts`, `get-profile.use-case.ts` (+spec, auth에서만 사용)
-- [x] 도메인 컨트롤러 9개에서 `@UseGuards(JwtAuthGuard)` + import 제거 (advertiser·advertising·campaign·config·dashboard·media·partner·tracker·user)
-- [x] 도메인 모듈 8개에서 `imports: [AuthModule]` 제거 + `app.module.ts`에서 AuthModule 제거
-- [x] `@auth/*` 별칭 제거 — `tsconfig.json` paths, `package.json` jest moduleNameMapper
+- [x] `bcrypt`·`@aws-sdk/client-ses`(+`@types/bcrypt`) 추가, `pnpm install`
+- [x] `schema.prisma` user에 `password VarChar(60)` 추가 (email_verified는 정책 변경으로 불필요 — 생성된 user는 전부 인증 완료 상태)
+- [x] 마이그레이션 SQL 수기 작성 `20260720130000_add_user_password` (기존 행 DELETE 선례 따름)
+- [ ] (사용자) `pnpm deploy` / `pnpm generate` 실행
 
-## user 모듈 정리
+## infra
 
-- [x] POST /user 복원 — `create-user.dto.ts` `{ email }`, 컨트롤러 `create` 메서드
-- [x] `create-user.use-case.ts` — email 중복 검사(ConflictException) 추가, 주석 갱신
-- [x] `user.module.ts` — exports 제거 (auth 전용이었음)
-- [x] `user.repository.ts` — 주석 갱신 (구글 가입 문구 제거)
-- [x] spec 갱신 — create-user.use-case.spec, user.controller.spec
+- [x] `src/infra/mail/` 신규 4파일 — mail.port(MAIL_PORT), mail.constants(SES_CLIENT), ses-mail.adapter, mail.module
+- [x] `cache.port.ts`·`redis-cache.adapter.ts`에 `del(key)` 추가
 
-## 의존성 / 설정 / 문서
+## user 모듈
 
-- [x] `package.json` — @nestjs/jwt·@nestjs/passport·passport·passport-jwt·passport-google-oauth20(+types) 제거, `pnpm install`
-- [x] `turbo.json` globalEnv — JWT_SECRET·GOOGLE_* 제거
-- [x] README — .env 예시에서 JWT_SECRET·GOOGLE_* 제거, 구글 로그인 안내 문구 제거
+- [x] `user.entity.ts` — password는 도메인 타입에 넣지 않음(응답 노출 방지)
+- [x] `user.repository.ts` — CreateUserProps에 `password`
+- [x] `prisma-user.repository.ts` — findAll/findById/findByEmail/update에 `omit: { password: true }`
+- [x] `pending-signup.constants.ts` 신규 — TTL 10분(ms)·키 팩토리·PendingSignup 타입
+- [x] `request-signup.use-case.ts` 신규 — 가입된 email 409, 해시·코드를 JSON으로 Redis 저장(재요청 시 덮어씀)·SES 발송
+- [x] `verify-signup.use-case.ts` 신규 — 중복 409 → 코드 검증(만료·불일치 400) → 대기 해시로 생성 → 대기 삭제
+- [x] `request-signup.dto.ts`(email·password), `verify-signup.dto.ts`(email·code) 신규
+- [x] `user.controller.ts` — `POST /user`(신청, 200) + `POST /user/verify`(확정, 201)
+- [x] `user.module.ts` — CacheModule·MailModule import, RequestSignup·VerifySignup 등록
 
-## 유지하는 것
+## 테스트 / 문서
 
-- user 스키마(email·approved·role·created_at·updated_at)와 마이그레이션 3개 (090000·100000·110000)
-- DEVELOPER role (사용자 결정)
-- 가입·수정 시각 컬럼 (직전 작업)
-
-## 검증
-
-- [x] `pnpm test` — prisma client 재생성 전이라 prisma-user.repository.spec 타입 에러 1건은 기존 이슈로 허용
-- [ ] (사용자) `pnpm generate` / `pnpm deploy` 후 전체 통과 확인
+- [x] request-signup.use-case.spec (3케이스), verify-signup.use-case.spec (4케이스)
+- [x] user.controller.spec·prisma-user.repository.spec 갱신
+- [x] README `.env` 예시에 AWS_REGION·AWS_ACCESS_KEY_ID·AWS_SECRET_ACCESS_KEY·SES_FROM_EMAIL
+- [ ] `pnpm test` / `pnpm test:cov` (modules 4지표 90%+) — generate 이후 전체 통과 확인

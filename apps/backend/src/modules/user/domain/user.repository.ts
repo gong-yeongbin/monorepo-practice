@@ -3,9 +3,10 @@ import { User, UserRole } from '@user/domain/user.entity';
 
 export const USER_REPOSITORY = Symbol('USER_REPOSITORY');
 
-// role·approved는 DB 기본값(ADMIN·false)을 쓴다.
+// role·approved는 DB 기본값(ADMIN·false)을 쓴다. password는 bcrypt 해시 — 도메인 User 타입에는 노출하지 않는 쓰기 전용 필드다.
 export interface CreateUserProps {
 	email: string;
+	password: string;
 }
 
 // email은 불변. role·approved만 부분 수정한다.

@@ -1,25 +1,30 @@
-# 인증 제거 — 맥락 메모
+# 회원가입 + 이메일 인증(AWS SES) — 맥락 메모
 
 ## 배경
 
-2026-07-20 구글 계정 인증 전환을 구현 완료(미커밋) 후, 사용자가 방향을 바꿔 **인증 자체를 제거**하기로 결정. "로컬 로그인 복원"이 아니라 "인증 없는 상태"를 선택함. 구글 인증 구현은 커밋된 적이 없어 삭제로 폐기.
+2026-07-20 인증 전면 제거 직후, 회원가입을 제대로 만들기로 함. email+password 입력 → 6자리 코드 이메일 인증. 승인된 계획: `~/.claude/plans/binary-spinning-mochi.md`.
 
-## 결정 사항
+## 결정 사항 (사용자 선택)
 
-- **인증 완전 제거** (사용자 선택). auth 모듈·JWT 가드·passport 계열 전부 삭제. 모든 엔드포인트가 인증 없이 열린다.
-- **user 스키마는 email 기반 유지**. 구글 전환에서 만든 `email`(unique)·`approved` 컬럼과 마이그레이션 `20260720090000_user_google_auth`를 유지한다. 이유는 두 가지. (1) 해당 마이그레이션이 로컬 DB에 이미 적용됐을 가능성이 있어(append-only 원칙) 손대지 않는 편이 안전. (2) 인증이 없어도 email이 user 식별자로 더 자연스럽다. `approved`는 인증 게이트 용도가 사라져 지금은 단순 데이터 필드다 — 나중에 불필요하면 별도 마이그레이션으로 제거.
-- **DEVELOPER role 유지** (사용자 선택). enum 값과 마이그레이션 `20260720100000` 유지.
-- **가입·수정 시각 컬럼 유지** (직전 요청). `created_at`/`updated_at` + 마이그레이션 `20260720110000`.
-- **POST /user 복원**. 구글 자동 가입이 사라지면 user 생성 경로가 0이 되므로, email만 받는 생성 엔드포인트를 복원. HEAD의 이전 구현을 따라 중복 검사 + ConflictException 패턴 적용.
-- **find-user·get-profile use-case 삭제**. auth(구글 검증·프로필 조회)에서만 쓰였음. `findByEmail`은 create-user의 중복 검사가 쓰므로 repository에 유지.
+- **6자리 인증 코드 방식** (링크 클릭 아님).
+- **가입하면서 메일 인증** (2026-07-20 정책 확정). 처음엔 "가입 후 별도 인증(email_verified 컬럼)"으로 구현했으나 사용자가 정책 정정 → 코드 검증을 통과해야 user가 생성되는 2단계 흐름으로 재작업. 이후 "가입 요청과 함께 코드 발송" UX로 한 번 더 조정(사용자 선택). 최종 흐름은 ① `POST /user { email, password }` — 중복 409, bcrypt 해시+6자리 코드를 `signup:{email}` 키에 JSON으로 10분 TTL 저장(재요청 시 덮어씀), SES 발송, **user 미생성**(200 응답) → ② `POST /user/verify { email, code }` — 중복 409, 만료·불일치 400, 통과 시 대기 정보의 해시로 user 생성(201) 후 대기 삭제. `email_verified` 컬럼은 불필요(생성된 user는 전부 인증 완료 상태). password 해시가 인증 완료까지 Redis에 임시로 머무는 트레이드오프는 인지하고 수용(평문 아님, TTL 자동 소멸).
+- **AWS SES 발송** (`@aws-sdk/client-ses`). sandbox 제약: 발신자·수신자 identity 사전 검증 필요, IAM 키는 `.env`.
+- **범위는 가입+인증까지.** 로그인(JWT)·가드 재적용은 다음 단계.
 
-## 백업
+## 설계 결정
 
-폐기한 구글 인증 구현 스냅샷(삭제 직전 작업 트리 전체)은 세션 scratchpad에 보관.
-`/private/tmp/claude-501/-Users-gong-yeongbin-IdeaProjects-monorepo-practice/63e94ef5-42c0-4071-a5bf-c6c65da1b488/scratchpad/pre-auth-removal-tracked.patch` (+ `-untracked.tar.gz`). 임시 디렉터리라 오래 보관하려면 옮겨야 함.
+- 인증 코드는 기존 `CACHE_PORT`(Redis) 재사용 — 키 `email-verification:{email}`, TTL 10분(밀리초 단위 주의). 재사용 방지를 위해 `CachePort`에 `del` 추가.
+- **password는 domain `User` 타입에 넣지 않는다.** repository가 Prisma row를 그대로 반환하는 구조라 타입에 넣으면 GET/PATCH 응답에 해시가 노출됨. 대신 `prisma-user.repository.ts`의 findAll/findById/findByEmail/update 4곳에 Prisma `omit: { password: true }` 적용(update도 row를 반환하므로 포함). omit된 row는 User와 일치해 "row 재포장 금지" 규칙과 충돌 없음. 이후 로그인 구현 시 password를 읽는 전용 메서드(findByEmailWithPassword 류)가 필요함.
+- 만료·불일치 코드는 같은 400으로 응답(코드 존재 여부 oracle 차단). 이미 가입된 email은 발송·가입 양쪽에서 409.
+- bcrypt salt rounds 10, password VarChar(60) — 과거 로컬 인증 시절 선례와 동일. DTO는 MinLength(8)·MaxLength(72)(bcrypt 72바이트 한계).
+- 마이그레이션은 기존 user 행 DELETE 후 password NOT NULL 추가(20260720090000 선례). 로컬 개발 DB 전용이라 허용. `20260720130000_add_user_password`는 미적용·미커밋 상태에서 정책 변경을 반영해 수정함(Docker 데몬이 꺼져 있어 deploy가 불가능했음을 확인).
+- turbo.json globalEnv는 건드리지 않음 — 런타임 전용 변수 미등재가 현행 컨벤션.
+
+## 알려진 한계 (의도적 제외)
+
+- 코드 발송의 rate limit 없음 — `POST /user/verification-code`를 반복 호출하면 SES 발송이 그만큼 나감(실습 수준에서 허용). 재발송은 같은 엔드포인트 재호출로 해결됨.
 
 ## 주의
 
-- prisma/CLAUDE.md 규칙대로 `generate`/`deploy`는 사용자가 직접 실행. 실행 전까지 prisma-user.repository의 타입체크 실패(구 스키마 기준 생성 타입)는 기존 이슈.
-- `20260720090000`이 로컬 DB에 실제 적용됐는지는 미확인. 적용 전이면 `pnpm deploy` 한 번으로 3개 마이그레이션이 순서대로 적용된다.
-- 이전 작업(구글 인증 전환)의 체크리스트·맥락 메모는 커밋된 적이 없어 git 히스토리에 없다. 필요하면 위 백업 patch 안에 있음.
+- `pnpm deploy`/`pnpm generate`는 사용자가 직접 실행(prisma/CLAUDE.md 규칙). generate 전까지 password/email_verified 관련 타입 에러는 정상.
+- 직전 작업(인증 제거)의 백업: scratchpad의 `pre-auth-removal-tracked.patch`(+untracked.tar.gz). 세션 임시 디렉터리라 필요하면 옮길 것.

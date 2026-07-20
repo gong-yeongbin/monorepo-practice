@@ -15,4 +15,8 @@ export class RedisCacheAdapter implements CachePort {
 	async get(key: string) {
 		return await this.redis.get(key);
 	}
+
+	async del(key: string) {
+		await this.redis.del(key);
+	}
 }

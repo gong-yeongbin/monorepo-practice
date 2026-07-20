@@ -157,7 +157,13 @@ PORT=3001
 VALKEY="redis://localhost:6379"
 REDIS_STREAM_GROUP="mecross-system"
 REDIS_STREAM_CONSUMER="consumer-1"
+AWS_REGION="ap-northeast-2"
+AWS_ACCESS_KEY_ID="<ses:SendEmail 권한을 가진 IAM access key>"
+AWS_SECRET_ACCESS_KEY="<IAM secret key>"
+SES_FROM_EMAIL="<SES에서 검증한 발신자 이메일>"
 ```
+
+> 회원가입은 2단계입니다. `POST /user`에 email·password를 제출하면 6자리 인증 코드가 발송되고(AWS SES, 이 시점엔 계정 미생성), `POST /user/verify`에 email·code를 제출해 검증을 통과해야 계정이 생성됩니다. SES sandbox 상태에서는 발신자뿐 아니라 수신자 이메일도 SES identity로 등록·검증되어 있어야 합니다.
 
 ### 데이터베이스 마이그레이션
 
