@@ -1,11 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
 import { UpdateUserUseCase } from './update-user.use-case';
 import { USER_REPOSITORY } from '@user/domain/user.repository';
-
-jest.mock('bcrypt');
-const mockedBcrypt = bcrypt as jest.Mocked<typeof bcrypt>;
 
 describe('UpdateUserUseCase', () => {
 	const userRepository = { findById: jest.fn(), update: jest.fn() };
@@ -19,35 +15,32 @@ describe('UpdateUserUseCase', () => {
 		useCase = module.get(UpdateUserUseCase);
 	});
 
-	it('password를 재해싱하고 role과 함께 수정해 프로필을 반환한다', async () => {
-		userRepository.findById.mockResolvedValue({ id: 1, user_id: 'admin', password: 'old', role: 'ADMIN' });
-		mockedBcrypt.hash.mockResolvedValue('hashed-pw' as never);
-		userRepository.update.mockResolvedValue({ id: 1, user_id: 'admin', password: 'hashed-pw', role: 'MEDIA' });
+	it('role·approved를 수정해 user를 반환한다', async () => {
+		userRepository.findById.mockResolvedValue({ id: 1, email: 'admin@example.com', role: 'ADMIN', approved: false });
+		const updated = { id: 1, email: 'admin@example.com', role: 'MEDIA', approved: true };
+		userRepository.update.mockResolvedValue(updated);
 
-		const result = await useCase.execute(1, { password: 'newpw', role: 'MEDIA' });
+		const result = await useCase.execute(1, { role: 'MEDIA', approved: true });
 
-		expect(mockedBcrypt.hash).toHaveBeenCalledWith('newpw', 10);
-		expect(userRepository.update).toHaveBeenCalledWith(1, { password: 'hashed-pw', role: 'MEDIA' });
-		expect(result).toEqual({ id: 1, user_id: 'admin', role: 'MEDIA' });
+		expect(userRepository.update).toHaveBeenCalledWith(1, { role: 'MEDIA', approved: true });
+		expect(result).toBe(updated);
 	});
 
-	it('role만 주면 password 해싱 없이 role만 수정한다', async () => {
-		userRepository.findById.mockResolvedValue({ id: 1, user_id: 'admin', password: 'old', role: 'ADMIN' });
-		userRepository.update.mockResolvedValue({ id: 1, user_id: 'admin', password: 'old', role: 'ADVERTISER' });
+	it('approved만 주면 approved만 수정한다', async () => {
+		userRepository.findById.mockResolvedValue({ id: 1, email: 'admin@example.com', role: 'ADMIN', approved: false });
+		userRepository.update.mockResolvedValue({ id: 1, email: 'admin@example.com', role: 'ADMIN', approved: true });
 
-		await useCase.execute(1, { role: 'ADVERTISER' });
+		await useCase.execute(1, { approved: true });
 
-		expect(mockedBcrypt.hash).not.toHaveBeenCalled();
-		expect(userRepository.update).toHaveBeenCalledWith(1, { role: 'ADVERTISER' });
+		expect(userRepository.update).toHaveBeenCalledWith(1, { approved: true });
 	});
 
 	it('빈 dto면 아무 필드 없이 update를 호출한다', async () => {
-		userRepository.findById.mockResolvedValue({ id: 1, user_id: 'admin', password: 'old', role: 'ADMIN' });
-		userRepository.update.mockResolvedValue({ id: 1, user_id: 'admin', password: 'old', role: 'ADMIN' });
+		userRepository.findById.mockResolvedValue({ id: 1, email: 'admin@example.com', role: 'ADMIN', approved: true });
+		userRepository.update.mockResolvedValue({ id: 1, email: 'admin@example.com', role: 'ADMIN', approved: true });
 
 		await useCase.execute(1, {});
 
-		expect(mockedBcrypt.hash).not.toHaveBeenCalled();
 		expect(userRepository.update).toHaveBeenCalledWith(1, {});
 	});
 

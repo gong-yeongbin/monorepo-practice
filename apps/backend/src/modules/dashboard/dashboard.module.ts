@@ -7,10 +7,8 @@ import { DailyDetailUseCase } from '@dashboard/application/daily-detail.use-case
 import { DailyDetailAllUseCase } from '@dashboard/application/daily-detail-all.use-case';
 import { DASHBOARD_REPOSITORY } from '@dashboard/domain/dashboard.repository';
 import { PrismaDashboardRepository } from '@dashboard/infrastructure/prisma-dashboard.repository';
-import { AuthModule } from '@auth/auth.module';
 
 @Module({
-	imports: [AuthModule],
 	controllers: [DashboardController],
 	providers: [
 		DashboardUseCase,

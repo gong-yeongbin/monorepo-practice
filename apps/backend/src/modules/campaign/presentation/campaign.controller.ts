@@ -1,5 +1,5 @@
 // campaign CRUD를 처리하는 컨트롤러
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
 import { CreateCampaignUseCase } from '@campaign/application/create-campaign.use-case';
 import { DeleteCampaignUseCase } from '@campaign/application/delete-campaign.use-case';
 import { UpdateCampaignUseCase } from '@campaign/application/update-campaign.use-case';
@@ -9,11 +9,9 @@ import { CreateCampaignDto } from '@campaign/application/dto/create-campaign.dto
 import { CampaignIdDto } from '@campaign/application/dto/campaign-id.dto';
 import { ListCampaignDto } from '@campaign/application/dto/list-campaign.dto';
 import { UpdateCampaignDto } from '@campaign/application/dto/update-campaign.dto';
-import { JwtAuthGuard } from '@auth/presentation/jwt-auth.guard';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 
 @Controller('campaign')
-@UseGuards(JwtAuthGuard)
 @UseInterceptors(ResponseInterceptor)
 export class CampaignController {
 	constructor(

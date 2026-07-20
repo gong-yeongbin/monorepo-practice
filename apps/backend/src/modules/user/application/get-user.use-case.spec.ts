@@ -15,10 +15,11 @@ describe('GetUserUseCase', () => {
 		useCase = module.get(GetUserUseCase);
 	});
 
-	it('존재하면 password를 제외한 프로필을 반환한다', async () => {
-		userRepository.findById.mockResolvedValue({ id: 1, user_id: 'admin', password: 'secret', role: 'ADMIN' });
+	it('존재하면 user를 반환한다', async () => {
+		const user = { id: 1, email: 'admin@example.com', role: 'ADMIN', approved: true };
+		userRepository.findById.mockResolvedValue(user);
 
-		expect(await useCase.execute(1)).toEqual({ id: 1, user_id: 'admin', role: 'ADMIN' });
+		expect(await useCase.execute(1)).toBe(user);
 	});
 
 	it('없으면 NotFoundException을 던진다', async () => {

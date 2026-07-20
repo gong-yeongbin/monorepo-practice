@@ -5,7 +5,6 @@ import { ListUserUseCase } from '@user/application/list-user.use-case';
 import { GetUserUseCase } from '@user/application/get-user.use-case';
 import { UpdateUserUseCase } from '@user/application/update-user.use-case';
 import { DeleteUserUseCase } from '@user/application/delete-user.use-case';
-import { CreateUserDto } from '@user/application/dto/create-user.dto';
 
 describe('UserController', () => {
 	const createUserUseCase = { execute: jest.fn() } as unknown as CreateUserUseCase;
@@ -17,33 +16,31 @@ describe('UserController', () => {
 
 	beforeEach(() => jest.clearAllMocks());
 
-	it('create는 create use-case에 body를 위임한다', async () => {
-		const body: CreateUserDto = { user_id: 'admin', password: 'pw1234', role: 'ADMIN' };
-
-		await controller.create(body);
-
-		expect(createUserUseCase.execute).toHaveBeenCalledWith(body);
+	it('create는 생성 use-case에 email을 위임한다', async () => {
+		await controller.create({ email: 'new@example.com' });
+		expect(createUserUseCase.execute).toHaveBeenCalledWith('new@example.com');
 	});
 
 	it('list는 목록 use-case 결과를 반환한다', async () => {
-		const list = [{ id: 1, user_id: 'admin', role: 'ADMIN' }];
+		const list = [{ id: 1, email: 'admin@example.com', role: 'ADMIN', approved: true }];
 		(listUserUseCase.execute as jest.Mock).mockResolvedValue(list);
 
 		expect(await controller.list()).toBe(list);
 	});
 
 	it('get은 단건 use-case에 id를 위임한다', async () => {
-		(getUserUseCase.execute as jest.Mock).mockResolvedValue({ id: 1, user_id: 'admin', role: 'ADMIN' });
+		const user = { id: 1, email: 'admin@example.com', role: 'ADMIN', approved: true };
+		(getUserUseCase.execute as jest.Mock).mockResolvedValue(user);
 
-		expect(await controller.get({ id: 1 })).toEqual({ id: 1, user_id: 'admin', role: 'ADMIN' });
+		expect(await controller.get({ id: 1 })).toBe(user);
 		expect(getUserUseCase.execute).toHaveBeenCalledWith(1);
 	});
 
 	it('update는 수정 use-case에 id와 body를 위임한다', async () => {
-		(updateUserUseCase.execute as jest.Mock).mockResolvedValue({ id: 1, user_id: 'admin', role: 'MEDIA' });
+		(updateUserUseCase.execute as jest.Mock).mockResolvedValue({ id: 1, email: 'admin@example.com', role: 'MEDIA', approved: true });
 
-		await controller.update({ id: 1 }, { role: 'MEDIA' });
-		expect(updateUserUseCase.execute).toHaveBeenCalledWith(1, { role: 'MEDIA' });
+		await controller.update({ id: 1 }, { role: 'MEDIA', approved: true });
+		expect(updateUserUseCase.execute).toHaveBeenCalledWith(1, { role: 'MEDIA', approved: true });
 	});
 
 	it('delete는 삭제 use-case에 id를 위임한다', async () => {

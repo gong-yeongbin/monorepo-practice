@@ -1,5 +1,5 @@
 // daily_report 집계 통계(대시보드) 조회를 처리하는 컨트롤러
-import { Controller, Get, Param, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
 import { DashboardUseCase } from '@dashboard/application/dashboard.use-case';
 import { DailyUseCase } from '@dashboard/application/daily.use-case';
 import { DetailUseCase } from '@dashboard/application/detail.use-case';
@@ -7,11 +7,9 @@ import { DailyDetailUseCase } from '@dashboard/application/daily-detail.use-case
 import { DailyDetailAllUseCase } from '@dashboard/application/daily-detail-all.use-case';
 import { DashboardDto, DailyDto, DetailDto, DailyDetailAllDto } from '@dashboard/application/dto/statistics.dto';
 import { AdvertisingIdDto } from '@dashboard/application/dto/advertising-id.dto';
-import { JwtAuthGuard } from '@auth/presentation/jwt-auth.guard';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 
 @Controller('dashboard')
-@UseGuards(JwtAuthGuard)
 @UseInterceptors(ResponseInterceptor)
 export class DashboardController {
 	constructor(

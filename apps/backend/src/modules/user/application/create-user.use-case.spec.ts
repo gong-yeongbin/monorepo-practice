@@ -1,18 +1,11 @@
 import { Test } from '@nestjs/testing';
 import { ConflictException } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
 import { CreateUserUseCase } from './create-user.use-case';
 import { USER_REPOSITORY } from '@user/domain/user.repository';
-import { CreateUserDto } from '@user/application/dto/create-user.dto';
-
-jest.mock('bcrypt');
-const mockedBcrypt = bcrypt as jest.Mocked<typeof bcrypt>;
 
 describe('CreateUserUseCase', () => {
-	const userRepository = { findByUserId: jest.fn(), create: jest.fn() };
+	const userRepository = { findByEmail: jest.fn(), create: jest.fn() };
 	let useCase: CreateUserUseCase;
-
-	const dto: CreateUserDto = { user_id: 'admin', password: 'pw1234', role: 'ADMIN' };
 
 	beforeEach(async () => {
 		jest.clearAllMocks();
@@ -24,20 +17,18 @@ describe('CreateUserUseCase', () => {
 		useCase = module.get(CreateUserUseCase);
 	});
 
-	it('신규 user_id면 비밀번호를 bcrypt로 해싱해 생성한다', async () => {
-		userRepository.findByUserId.mockResolvedValue(null);
-		mockedBcrypt.hash.mockResolvedValue('hashed-pw' as never);
+	it('email로 user를 생성한다(role·approved는 DB 기본값)', async () => {
+		userRepository.findByEmail.mockResolvedValue(null);
 
-		await useCase.execute(dto);
+		await useCase.execute('new@example.com');
 
-		expect(mockedBcrypt.hash).toHaveBeenCalledWith('pw1234', 10);
-		expect(userRepository.create).toHaveBeenCalledWith({ user_id: 'admin', password: 'hashed-pw', role: 'ADMIN' });
+		expect(userRepository.create).toHaveBeenCalledWith({ email: 'new@example.com' });
 	});
 
-	it('이미 존재하는 user_id면 ConflictException을 던지고 생성하지 않는다', async () => {
-		userRepository.findByUserId.mockResolvedValue({ id: 1, user_id: 'admin' });
+	it('이미 존재하는 email이면 ConflictException을 던지고 생성하지 않는다', async () => {
+		userRepository.findByEmail.mockResolvedValue({ id: 1, email: 'dup@example.com', role: 'ADMIN', approved: true });
 
-		await expect(useCase.execute(dto)).rejects.toThrow(ConflictException);
+		await expect(useCase.execute('dup@example.com')).rejects.toThrow(ConflictException);
 		expect(userRepository.create).not.toHaveBeenCalled();
 	});
 });

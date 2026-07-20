@@ -14,7 +14,7 @@ describe('PrismaUserRepository', () => {
 	beforeEach(() => jest.clearAllMocks());
 
 	it('findAll은 전체 목록을 반환한다', async () => {
-		const list = [{ id: 1, user_id: 'admin', password: 'hashed', role: 'ADMIN' }];
+		const list = [{ id: 1, email: 'admin@example.com', role: 'ADMIN', approved: true }];
 		findMany.mockResolvedValue(list);
 
 		expect(await repository.findAll()).toBe(list);
@@ -22,30 +22,30 @@ describe('PrismaUserRepository', () => {
 	});
 
 	it('findById는 id로 조회한다', async () => {
-		const user = { id: 1, user_id: 'admin', password: 'hashed', role: 'ADMIN' };
+		const user = { id: 1, email: 'admin@example.com', role: 'ADMIN', approved: true };
 		findUnique.mockResolvedValue(user);
 
 		expect(await repository.findById(1)).toBe(user);
 		expect(findUnique).toHaveBeenCalledWith({ where: { id: 1 } });
 	});
 
-	it('user_id로 조회한다', async () => {
-		const user = { id: 1, user_id: 'admin', password: 'hashed', role: 'ADMIN' };
+	it('email로 조회한다', async () => {
+		const user = { id: 1, email: 'admin@example.com', role: 'ADMIN', approved: true };
 		findUnique.mockResolvedValue(user);
 
-		const result = await repository.findByUserId('admin');
+		const result = await repository.findByEmail('admin@example.com');
 
 		expect(result).toBe(user);
-		expect(findUnique).toHaveBeenCalledWith({ where: { user_id: 'admin' } });
+		expect(findUnique).toHaveBeenCalledWith({ where: { email: 'admin@example.com' } });
 	});
 
 	it('없으면 null을 반환한다', async () => {
 		findUnique.mockResolvedValue(null);
-		expect(await repository.findByUserId('none')).toBeNull();
+		expect(await repository.findByEmail('none@example.com')).toBeNull();
 	});
 
 	it('전달받은 props로 user를 생성한다', async () => {
-		const props = { user_id: 'admin', password: 'hashed', role: 'ADMIN' as const };
+		const props = { email: 'new@example.com' };
 
 		await repository.create(props);
 
@@ -53,11 +53,11 @@ describe('PrismaUserRepository', () => {
 	});
 
 	it('update는 id·props로 수정한다', async () => {
-		const updated = { id: 1, user_id: 'admin', password: 'new', role: 'MEDIA' };
+		const updated = { id: 1, email: 'admin@example.com', role: 'MEDIA', approved: true };
 		update.mockResolvedValue(updated);
 
-		expect(await repository.update(1, { password: 'new', role: 'MEDIA' })).toBe(updated);
-		expect(update).toHaveBeenCalledWith({ where: { id: 1 }, data: { password: 'new', role: 'MEDIA' } });
+		expect(await repository.update(1, { role: 'MEDIA', approved: true })).toBe(updated);
+		expect(update).toHaveBeenCalledWith({ where: { id: 1 }, data: { role: 'MEDIA', approved: true } });
 	});
 
 	it('delete는 id로 삭제한다', async () => {

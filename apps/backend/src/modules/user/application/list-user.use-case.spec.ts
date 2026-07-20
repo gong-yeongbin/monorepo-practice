@@ -14,15 +14,13 @@ describe('ListUserUseCase', () => {
 		useCase = module.get(ListUserUseCase);
 	});
 
-	it('password를 제외한 프로필 목록을 반환한다', async () => {
-		userRepository.findAll.mockResolvedValue([
-			{ id: 1, user_id: 'admin', password: 'secret', role: 'ADMIN' },
-			{ id: 2, user_id: 'adv', password: 'secret2', role: 'ADVERTISER' },
-		]);
+	it('user 전체 목록을 반환한다', async () => {
+		const list = [
+			{ id: 1, email: 'admin@example.com', role: 'ADMIN', approved: true },
+			{ id: 2, email: 'adv@example.com', role: 'ADVERTISER', approved: false },
+		];
+		userRepository.findAll.mockResolvedValue(list);
 
-		expect(await useCase.execute()).toEqual([
-			{ id: 1, user_id: 'admin', role: 'ADMIN' },
-			{ id: 2, user_id: 'adv', role: 'ADVERTISER' },
-		]);
+		expect(await useCase.execute()).toBe(list);
 	});
 });

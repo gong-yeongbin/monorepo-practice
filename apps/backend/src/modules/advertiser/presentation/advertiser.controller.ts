@@ -1,5 +1,5 @@
 // advertiser CRUD를 처리하는 컨트롤러
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseInterceptors } from '@nestjs/common';
 import { ListAdvertiserUseCase } from '@advertiser/application/list-advertiser.use-case';
 import { GetAdvertiserUseCase } from '@advertiser/application/get-advertiser.use-case';
 import { CreateAdvertiserUseCase } from '@advertiser/application/create-advertiser.use-case';
@@ -7,11 +7,9 @@ import { UpdateAdvertiserUseCase } from '@advertiser/application/update-advertis
 import { DeleteAdvertiserUseCase } from '@advertiser/application/delete-advertiser.use-case';
 import { CreateAdvertiserDto } from '@advertiser/application/dto/create-advertiser.dto';
 import { AdvertiserIdDto } from '@advertiser/application/dto/advertiser-id.dto';
-import { JwtAuthGuard } from '@auth/presentation/jwt-auth.guard';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 
 @Controller('advertiser')
-@UseGuards(JwtAuthGuard)
 @UseInterceptors(ResponseInterceptor)
 export class AdvertiserController {
 	constructor(

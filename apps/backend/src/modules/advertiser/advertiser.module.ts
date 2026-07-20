@@ -7,10 +7,8 @@ import { UpdateAdvertiserUseCase } from '@advertiser/application/update-advertis
 import { DeleteAdvertiserUseCase } from '@advertiser/application/delete-advertiser.use-case';
 import { ADVERTISER_REPOSITORY } from '@advertiser/domain/advertiser.repository';
 import { PrismaAdvertiserRepository } from '@advertiser/infrastructure/prisma-advertiser.repository';
-import { AuthModule } from '@auth/auth.module';
 
 @Module({
-	imports: [AuthModule],
 	controllers: [AdvertiserController],
 	providers: [
 		ListAdvertiserUseCase,

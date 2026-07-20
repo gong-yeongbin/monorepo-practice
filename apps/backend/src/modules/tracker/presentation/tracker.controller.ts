@@ -1,5 +1,5 @@
 // tracker CRUD를 처리하는 컨트롤러
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseInterceptors } from '@nestjs/common';
 import { ListTrackerUseCase } from '@tracker/application/list-tracker.use-case';
 import { GetTrackerUseCase } from '@tracker/application/get-tracker.use-case';
 import { CreateTrackerUseCase } from '@tracker/application/create-tracker.use-case';
@@ -8,11 +8,9 @@ import { DeleteTrackerUseCase } from '@tracker/application/delete-tracker.use-ca
 import { CreateTrackerDto } from '@tracker/application/dto/create-tracker.dto';
 import { UpdateTrackerDto } from '@tracker/application/dto/update-tracker.dto';
 import { TrackerIdDto } from '@tracker/application/dto/tracker-id.dto';
-import { JwtAuthGuard } from '@auth/presentation/jwt-auth.guard';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 
 @Controller('tracker')
-@UseGuards(JwtAuthGuard)
 @UseInterceptors(ResponseInterceptor)
 export class TrackerController {
 	constructor(

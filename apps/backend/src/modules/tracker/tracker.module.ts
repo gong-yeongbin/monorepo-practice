@@ -7,10 +7,8 @@ import { UpdateTrackerUseCase } from '@tracker/application/update-tracker.use-ca
 import { DeleteTrackerUseCase } from '@tracker/application/delete-tracker.use-case';
 import { TRACKER_REPOSITORY } from '@tracker/domain/tracker.repository';
 import { PrismaTrackerRepository } from '@tracker/infrastructure/prisma-tracker.repository';
-import { AuthModule } from '@auth/auth.module';
 
 @Module({
-	imports: [AuthModule],
 	controllers: [TrackerController],
 	providers: [
 		ListTrackerUseCase,

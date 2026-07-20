@@ -7,10 +7,8 @@ import { UpdateMediaUseCase } from '@media/application/update-media.use-case';
 import { DeleteMediaUseCase } from '@media/application/delete-media.use-case';
 import { MEDIA_REPOSITORY } from '@media/domain/media.repository';
 import { PrismaMediaRepository } from '@media/infrastructure/prisma-media.repository';
-import { AuthModule } from '@auth/auth.module';
 
 @Module({
-	imports: [AuthModule],
 	controllers: [MediaController],
 	providers: [
 		ListMediaUseCase,

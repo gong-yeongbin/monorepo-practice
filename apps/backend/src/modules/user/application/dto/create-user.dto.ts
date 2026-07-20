@@ -1,15 +1,8 @@
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { UserRole } from '@user/domain/user.entity';
+// POST /user 요청 body — email만 받고 role·approved는 DB 기본값을 쓴다
+import { IsEmail, IsNotEmpty } from 'class-validator';
 
 export class CreateUserDto {
 	@IsNotEmpty()
-	@IsString()
-	user_id: string;
-
-	@IsNotEmpty()
-	@IsString()
-	password: string;
-
-	@IsEnum(['ADMIN', 'ADVERTISER', 'MEDIA'])
-	role: UserRole;
+	@IsEmail()
+	email: string;
 }

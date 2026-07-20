@@ -10,7 +10,6 @@
       "@tracking/*": ["./src/modules/tracking/*"],
       "@postback/*": ["./src/modules/postback/*"],
       "@user/*": ["./src/modules/user/*"],
-      "@auth/*": ["./src/modules/auth/*"],
       "@advertiser/*": ["./src/modules/advertiser/*"],
       "@advertising/*": ["./src/modules/advertising/*"],
       "@media/*": ["./src/modules/media/*"],

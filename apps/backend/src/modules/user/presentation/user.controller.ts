@@ -1,5 +1,5 @@
 // user CRUD를 처리하는 컨트롤러
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseInterceptors } from '@nestjs/common';
 import { CreateUserDto } from '@user/application/dto/create-user.dto';
 import { UpdateUserDto } from '@user/application/dto/update-user.dto';
 import { UserIdDto } from '@user/application/dto/user-id.dto';
@@ -8,11 +8,9 @@ import { ListUserUseCase } from '@user/application/list-user.use-case';
 import { GetUserUseCase } from '@user/application/get-user.use-case';
 import { UpdateUserUseCase } from '@user/application/update-user.use-case';
 import { DeleteUserUseCase } from '@user/application/delete-user.use-case';
-import { JwtAuthGuard } from '@auth/presentation/jwt-auth.guard';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 
 @Controller('user')
-@UseGuards(JwtAuthGuard)
 @UseInterceptors(ResponseInterceptor)
 export class UserController {
 	constructor(
@@ -25,7 +23,7 @@ export class UserController {
 
 	@Post()
 	async create(@Body() body: CreateUserDto): Promise<void> {
-		await this.createUserUseCase.execute(body);
+		await this.createUserUseCase.execute(body.email);
 	}
 
 	@Get()

@@ -1,5 +1,5 @@
 // advertising CRUD와 통계 조회를 처리하는 컨트롤러
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseInterceptors } from '@nestjs/common';
 import { CreateAdvertisingUseCase } from '@advertising/application/create-advertising.use-case';
 import { ListAdvertisingUseCase } from '@advertising/application/list-advertising.use-case';
 import { GetAdvertisingUseCase } from '@advertising/application/get-advertising.use-case';
@@ -9,11 +9,9 @@ import { CreateAdvertisingDto } from '@advertising/application/dto/create-advert
 import { UpdateAdvertisingDto } from '@advertising/application/dto/update-advertising.dto';
 import { ListAdvertisingDto } from '@advertising/application/dto/list-advertising.dto';
 import { AdvertisingIdDto } from '@advertising/application/dto/advertising-id.dto';
-import { JwtAuthGuard } from '@auth/presentation/jwt-auth.guard';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 
 @Controller('advertising')
-@UseGuards(JwtAuthGuard)
 @UseInterceptors(ResponseInterceptor)
 export class AdvertisingController {
 	constructor(

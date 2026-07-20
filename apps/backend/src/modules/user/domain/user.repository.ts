@@ -3,22 +3,21 @@ import { User, UserRole } from '@user/domain/user.entity';
 
 export const USER_REPOSITORY = Symbol('USER_REPOSITORY');
 
+// role·approved는 DB 기본값(ADMIN·false)을 쓴다.
 export interface CreateUserProps {
-	user_id: string;
-	password: string;
-	role: UserRole;
+	email: string;
 }
 
-// user_id(로그인 식별자)는 불변. password·role만 부분 수정한다.
+// email은 불변. role·approved만 부분 수정한다.
 export interface UpdateUserProps {
-	password?: string;
 	role?: UserRole;
+	approved?: boolean;
 }
 
 export interface UserRepository {
 	findAll(): Promise<User[]>;
 	findById(id: number): Promise<User | null>;
-	findByUserId(user_id: string): Promise<User | null>;
+	findByEmail(email: string): Promise<User | null>;
 	create(props: CreateUserProps): Promise<void>;
 	update(id: number, props: UpdateUserProps): Promise<User>;
 	delete(id: number): Promise<void>;
