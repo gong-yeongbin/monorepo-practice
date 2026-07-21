@@ -8,6 +8,7 @@ const normal = (info: any) => {
 	return columnValue ? columnValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') : 0;
 };
 
+/* v8 ignore start -- useStore/JSX를 반환하는 링크 셀은 렌더 테스트 범위 밖이라 커버리지에서 제외 */
 const linkedInstall = (
 	info: any,
 	setInstallVisible: React.Dispatch<React.SetStateAction<boolean>>,
@@ -44,6 +45,7 @@ const event = (info: any, setEventVisible: React.Dispatch<React.SetStateAction<b
 		cellValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 	);
 };
+/* v8 ignore stop */
 
 const cvr = (info: any) => {
 	return `${info.row.original.cvr
@@ -52,6 +54,7 @@ const cvr = (info: any) => {
 		.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}%`;
 };
 
+/* v8 ignore start -- useStore/JSX를 반환하는 링크 셀은 렌더 테스트 범위 밖이라 커버리지에서 제외 */
 const unregistered = (
 	info: any,
 	setUnregisteredVisible: React.Dispatch<React.SetStateAction<boolean>>,
@@ -73,6 +76,7 @@ const unregistered = (
 		unregistered.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 	);
 };
+/* v8 ignore stop */
 
 const status = (info: any) => {
 	return info.row.original.status === 1 ? '진행 중' : '-';

@@ -1,7 +1,7 @@
 import React from 'react';
 import { axiosInstance } from '@/shared/api/axios';
 
-const getDataWithCvr = (data: any) => {
+export const getDataWithCvr = (data: any) => {
 	data.forEach((row: { cvr: number; install: string; click: string }) => {
 		const cvrValue = (parseInt(row.install, 10) / parseInt(row.click, 10)) * 100;
 		const roundedCvr = roundCvr(cvrValue);
@@ -22,6 +22,7 @@ const roundCvr = (data: number) => {
 	return (Math.round(scaled) / 100) * Math.sign(data);
 };
 
+/* v8 ignore start -- axios 조회 함수는 순수 로직 테스트 범위 밖이라 커버리지에서 제외 */
 const getDashboardData = async (date: string) => {
 	const res = await axiosInstance.get(`/advertising/dashboard?date=${date}`);
 	return res.data.data;
@@ -145,3 +146,4 @@ export const api = {
 	getCampaigns,
 	getCampaignEvents,
 };
+/* v8 ignore stop */

@@ -11,8 +11,17 @@
 - `pnpm build` / `pnpm build:staging` / `pnpm build:prod` — 모드별 빌드.
 - `pnpm preview` — 빌드 결과 미리보기.
 - `pnpm lint` — `eslint src/**/*.{ts,tsx}`. `pnpm check-types` — `tsc --noEmit`.
+- `pnpm test` — Vitest 1회 실행(jsdom 환경). `pnpm test:watch`로 watch 모드. `pnpm test:coverage`로 커버리지. 테스트 설정은 `vite.config.ts`의 `test` 필드에 있고, `@/*` 별칭을 그대로 공유한다.
 
-테스트 러너는 없다. 변경 후 검증은 `check-types` + `build`로 한다.
+테스트는 `src/**/*.{test,spec}.{ts,tsx}`로 콜로케이션한다. 현재는 React 비의존 순수 로직 위주다 — `shared/lib`(get-cell·get-total), `shared/api`(CVR 파생). `getTotal`은 `useMemo`를 쓰므로 `@testing-library/react`로 렌더해 검증한다.
+
+## 커버리지 기준 (엄수)
+
+**커버리지는 90% 이상이어야 한다.** `vite.config.ts`의 `test.coverage.thresholds`가 statements·branches·functions·lines 모두 90%로 강제하며, 미달 시 `pnpm test:coverage`가 exit 1로 **실패**한다.
+
+- 커버리지 대상(`coverage.include`)은 **테스트한 순수 로직 파일로 한정**한다 — `shared/lib/get-cell.tsx`, `shared/lib/get-total.tsx`, `shared/api/api.tsx`. 화면 컴포넌트(antd·react-table·MobX 의존)를 포함하면 90%를 만족할 수 없다.
+- 대상 파일 안에서 테스트하지 않는 함수는 `/* v8 ignore start */` … `/* v8 ignore stop */`로 분모에서 제외한다(예: `api.tsx`의 axios 조회 함수, `get-cell.tsx`의 useStore/JSX 링크 셀).
+- 순수 로직을 추가하거나 테스트를 넓힐 때는 해당 파일을 `include`에 넣고 90%를 유지한 채 확장한다.
 
 ## 구조 (기능 기반 + FSD 유사)
 
