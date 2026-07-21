@@ -40,7 +40,7 @@ describe('PrismaDashboardRepository', () => {
 			{ created_date: new Date('2026-07-09'), _sum: { click: null, install: null, registration: null, retention: null, purchase: null, revenue: null, etc1: null, etc2: null, etc3: null, etc4: null, etc5: null, unregistered: null } },
 		]);
 
-		const result = await repository.daily('tok', { start_date: new Date('2026-07-01'), end_date: new Date('2026-07-10') });
+		const result = await repository.daily({ start_date: new Date('2026-07-01'), end_date: new Date('2026-07-10') }, 'tok');
 
 		expect(result[0]).toEqual({
 			created_date: new Date('2026-07-10'),
@@ -55,28 +55,14 @@ describe('PrismaDashboardRepository', () => {
 		expect(daily_report.groupBy).toHaveBeenCalledWith(expect.objectContaining({ by: ['created_date'], where: expect.objectContaining({ token: 'tok' }) }));
 	});
 
-	it('dailyDetail은 daily와 동일하게 token 기준 합산을 매핑한다', async () => {
+	it('daily는 token이 없으면 token 필터 없이 날짜 범위 전체를 합산한다', async () => {
 		daily_report.groupBy.mockResolvedValue([
 			{ created_date: new Date('2026-07-10'), _sum: { click: 3, install: 1, registration: 0, retention: 0, purchase: 0, revenue: 0, etc1: 0, etc2: 0, etc3: 0, etc4: 0, etc5: 0, unregistered: 0 } },
 		]);
 
-		const result = await repository.dailyDetail('tok', { start_date: new Date('2026-07-01'), end_date: new Date('2026-07-10') });
+		const result = await repository.daily({ start_date: new Date('2026-07-01'), end_date: new Date('2026-07-10') });
 
 		expect(result[0]).toEqual(expect.objectContaining({ click: 3, install: 1 }));
-	});
-
-	it('dailyDetailAll은 token 필터 없이 날짜 범위로 groupBy 합산하고 모든 카운터를 매핑한다', async () => {
-		daily_report.groupBy.mockResolvedValue([
-			{ created_date: new Date('2026-07-10'), _sum: { click: 1, install: 2, registration: 3, retention: 4, purchase: 5, revenue: 6, etc1: 7, etc2: 8, etc3: 9, etc4: 10, etc5: 11, unregistered: 12 } },
-		]);
-
-		const result = await repository.dailyDetailAll({ start_date: new Date('2026-07-01'), end_date: new Date('2026-07-10') });
-
-		expect(result[0]).toEqual({
-			created_date: new Date('2026-07-10'),
-			click: 1, install: 2, registration: 3, retention: 4, purchase: 5, revenue: 6,
-			etc1: 7, etc2: 8, etc3: 9, etc4: 10, etc5: 11, unregistered: 12,
-		});
 		const call = daily_report.groupBy.mock.calls[0][0];
 		expect(call.where.token).toBeUndefined();
 		expect(call.where.created_date).toBeDefined();

@@ -8,11 +8,12 @@ export class DashboardDto {
 	date: string;
 }
 
-// 일별/일별상세: token + 날짜 범위
+// 일별: 날짜 범위 + 선택적 token(없으면 전체 합산)
 export class DailyDto {
+	@IsOptional()
 	@IsNotEmpty()
 	@IsString()
-	token: string;
+	token?: string;
 
 	@IsDateString()
 	start_date: string;
@@ -33,13 +34,4 @@ export class DetailDto {
 	@Type(() => Number)
 	@IsInt()
 	media_id?: number;
-}
-
-// 엑셀(전체 조회): 날짜 범위만
-export class DailyDetailAllDto {
-	@IsDateString()
-	start_date: string;
-
-	@IsDateString()
-	end_date: string;
 }

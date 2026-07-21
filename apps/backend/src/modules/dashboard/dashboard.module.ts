@@ -3,20 +3,11 @@ import { DashboardController } from '@dashboard/presentation/dashboard.controlle
 import { DashboardUseCase } from '@dashboard/application/dashboard.use-case';
 import { DailyUseCase } from '@dashboard/application/daily.use-case';
 import { DetailUseCase } from '@dashboard/application/detail.use-case';
-import { DailyDetailUseCase } from '@dashboard/application/daily-detail.use-case';
-import { DailyDetailAllUseCase } from '@dashboard/application/daily-detail-all.use-case';
 import { DASHBOARD_REPOSITORY } from '@dashboard/domain/dashboard.repository';
 import { PrismaDashboardRepository } from '@dashboard/infrastructure/prisma-dashboard.repository';
 
 @Module({
 	controllers: [DashboardController],
-	providers: [
-		DashboardUseCase,
-		DailyUseCase,
-		DetailUseCase,
-		DailyDetailUseCase,
-		DailyDetailAllUseCase,
-		{ provide: DASHBOARD_REPOSITORY, useClass: PrismaDashboardRepository },
-	],
+	providers: [DashboardUseCase, DailyUseCase, DetailUseCase, { provide: DASHBOARD_REPOSITORY, useClass: PrismaDashboardRepository }],
 })
 export class DashboardModule {}

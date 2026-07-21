@@ -25,31 +25,11 @@ export class PrismaDashboardRepository implements DashboardRepository {
 			GROUP BY a.id, a.name`;
 	}
 
-	async daily(token: string, range: DateRange): Promise<DailyRow[]> {
-		return this.aggregateDailyByToken(token, range);
-	}
-
-	async dailyDetail(token: string, range: DateRange): Promise<DailyRow[]> {
-		return this.aggregateDailyByToken(token, range);
-	}
-
-	// token 기준 날짜별 카운터 합산(daily/dailyDetail 공용)
-	private async aggregateDailyByToken(token: string, range: DateRange): Promise<DailyRow[]> {
+	// 날짜별 카운터 합산. token이 주어지면 해당 캠페인으로 한정, 없으면 전체 합산.
+	async daily(range: DateRange, token?: string): Promise<DailyRow[]> {
 		const rows = await this.prismaService.daily_report.groupBy({
 			by: ['created_date'],
-			where: { token, created_date: { gte: range.start_date, lte: range.end_date } },
-			_sum: DAILY_SUM_SELECT,
-			orderBy: { created_date: 'desc' },
-		});
-
-		return rows.map(mapDailyRow);
-	}
-
-	async dailyDetailAll(range: DateRange): Promise<DailyRow[]> {
-		// 필터 없이 날짜 범위 전체 합산(admin의 excel 엔드포인트 = 데이터 조회일 뿐)
-		const rows = await this.prismaService.daily_report.groupBy({
-			by: ['created_date'],
-			where: { created_date: { gte: range.start_date, lte: range.end_date } },
+			where: { ...(token && { token }), created_date: { gte: range.start_date, lte: range.end_date } },
 			_sum: DAILY_SUM_SELECT,
 			orderBy: { created_date: 'desc' },
 		});
@@ -80,7 +60,7 @@ export class PrismaDashboardRepository implements DashboardRepository {
 	}
 }
 
-// daily_report groupBy에서 합산할 카운터 선택자(daily/dailyDetailAll 공용)
+// daily_report groupBy에서 합산할 카운터 선택자
 const DAILY_SUM_SELECT = {
 	click: true, install: true, registration: true, retention: true, purchase: true, revenue: true,
 	etc1: true, etc2: true, etc3: true, etc4: true, etc5: true, unregistered: true,

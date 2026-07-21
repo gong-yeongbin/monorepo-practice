@@ -14,11 +14,19 @@ describe('DailyUseCase', () => {
 		useCase = module.get(DailyUseCase);
 	});
 
-	it('token과 변환된 날짜 범위를 repository에 넘긴다', async () => {
+	it('변환된 날짜 범위와 token을 repository에 넘긴다', async () => {
 		const rows = [{ created_date: new Date('2026-07-10') }];
 		dashboardRepository.daily.mockResolvedValue(rows);
 
 		expect(await useCase.execute({ token: 'tok', start_date: '2026-07-01', end_date: '2026-07-10' })).toBe(rows);
-		expect(dashboardRepository.daily).toHaveBeenCalledWith('tok', { start_date: new Date('2026-07-01'), end_date: new Date('2026-07-10') });
+		expect(dashboardRepository.daily).toHaveBeenCalledWith({ start_date: new Date('2026-07-01'), end_date: new Date('2026-07-10') }, 'tok');
+	});
+
+	it('token이 없으면 undefined를 넘긴다(전체 합산)', async () => {
+		const rows = [{ created_date: new Date('2026-07-10') }];
+		dashboardRepository.daily.mockResolvedValue(rows);
+
+		expect(await useCase.execute({ start_date: '2026-07-01', end_date: '2026-07-10' })).toBe(rows);
+		expect(dashboardRepository.daily).toHaveBeenCalledWith({ start_date: new Date('2026-07-01'), end_date: new Date('2026-07-10') }, undefined);
 	});
 });

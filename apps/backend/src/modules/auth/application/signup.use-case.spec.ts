@@ -16,7 +16,7 @@ describe('SignupUseCase', () => {
 	const mail = { send: jest.fn() };
 	let useCase: SignupUseCase;
 
-	const savedPending = (): PendingSignup => JSON.parse((cache.set as jest.Mock).mock.calls[0][1] as string) as PendingSignup;
+	const savedPending = (): PendingSignup => JSON.parse((cache.set).mock.calls[0][1] as string) as PendingSignup;
 
 	beforeEach(async () => {
 		jest.clearAllMocks();

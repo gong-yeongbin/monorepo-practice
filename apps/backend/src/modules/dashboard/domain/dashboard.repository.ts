@@ -10,8 +10,6 @@ export interface DateRange {
 
 export interface DashboardRepository {
 	dashboard(date: Date): Promise<DashboardRow[]>;
-	daily(token: string, range: DateRange): Promise<DailyRow[]>;
+	daily(range: DateRange, token?: string): Promise<DailyRow[]>;
 	detail(advertising_id: number, range: DateRange, media_id?: number): Promise<DetailRow[]>;
-	dailyDetail(token: string, range: DateRange): Promise<DailyRow[]>;
-	dailyDetailAll(range: DateRange): Promise<DailyRow[]>;
 }
