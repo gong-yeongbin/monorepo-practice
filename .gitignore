@@ -39,5 +39,9 @@ yarn-error.log*
 .DS_Store
 *.pem
 
+# Claude 작업 메모 (개인용)
+/checklist.md
+/context-notes.md
+
 /.idea
 .vscode/
