@@ -1,26 +1,25 @@
 import React from 'react';
 import { axiosInstance } from '@/shared/api/axios';
 
-const getDataWithCVR = (data: any) => {
-	data.forEach((obj: { cvr: number; install: string; click: string }) => {
-		const cvrData = (parseInt(obj.install, 10) / parseInt(obj.click, 10)) * 100;
-		const roundedCvr = roundCVR(cvrData);
-		const checkedCvr = checkIfNumber(roundedCvr);
-		obj.cvr = checkedCvr;
+const getDataWithCvr = (data: any) => {
+	data.forEach((row: { cvr: number; install: string; click: string }) => {
+		const cvrValue = (parseInt(row.install, 10) / parseInt(row.click, 10)) * 100;
+		const roundedCvr = roundCvr(cvrValue);
+		row.cvr = ensureFiniteNumber(roundedCvr);
 	});
 	return [...data];
 };
 
-const checkIfNumber = (cvr: any) => {
+const ensureFiniteNumber = (cvr: any) => {
 	if (Number.isNaN(cvr) || !Number.isFinite(cvr)) {
 		return 0;
 	}
 	return cvr;
 };
 
-const roundCVR = (data: number) => {
-	const m = Number((Math.abs(data) * 100).toPrecision(15));
-	return (Math.round(m) / 100) * Math.sign(data);
+const roundCvr = (data: number) => {
+	const scaled = Number((Math.abs(data) * 100).toPrecision(15));
+	return (Math.round(scaled) / 100) * Math.sign(data);
 };
 
 const getDashboardData = async (date: string) => {
@@ -33,8 +32,8 @@ const getDetail = async (info: { date: (string | null)[]; paramId: string | unde
 	const res = await axiosInstance.get(
 		`/advertising/detail/${paramId}?startDate=${date[0]}&endDate=${date[1]}`,
 	);
-	const dataWithCVR = getDataWithCVR(res.data.data);
-	return dataWithCVR;
+	const dataWithCvr = getDataWithCvr(res.data.data);
+	return dataWithCvr;
 };
 
 const getMedia = async () => {
@@ -67,8 +66,8 @@ const getDaily = async (date: (string | null)[]) => {
 	const res = await axiosInstance.get(
 		`/advertising/daily?startDate=${date[0]}&endDate=${date[1]}&token=${token}`,
 	);
-	const dataWithCVR = getDataWithCVR(res.data.data);
-	return dataWithCVR;
+	const dataWithCvr = getDataWithCvr(res.data.data);
+	return dataWithCvr;
 };
 
 const getDailyDetail = async (info: {
@@ -81,8 +80,8 @@ const getDailyDetail = async (info: {
 	const res = await axiosInstance.get(
 		`/advertising/dailydetail?startDate=${date[0]}&endDate=${date[1]}&type=${orderType}&order=${order}&token=${token}`,
 	);
-	const dataWithCVR = getDataWithCVR(res.data.data);
-	return dataWithCVR;
+	const dataWithCvr = getDataWithCvr(res.data.data);
+	return dataWithCvr;
 };
 
 const getChangeCreated = async (paramId?: string) => {

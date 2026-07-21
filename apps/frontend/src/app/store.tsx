@@ -1,13 +1,13 @@
 import { makeAutoObservable } from 'mobx';
 import React, { createContext, useContext, FC, PropsWithChildren } from 'react';
-import { Iinfo } from '@/shared/ui/InfoCard/InfoCard';
+import { Info } from '@/shared/ui/info-card/info-card';
 
 class Store {
 	pageTitle = '';
 
 	selectedMenu = '';
 
-	info: Iinfo = {
+	info: Info = {
 		advertiser: '',
 		tracker: '',
 		advertising: '',
