@@ -44,6 +44,14 @@ describe('PrismaUserRepository', () => {
 		expect(await repository.findByEmail('none@example.com')).toBeNull();
 	});
 
+	it('findByEmailWithPassword는 password를 포함해 조회한다', async () => {
+		const user = { id: 1, email: 'admin@example.com', password: 'hashed-password', role: 'ADMIN', approved: true };
+		findUnique.mockResolvedValue(user);
+
+		expect(await repository.findByEmailWithPassword('admin@example.com')).toBe(user);
+		expect(findUnique).toHaveBeenCalledWith({ where: { email: 'admin@example.com' } });
+	});
+
 	it('전달받은 props로 user를 생성한다', async () => {
 		const props = { email: 'new@example.com', password: 'hashed-password' };
 

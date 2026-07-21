@@ -1,7 +1,7 @@
 // Prisma로 user를 조회·생성·수정·삭제하는 repository 구현체
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@infra/prisma/prisma.service';
-import { User } from '@user/domain/user.entity';
+import { User, UserWithPassword } from '@user/domain/user.entity';
 import { CreateUserProps, UpdateUserProps, UserRepository } from '@user/domain/user.repository';
 
 @Injectable()
@@ -19,6 +19,11 @@ export class PrismaUserRepository implements UserRepository {
 
 	async findByEmail(email: string): Promise<User | null> {
 		return this.prismaService.user.findUnique({ where: { email }, omit: { password: true } });
+	}
+
+	// signin 비밀번호 검증 전용 — 유일하게 password를 포함해 반환한다
+	async findByEmailWithPassword(email: string): Promise<UserWithPassword | null> {
+		return this.prismaService.user.findUnique({ where: { email } });
 	}
 
 	async create(props: CreateUserProps): Promise<void> {

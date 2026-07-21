@@ -1,108 +1,93 @@
 # Backend
 
-트래킹 및 포스트백 처리를 위한 시스템 API 서버입니다. 다양한 트래킹 솔루션으로부터의 트래킹 데이터를 수신하고, 매체사로 포스트백을 전송합니다.
+광고 관리 플랫폼(광고주/캠페인/매체/트래커)과 Redis Stream 기반 트래킹·포스트백 처리를 담당하는 API 서버입니다. 기본 포트는 3001입니다.
 
 ## 기술 스택
 
 - **Framework**: NestJS 11.x
-- **Message Queue**: Kafka (KafkaJS)
-- **Cache**: Redis (Keyv)
-- **HTTP Client**: Express
-- **Language**: TypeScript
+- **Database**: MySQL 8 — Prisma 7 (`@prisma/adapter-mariadb` driver adapter)
+- **Messaging**: Redis Stream (ioredis) — 트래킹·포스트백 비동기 처리
+- **Cache**: Redis (ioredis) — 가입 대기 정보·refresh token 저장
+- **Mail**: AWS SES — 회원가입 인증 코드 발송
+- **Auth**: JWT (`@nestjs/jwt`) — access/refresh 토큰
+- **Language**: TypeScript (strict)
 
 ## 프로젝트 구조
 
 ```
 src/
-├── main.ts                    # 애플리케이션 진입점
+├── main.ts                    # 진입점 (전역 ValidationPipe, PORT 바인딩)
 ├── app.module.ts              # 루트 모듈
-├── common/                    # 공통 유틸리티
-│   └── util/                  # 유틸리티 함수
-├── core/                      # 공유 인프라 (포트 + 어댑터)
-│   ├── cache/                 # 캐시 포트 + Redis 어댑터
-│   └── kafka/                 # 프로듀서·컨슈머 포트 + Kafka 어댑터
-├── module/                    # 기능 모듈 (모듈별 클린 아키텍처 레이어)
-│   ├── campaign/              # 공유 캠페인 도메인
-│   │   ├── domain/            # 엔티티 + 리포지토리 포트
-│   │   └── infrastructure/    # Prisma 리포지토리 구현
-│   ├── postback/              # 포스트백 처리
-│   │   ├── application/       # 유스케이스 + 포트 + DTO
-│   │   ├── infrastructure/    # Prisma 리포지토리 구현
-│   │   └── presentation/      # 컨트롤러 + 요청 DTO
-│   └── tracking/              # 트래킹 처리
-│       ├── application/       # 유스케이스 + DTO
-│       └── presentation/      # 컨트롤러
-└── tracker/                   # 트래커 벤더별 DTO 레지스트리
+├── app.controller.ts          # GET /health
+├── common/                    # 상태 없는 순수 유틸
+├── infra/                     # 공유 인프라 (포트 + 어댑터)
+│   ├── prisma/                # PrismaService — MySQL 연결 수명주기
+│   ├── cache/                 # CachePort + Redis 어댑터 (TTL은 밀리초)
+│   ├── stream/                # Redis Stream 프로듀서·컨슈머
+│   └── mail/                  # MailPort + AWS SES 어댑터
+├── interceptors/              # 응답을 { statusCode, data, _meta }로 감싸는 인터셉터
+├── modules/                   # 기능 모듈 — 클린 아키텍처 4계층
+│   │                          #   (domain / application / infrastructure / presentation)
+│   ├── auth/                  # 회원가입(이메일 인증)·로그인·토큰 재발급
+│   ├── user/                  # 사용자 조회·수정·삭제
+│   ├── advertiser/            # 광고주 CRUD
+│   ├── advertising/           # 광고 CRUD
+│   ├── media/                 # 매체 CRUD
+│   ├── tracker/               # 트래커 CRUD
+│   ├── campaign/              # 캠페인 CRUD
+│   ├── config/                # 캠페인별 설정 조회·수정
+│   ├── partner/               # 파트너 조회
+│   ├── dashboard/             # 대시보드·일별 리포트 조회
+│   ├── tracking/              # 트래킹 클릭 수신·리다이렉트
+│   └── postback/              # 트래커 포스트백 수신
+└── trackers/                  # 트래커 벤더별 파라미터 정의 레지스트리
+                               #   (appsflyer / adjust / airbridge / adbrix-remaster)
 ```
 
-## 주요 기능
+## 실행
 
-### 트래킹 처리
-다양한 트래킹 솔루션으로부터의 트래킹 데이터를 수신하고 처리합니다:
-
-- **AppsFlyer**: AppsFlyer 트래킹 데이터 처리
-- **Adjust**: Adjust 트래킹 데이터 처리
-- **Airbridge**: Airbridge 트래킹 데이터 처리
-- **AdbrixRemaster**: AdbrixRemaster 트래킹 데이터 처리
-
-### 포스트백 처리
-매체사로 포스트백을 전송합니다:
-
-- **Install Postback**: 설치 이벤트 포스트백
-- **Event Postback**: 커스텀 이벤트 포스트백
-
-### 메시지 큐 처리
-- Kafka를 통한 비동기 메시지 처리
-- Producer: 트래킹 데이터를 Kafka로 전송
-- Consumer: Kafka에서 메시지를 수신하여 처리
-
-### 캐시 관리
-- Redis를 사용한 캐시 관리
-- 트래킹 데이터 임시 저장
-- 성능 최적화
-
-## 설치 및 실행
-
-### 의존성 설치
+로컬 인프라(MySQL + Redis)는 모노레포 루트의 docker compose로 띄웁니다.
 
 ```bash
+# 루트에서
 pnpm install
-```
+pnpm docker:up          # mysql:8.0 (DB: mecross) + redis:alpine
 
-### 개발 환경 실행
+# apps/backend에서 — Prisma 마이그레이션 적용·클라이언트 생성
+pnpm deploy
+pnpm generate
 
-```bash
-# 개발 모드 (watch 모드)
-pnpm run dev
+# 개발 모드 (watch)
+pnpm dev                # 루트에서는 pnpm dev --filter=backend
 
-# 디버그 모드
-pnpm run start:debug
-
-# 프로덕션 모드
-pnpm run start:prod
-```
-
-### 빌드
-
-```bash
-pnpm run build
+# 빌드 / 프로덕션
+pnpm build
+pnpm start:prod
 ```
 
 ## 환경 변수
 
-`.env` 파일을 생성하고 다음 변수들을 설정하세요:
+`apps/backend/.env` 파일에 다음 변수를 설정합니다.
 
 ```env
-# 데이터베이스
-DATABASE_URL="postgresql://user:password@localhost:5432/dbname"
+# 데이터베이스 (docker-compose 기본값 기준)
+DATABASE_URL="mysql://root:1234@localhost:3306/mecross"
 
-# Kafka
-KAFKA_BROKERS="localhost:9092"
-KAFKA_CLIENT_ID="system-api"
-KAFKA_GROUP_ID="system-api-group"
+# Redis 접속 URL (캐시·스트림 공용, 미설정 시 redis://localhost:6379)
+VALKEY="redis://localhost:6379"
 
-# Redis
-REDIS_URL="redis://localhost:6379"
+# Redis Stream 컨슈머 (미설정 시 mecross-system / consumer-1)
+REDIS_STREAM_GROUP="mecross-system"
+REDIS_STREAM_CONSUMER="consumer-1"
+
+# AWS SES — 회원가입 인증 코드 메일 발송
+# 자격 증명은 AWS SDK 기본 체인(AWS_ACCESS_KEY_ID·AWS_SECRET_ACCESS_KEY 등)을 사용
+AWS_REGION="ap-northeast-2"
+SES_FROM_EMAIL="no-reply@example.com"
+
+# JWT — signin·refresh 토큰 서명 키 (없으면 로그인 시점에 에러)
+JWT_ACCESS_SECRET="change-me-access"
+JWT_REFRESH_SECRET="change-me-refresh"
 
 # 서버
 PORT=3001
@@ -110,145 +95,78 @@ PORT=3001
 
 ## API 엔드포인트
 
-### 트래킹 엔드포인트
+### 인증 (`/auth`)
 
-#### AppsFlyer
+| 메서드 | 경로 | 설명 |
+|---|---|---|
+| POST | `/auth/signup` | 가입 신청 — 이메일로 6자리 인증 코드 발송 (user 미생성, 200) |
+| POST | `/auth/signup/verify` | 코드 검증 통과 시 가입 확정 (201) |
+| POST | `/auth/signin` | 로그인 — access(15분)·refresh(7일) 토큰 발급 (미승인 user는 403) |
+| POST | `/auth/refresh` | refresh token으로 access token 재발급 |
+
+### 트래킹·포스트백
+
+| 메서드 | 경로 | 설명 |
+|---|---|---|
+| GET | `/tracking` | 트래킹 클릭 수신 — 트래커 랜딩 URL로 리다이렉트, Redis Stream으로 비동기 저장 |
+| GET | `/:name/install` | 트래커별 install 포스트백 수신 (`name`: appsflyer 등) |
+| GET | `/:name/event` | 트래커별 event 포스트백 수신 |
+
+### 어드민 리소스
+
+| 리소스 | 라우트 |
+|---|---|
+| user | GET `/user`, GET `/user/:id`, PATCH `/user/:id`, DELETE `/user/:id` |
+| advertiser | GET, POST `/advertiser`, GET, PATCH, DELETE `/advertiser/:id` |
+| advertising | GET, POST `/advertising`, GET, PUT, DELETE `/advertising/:id` |
+| media | GET, POST `/media`, GET, PATCH, DELETE `/media/:id` |
+| tracker | GET, POST `/tracker`, GET, PATCH, DELETE `/tracker/:id` |
+| campaign | GET, POST `/campaign`, GET, PATCH, DELETE `/campaign/:id` |
+| config | GET, PATCH `/config/:campaignId` |
+| partner | GET `/partner/:id` |
+| dashboard | GET `/dashboard`, `/dashboard/daily`, `/dashboard/dailydetail`, `/dashboard/dailydetail/excel`, `/dashboard/detail/:id` |
+
+### 기타
+
+| 메서드 | 경로 | 설명 |
+|---|---|---|
+| GET | `/health` | 헬스체크 |
+
+## 메시지 흐름
+
+1. 트래킹·포스트백 HTTP 요청을 수신하면 검증 후 Redis Stream에 메시지를 발행하고 즉시 응답합니다.
+2. Stream 컨슈머(`XREADGROUP`)가 배치로 메시지를 수신해 DB 저장과 일별 리포트 집계를 수행합니다.
+3. 캐시 연결과 스트림 연결은 별도 ioredis 클라이언트로 분리되어 있습니다(`BLOCK` 점유 방지).
+
+## Prisma
+
+`apps/backend`에서 실행합니다.
+
+```bash
+pnpm migrate     # 마이그레이션 생성 (--create-only)
+pnpm deploy      # 마이그레이션 적용
+pnpm generate    # 클라이언트 생성
+pnpm reset       # DB 초기화
 ```
-POST /tracking/appsflyer
-```
 
-#### Adjust
-```
-POST /tracking/adjust
-```
-
-#### Airbridge
-```
-POST /tracking/airbridge
-```
-
-#### AdbrixRemaster
-```
-POST /tracking/adbrixremaster
-```
-
-### 포스트백 엔드포인트
-
-#### Install Postback
-```
-POST /postback/install
-```
-
-#### Event Postback
-```
-POST /postback/event
-```
-
-## 아키텍처
-
-### 메시지 흐름
-
-1. **트래킹 데이터 수신**
-   - 외부 트래킹 솔루션에서 HTTP 요청 수신
-   - 데이터 검증 및 정규화
-   - Kafka Producer를 통해 메시지 전송
-
-2. **Kafka Consumer 처리**
-   - Kafka에서 메시지 수신
-   - 비즈니스 로직 처리
-   - 데이터베이스 저장
-   - 포스트백 전송 (필요 시)
-
-3. **포스트백 전송**
-   - 매체사로 HTTP POST 요청
-   - 재시도 로직
-   - 실패 시 큐에 재등록
-
-### 캐시 전략
-
-- 트래킹 데이터 임시 저장 (중복 방지)
-- 자주 조회되는 데이터 캐싱
-- TTL 설정을 통한 자동 만료
-
-## 모듈 상세
-
-### Postback Module
-- Install Postback 처리
-- Event Postback 처리
-- 포스트백 전송 및 재시도 로직
-- Kafka Producer 인터셉터
-
-### Tracking Module
-- 다양한 트래킹 솔루션 지원
-- 트래킹 데이터 정규화
-- 일일 통계 집계
-- Kafka Producer 인터셉터
-
-### Kafka Module
-- Producer: 메시지 전송
-- Consumer: 메시지 수신 및 처리
-- 토픽 관리
-- 에러 핸들링
-
-### Cache Module
-- Redis 캐시 관리
-- Key-value 저장소
-- TTL 관리
+스키마는 `prisma/schema.prisma`에 있고, datasource URL은 `prisma.config.ts`가 `DATABASE_URL`에서 주입합니다.
 
 ## 테스트
 
 ```bash
-# 단위 테스트
-pnpm run test
-
-# E2E 테스트
-pnpm run test:e2e
-
-# 커버리지
-pnpm run test:cov
-
-# Watch 모드
-pnpm run test:watch
+pnpm test                    # 단위 테스트
+pnpm test -- -t "테스트명"    # 단일 테스트
+pnpm test:cov                # 커버리지 — modules/ 는 4지표 90% 이상 유지
+pnpm test:e2e                # E2E (./test/jest-e2e.json)
+pnpm test:watch              # watch 모드
 ```
 
 ## 코드 포맷팅 및 린트
 
 ```bash
-# 코드 포맷팅
-pnpm run format
-
-# 린트
-pnpm run lint
+pnpm format
+pnpm lint
 ```
-
-## 메시지 큐 설정
-
-### Kafka 토픽
-
-시스템에서 사용하는 주요 토픽:
-
-- `tracking` - 트래킹 데이터
-- `postback` - 포스트백 처리 요청
-- `daily-statistic` - 일일 통계 집계
-
-### Consumer Group
-
-- 각 모듈별 독립적인 Consumer Group 사용
-- 수평 확장 지원
-
-## 성능 최적화
-
-- 비동기 메시지 처리로 응답 시간 단축
-- Redis 캐싱으로 데이터베이스 부하 감소
-- Kafka를 통한 분산 처리
-- 배치 처리로 대량 데이터 처리
-
-## 모니터링
-
-- Kafka 메시지 처리 모니터링
-- Redis 캐시 히트율 모니터링
-- 포스트백 전송 성공률 모니터링
-- 에러 로깅 및 알림
 
 ## 라이선스
 

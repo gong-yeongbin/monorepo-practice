@@ -10,3 +10,8 @@ export interface User {
 	updated_at: Date;
 	advertiser_id: number | null;
 }
+
+// signin 비밀번호 검증 전용. API 응답으로 반환 금지 — password는 bcrypt 해시.
+export interface UserWithPassword extends User {
+	password: string;
+}
