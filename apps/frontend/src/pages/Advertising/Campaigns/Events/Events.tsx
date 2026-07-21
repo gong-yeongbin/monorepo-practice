@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import { observer } from 'mobx-react';
 import { Skeleton, Table as EmptyTable, Button, Popconfirm, message } from 'antd';
 import { ArrowLeftOutlined, CheckOutlined } from '@ant-design/icons';

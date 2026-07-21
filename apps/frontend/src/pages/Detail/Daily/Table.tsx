@@ -8,8 +8,8 @@ import {
 } from '@tanstack/react-table';
 import { useNavigate, useParams } from 'react-router';
 import { Button, Table } from 'antd';
-import moment from 'moment';
-import 'moment/locale/ko';
+import dayjs from 'dayjs';
+import 'dayjs/locale/ko';
 import { TableStyles } from '../../../globalStyles';
 import { getCell } from '../../../getCell';
 import { getTotal } from '../../../getTotal';
@@ -60,7 +60,7 @@ const DailyTable = (props: { data: any }) => {
 
 	const columns = useMemo(
 		() => [
-			columnHelper.accessor(row => moment(row.createdAt).format('YY-MM-DD(dd)'), {
+			columnHelper.accessor(row => dayjs(row.createdAt).locale('ko').format('YY-MM-DD(dd)'), {
 				id: 'date',
 				header: 'date',
 				size: 100,

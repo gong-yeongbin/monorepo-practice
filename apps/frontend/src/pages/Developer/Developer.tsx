@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { observer } from 'mobx-react';
 import { LineChartOutlined, LockOutlined, UserAddOutlined, UserOutlined } from '@ant-design/icons';
 import {

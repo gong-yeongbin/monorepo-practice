@@ -1,7 +1,6 @@
 import styled, { createGlobalStyle } from 'styled-components';
 import { normalize } from 'styled-normalize';
 import { Button } from 'antd';
-import { DataGrid } from '@mui/x-data-grid';
 import 'antd/dist/antd.css';
 
 const GlobalStyles = createGlobalStyle`
@@ -362,25 +361,6 @@ export const TableStyles = styled.div<{ height?: string }>`
 			// 합계
 			padding-left: 50%;
 		}
-	}
-`;
-
-export const StyledDataGrid = styled(DataGrid)`
-	& .MuiDataGrid-columnHeaderTitle {
-		line-height: 1.5;
-		text-overflow: clip;
-		text-align: center;
-		white-space: pre-wrap;
-	}
-	& .MuiDataGrid-cellContent {
-		border: 0;
-		overflow: hidden;
-		display: -webkit-box;
-		-webkit-line-clamp: 3;
-		-webkit-box-orient: vertical;
-		text-overflow: ellipsis;
-		text-align: center;
-		white-space: pre-wrap;
 	}
 `;
 

@@ -1,6 +1,5 @@
 import React from 'react';
-import moment from 'moment';
-import { Tooltip, Typography } from 'antd';
+import { Typography } from 'antd';
 import { useStore } from './store';
 
 const normal = (info: any) => {
@@ -83,28 +82,6 @@ const createdAt = (info: any) => {
 	return info.row.original.createdAt.slice(2, 10);
 };
 
-const time = (info: any) => {
-	const field = info.column.id;
-	const row = info.row.original;
-	const value = info.getValue();
-	return value ? (
-		field === 'sendTime' ? (
-			<Tooltip
-				placement="topRight"
-				title={row.sendUrl}
-				color="var(--grey)"
-				className="MuiDataGrid-cellContent"
-			>
-				{moment(value).format('YY-MM-DD HH:mm:ss')}
-			</Tooltip>
-		) : (
-			moment(value).format('YY-MM-DD HH:mm:ss')
-		)
-	) : (
-		'-'
-	);
-};
-
 export const getCell = {
 	normal,
 	linkedInstall,
@@ -113,5 +90,4 @@ export const getCell = {
 	unregistered,
 	status,
 	createdAt,
-	time,
 };

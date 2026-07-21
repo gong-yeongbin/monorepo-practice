@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import { ConfigProvider } from 'antd';
 import { QueryClient, QueryClientProvider, QueryCache } from '@tanstack/react-query';
 import koKR from 'antd/lib/locale/ko_KR';

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, KeyboardEvent } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import { observer } from 'mobx-react';
 import {
 	Button,

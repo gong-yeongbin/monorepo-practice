@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Form, Input, Button, Avatar, message } from 'antd';
 import { observer } from 'mobx-react';
 import { LoadingOutlined, LockOutlined, UserOutlined } from '@ant-design/icons';

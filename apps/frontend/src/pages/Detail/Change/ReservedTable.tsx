@@ -7,7 +7,7 @@ import {
 } from '@tanstack/react-table';
 import { useNavigate } from 'react-router';
 import { Button, message, Popconfirm, Skeleton, Table as EmptyTable } from 'antd';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { ListWrapper } from './styles';
 import { TableStyles } from '../../../globalStyles';
 import { axiosInstance } from '../../../axios';
@@ -66,7 +66,7 @@ const ReservedTable = (props: {
 			}),
 			columnHelper.accessor('mediaName', { header: '매체', size: 70 }),
 			columnHelper.accessor('campaignName', { header: '캠페인명' }),
-			columnHelper.accessor(row => moment(row.reservedAt).format('YY-MM-DD HH:mm'), {
+			columnHelper.accessor(row => dayjs(row.reservedAt).format('YY-MM-DD HH:mm'), {
 				id: 'reservedAt',
 				header: '변경 시간',
 				size: 70,

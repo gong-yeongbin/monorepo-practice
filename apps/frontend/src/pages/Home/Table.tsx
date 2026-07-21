@@ -1,5 +1,5 @@
 import React, { useMemo, useState, ChangeEvent, KeyboardEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import {
 	useReactTable,
 	getCoreRowModel,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate } from 'react-router';
 
 function PrivateRoute(props: { children: React.JSX.Element }) {
 	const { children } = props;

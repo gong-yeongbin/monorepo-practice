@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import { observer } from 'mobx-react';
 import { Button, Skeleton, Tooltip, Table as EmptyTable, DatePicker } from 'antd';
 import { RetweetOutlined, SyncOutlined } from '@ant-design/icons';
