@@ -3,10 +3,10 @@ import { Skeleton, Table as EmptyTable } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import { PaddingContainer, TableContainer } from '@/app/global-styles';
 import { useStore } from '@/app/store';
-import Table from '@/features/trackers/trackers-table';
+import Table from '@/features/tracker/tracker-table';
 import { api } from '@/shared/api/api';
 
-const Trackers = () => {
+const Tracker = () => {
 	const store = useStore();
 
 	useEffect(() => {
@@ -30,4 +30,4 @@ const Trackers = () => {
 	);
 };
 
-export default Trackers;
+export default Tracker;

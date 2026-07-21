@@ -65,8 +65,8 @@ const Home = observer(() => {
 		} else if (pathname === `/media`) {
 			store.setSelectedMenu('media');
 			setSelectBar([]);
-		} else if (pathname === `/trackers`) {
-			store.setSelectedMenu('trackers');
+		} else if (pathname === `/tracker`) {
+			store.setSelectedMenu('tracker');
 			setSelectBar([]);
 		} else if (pathname === `/developer`) {
 			store.setSelectedMenu('developer');
@@ -153,7 +153,7 @@ const Home = observer(() => {
 		},
 		{
 			label: '트래커 관리',
-			key: 'trackers',
+			key: 'tracker',
 			icon: <FontAwesomeIcon icon={faChartLine} />,
 		},
 		{

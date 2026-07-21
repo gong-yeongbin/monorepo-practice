@@ -20,7 +20,7 @@ export interface TrackerColumns {
 
 const columnHelper = createColumnHelper<TrackerColumns>();
 
-const TrackersTable = (props: { data: TrackerColumns[] }) => {
+const TrackerTable = (props: { data: TrackerColumns[] }) => {
 	const { data } = props;
 
 	const [trackerUrlVisible, setTrackerUrlVisible] = useState(false);
@@ -162,4 +162,4 @@ const TrackersTable = (props: { data: TrackerColumns[] }) => {
 	);
 };
 
-export default TrackersTable;
+export default TrackerTable;

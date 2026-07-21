@@ -9,7 +9,7 @@ import GlobalStyles from '@/app/global-styles';
 import { Store, StoreProvider } from '@/app/store';
 import Dashboard from '@/features/home/dashboard';
 import Media from '@/features/media/media';
-import Trackers from '@/features/trackers/trackers';
+import Tracker from '@/features/tracker/tracker';
 import Developer from '@/features/developer/developer';
 import Detail from '@/features/detail/detail';
 import Change from '@/features/detail/change/change';
@@ -59,7 +59,7 @@ function App() {
 								<Route path="advertising/:id" element={<Campaigns />} />
 								<Route path="advertising/:id/events/:campaignIdx" element={<Events />} />
 								<Route path="media" element={<Media />} />
-								<Route path="trackers" element={<Trackers />} />
+								<Route path="tracker" element={<Tracker />} />
 								<Route
 									path="developer"
 									element={
