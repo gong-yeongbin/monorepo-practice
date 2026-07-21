@@ -3,9 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { observer } from 'mobx-react';
 import { Button, Skeleton, Tooltip, Table as EmptyTable, DatePicker } from 'antd';
 import { RetweetOutlined, SyncOutlined } from '@ant-design/icons';
-import { useQuery, useQueryClient } from 'react-query';
-import moment, { Moment } from 'moment';
-import { RangeValue } from 'rc-picker/lib/interface';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import dayjs, { Dayjs } from 'dayjs';
 import { useStore } from '../../store';
 import Table from './Table';
 import InfoCard from '../../components/InfoCard';
@@ -34,26 +33,27 @@ const Detail = observer(() => {
 		store.setPageTitle('광고 상세');
 	}, []);
 
-	const { isFetching } = useQuery(['detail', { paramId }], () => api.getDetail({ date, paramId }), {
-		onSuccess: arr => {
-			store.setDetail(arr);
-		},
-		onError: () => {
-			sessionStorage.clear();
-			navigate('/login');
-		},
+	const { isFetching, data } = useQuery({
+		queryKey: ['detail', { paramId }],
+		queryFn: () => api.getDetail({ date, paramId }),
 		enabled: !!(!isDateOpen && date && date[0] && date[1]),
 	});
 
+	useEffect(() => {
+		if (data) {
+			store.setDetail(data);
+		}
+	}, [data]);
+
 	const handleRefreshBtn = () => {
-		queryClient.invalidateQueries('detail');
+		queryClient.invalidateQueries({ queryKey: ['detail'] });
 	};
 
 	const handleChangeBtn = () => {
 		navigate(`/${paramId}/change`);
 	};
 
-	const onDateChange = (dates: RangeValue<Moment>, dateStrings: [string, string]) => {
+	const onDateChange = (dates: (Dayjs | null)[] | null, dateStrings: [string, string]) => {
 		if (dates) {
 			setDate([dateStrings[0], dateStrings[1]]);
 		}
@@ -65,8 +65,8 @@ const Detail = observer(() => {
 		setIsDateOpen(open);
 	};
 
-	const disabledDate = (selectedDate: Moment): boolean => {
-		return selectedDate && selectedDate > moment().endOf('day');
+	const disabledDate = (selectedDate: Dayjs): boolean => {
+		return selectedDate && selectedDate > dayjs().endOf('day');
 	};
 
 	return (
@@ -77,10 +77,10 @@ const Detail = observer(() => {
 				<NavLeft>
 					<RangePicker
 						ranges={{
-							오늘: [moment(), moment()],
-							'이번 달': [moment().startOf('month'), moment()],
+							오늘: [dayjs(), dayjs()],
+							'이번 달': [dayjs().startOf('month'), dayjs()],
 						}}
-						value={[moment(date[0]), moment(date[1])]}
+						value={[dayjs(date[0]), dayjs(date[1])]}
 						onChange={onDateChange}
 						onOpenChange={onOpenChange}
 						disabledDate={disabledDate}

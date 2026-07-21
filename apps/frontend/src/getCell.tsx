@@ -5,7 +5,7 @@ import { useStore } from './store';
 
 const normal = (info: any) => {
 	const columnName = info.column.id;
-	const columnValue = info.row.values[columnName];
+	const columnValue = info.row.original[columnName];
 	return columnValue ? columnValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') : 0;
 };
 
@@ -14,7 +14,7 @@ const linkedInstall = (
 	setInstallVisible: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
 	const columnName = info.column.id;
-	const cellValue = info.row.values[columnName].toString();
+	const cellValue = info.row.original[columnName].toString();
 	return cellValue > 0 ? (
 		<Typography.Link
 			onClick={() => {
@@ -31,7 +31,7 @@ const linkedInstall = (
 const event = (info: any, setEventVisible: React.Dispatch<React.SetStateAction<boolean>>) => {
 	const store = useStore();
 	const columnName = info.column.id;
-	const cellValue = info.row.values[columnName].toString();
+	const cellValue = info.row.original[columnName].toString();
 	return cellValue > 0 ? (
 		<Typography.Link
 			onClick={() => {
@@ -47,7 +47,7 @@ const event = (info: any, setEventVisible: React.Dispatch<React.SetStateAction<b
 };
 
 const cvr = (info: any) => {
-	return `${info.row.values.cvr
+	return `${info.row.original.cvr
 		.toFixed(2)
 		.toString()
 		.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}%`;
@@ -59,7 +59,7 @@ const unregistered = (
 ) => {
 	const {
 		row: {
-			values: { unregistered },
+			original: { unregistered },
 		},
 	} = info;
 	return unregistered > 0 ? (
@@ -76,15 +76,17 @@ const unregistered = (
 };
 
 const status = (info: any) => {
-	return info.row.values.status === 1 ? '진행 중' : '-';
+	return info.row.original.status === 1 ? '진행 중' : '-';
 };
 
 const createdAt = (info: any) => {
-	return info.row.values.createdAt.slice(2, 10);
+	return info.row.original.createdAt.slice(2, 10);
 };
 
 const time = (info: any) => {
-	const { field, row, value } = info;
+	const field = info.column.id;
+	const row = info.row.original;
+	const value = info.getValue();
 	return value ? (
 		field === 'sendTime' ? (
 			<Tooltip

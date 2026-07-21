@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { observer } from 'mobx-react';
 import { Skeleton, Table as EmptyTable } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useStore } from '../../../store';
 import InfoCard from '../../../components/InfoCard';
 import { axiosInstance } from '../../../axios';
@@ -33,23 +33,24 @@ const Campaigns = observer(() => {
 		store.setPageTitle('캠페인 리스트');
 	}, []);
 
-	const { isFetching } = useQuery(['campaignList'], () => api.getCampaigns(paramId), {
-		onSuccess: data => {
-			store.setCampaigns(data);
-		},
-		onError: error => {
-			handleErrors(error);
-		},
+	const { isFetching, data, error } = useQuery({
+		queryKey: ['campaignList'],
+		queryFn: () => api.getCampaigns(paramId),
 	});
 
-	const handleErrors = (error: unknown) => {
-		if (error instanceof Error && error.message.includes('400')) {
+	const handleErrors = (err: unknown) => {
+		if (err instanceof Error && err.message.includes('400')) {
 			navigate('/');
 		} else {
 			sessionStorage.clear();
 			navigate('/login');
 		}
 	};
+
+	useEffect(() => {
+		if (error) handleErrors(error);
+		else if (data) store.setCampaigns(data);
+	}, [data, error]);
 
 	const handleAddBtn = async () => {
 		setDrawerVisible(true);

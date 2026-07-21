@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { observer } from 'mobx-react';
 import { Select, Input, Skeleton, Table as EmptyTable } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useStore } from '../../store';
 import AdvertisingTable from './Table';
 import AddForm from './AddForm';
@@ -38,16 +38,10 @@ const Advertising = observer(() => {
 		searchWords,
 	};
 
-	const { isFetching, data } = useQuery(
-		['advertising', dependency],
-		() => api.getAdvertising(dependency),
-		{
-			onError: () => {
-				sessionStorage.clear();
-				navigate('/login');
-			},
-		},
-	);
+	const { isFetching, data } = useQuery({
+		queryKey: ['advertising', dependency],
+		queryFn: () => api.getAdvertising(dependency),
+	});
 
 	const handleStatusChange = (value: string) => {
 		if (value === 'on') {

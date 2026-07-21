@@ -1,14 +1,15 @@
 import React, { useMemo, useState, ChangeEvent, KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-	useTable,
-	useResizeColumns,
-	useFlexLayout,
+	useReactTable,
+	getCoreRowModel,
+	getFilteredRowModel,
+	getSortedRowModel,
+	flexRender,
+	createColumnHelper,
 	Column,
-	useSortBy,
-	useFilters,
-} from 'react-table';
-import { Dropdown, Menu } from 'antd';
+} from '@tanstack/react-table';
+import { Dropdown } from 'antd';
 import type { MenuProps } from 'antd';
 import { DownOutlined, SearchOutlined } from '@ant-design/icons';
 import { getCell } from '../../getCell';
@@ -54,6 +55,8 @@ const platforms: MenuProps['items'] = [
 	},
 ];
 
+const columnHelper = createColumnHelper<IColumns>();
+
 const DashboardTable = (props: { data: Array<IColumns> }) => {
 	const { data } = props;
 
@@ -62,270 +65,193 @@ const DashboardTable = (props: { data: Array<IColumns> }) => {
 
 	const navigate = useNavigate();
 
-	const handleNameClick = async (rowValues: any) => {
+	const handleNameClick = async (rowValues: IColumns) => {
 		navigate(`/${rowValues.idx}`);
 	};
 
-	const columns: Column<IColumns>[] = useMemo(
+	const columns = useMemo(
 		() => [
-			{
-				accessor: 'idx',
-			},
-			{
-				Header: '광고앱',
-				accessor: 'name',
-				width: 190,
-				minWidth: 90,
-				align: 'left',
-				frozen: 'true',
-				Cell: (data: any) => {
-					const {
-						row: { values },
-						value,
-					} = data;
-					return (
-						<span
-							role="button"
-							tabIndex={0}
-							onClick={() => handleNameClick(values)}
-							onKeyDown={() => handleNameClick(values)}
-							style={{ cursor: 'pointer' }}
-						>
-							{value}
-						</span>
-					);
-				},
-				Footer: () => {
-					return <div className="total frozen">합계</div>;
-				},
-				Filter: info => {
-					const {
-						column: { filterValue, width, setFilter },
-					} = info;
-					const handleClick = (e: ChangeEvent<HTMLInputElement>) => {
-						const {
-							target: { value },
-						} = e;
-						setFilter(value || undefined);
-					};
-					const handleEscPress = (e: KeyboardEvent) => {
-						if (e.code === 'Escape') {
-							setFilter(undefined);
-						}
-					};
-					return (
-						width &&
-						Number(width) > 100 && (
-							<NameSearchBar
-								value={filterValue || ''}
-								onChange={handleClick}
-								onKeyDown={handleEscPress}
-								prefix={<SearchOutlined />}
-								size="small"
-								allowClear
-							/>
-						)
-					);
-				},
-			},
-			{
-				accessor: 'platform',
-				width: 60,
-				minWidth: 50,
-				Filter: info => {
-					const {
-						column: { setFilter },
-					} = info;
-					const handleClick = (menuEvent: { key: string }) => {
-						const { key } = menuEvent;
-						if (key === all) {
-							setFilter(undefined);
-						} else {
-							setFilter(key);
-						}
-						setSelectedPlatform(key);
-					};
-					return (
-						<Dropdown
-							overlay={
-								<Menu
-									onClick={handleClick}
-									items={platforms}
-									selectedKeys={[selectedPlatform]}
-									id="platform-header"
-								/>
-							}
-						>
-							<PlatformHeader>
-								<th>{selectedPlatform === all ? '플랫폼' : selectedPlatform}</th>
-								<DownOutlined />
-							</PlatformHeader>
-						</Dropdown>
-					);
-				},
-			},
-			{
-				Header: 'click',
-				width: 140,
-				accessor: 'click',
-				Cell: info => getCell.normal(info),
-				Footer: info => getTotal(info),
-			},
-			{
-				Header: 'install',
-				accessor: 'install',
-				Cell: info => getCell.normal(info),
-				Footer: info => getTotal(info),
-			},
-			{
-				Header: 'retention',
-				minWidth: 80,
-				accessor: data => data.retention.replace(/\B(?=(\d{3})+(?!\d))/g, ','),
-				Footer: info => getTotal(info),
-			},
-			{
-				Header: 'purchase',
-				minWidth: 80,
-				accessor: data => data.purchase.replace(/\B(?=(\d{3})+(?!\d))/g, ','),
-				Footer: info => getTotal(info),
-			},
-			{
-				Header: 'revenue',
-				width: 140,
-				minWidth: 80,
-				accessor: data => data.revenue.replace(/\B(?=(\d{3})+(?!\d))/g, ','),
-				Footer: info => getTotal(info),
-			},
-			{
-				Header: 'registration',
-				minWidth: 105,
-				accessor: data => data.registration.replace(/\B(?=(\d{3})+(?!\d))/g, ','),
-				Footer: info => getTotal(info),
-			},
-			{
-				Header: 'etc1',
-				accessor: 'etc1',
-				width: 80,
-				minWidth: 50,
-				Footer: info => getTotal(info),
-			},
-			{
-				Header: 'etc2',
-				accessor: 'etc2',
-				width: 55,
-				Footer: info => getTotal(info),
-			},
-			{
-				Header: 'etc3',
-				accessor: 'etc3',
-				width: 55,
-				Footer: info => getTotal(info),
-			},
-			{
-				Header: 'etc4',
-				accessor: 'etc4',
-				width: 55,
-				Footer: info => getTotal(info),
-			},
-			{
-				Header: 'etc5',
-				accessor: 'etc5',
-				width: 55,
-				Footer: info => getTotal(info),
-			},
-		] as Column<IColumns>[],
+			columnHelper.accessor('idx', {}),
+			columnHelper.accessor('name', {
+				header: '광고앱',
+				size: 190,
+				minSize: 90,
+				cell: info => (
+					<span
+						role="button"
+						tabIndex={0}
+						onClick={() => handleNameClick(info.row.original)}
+						onKeyDown={() => handleNameClick(info.row.original)}
+						style={{ cursor: 'pointer' }}
+					>
+						{info.getValue()}
+					</span>
+				),
+				footer: () => <div className="total frozen">합계</div>,
+			}),
+			columnHelper.accessor('platform', { size: 60, minSize: 50 }),
+			columnHelper.accessor('click', {
+				header: 'click',
+				size: 140,
+				cell: info => getCell.normal(info),
+				footer: info => getTotal(info),
+			}),
+			columnHelper.accessor('install', {
+				header: 'install',
+				cell: info => getCell.normal(info),
+				footer: info => getTotal(info),
+			}),
+			columnHelper.accessor(row => row.retention.replace(/\B(?=(\d{3})+(?!\d))/g, ','), {
+				id: 'retention',
+				header: 'retention',
+				minSize: 80,
+				footer: info => getTotal(info),
+			}),
+			columnHelper.accessor(row => row.purchase.replace(/\B(?=(\d{3})+(?!\d))/g, ','), {
+				id: 'purchase',
+				header: 'purchase',
+				minSize: 80,
+				footer: info => getTotal(info),
+			}),
+			columnHelper.accessor(row => row.revenue.replace(/\B(?=(\d{3})+(?!\d))/g, ','), {
+				id: 'revenue',
+				header: 'revenue',
+				size: 140,
+				minSize: 80,
+				footer: info => getTotal(info),
+			}),
+			columnHelper.accessor(row => row.registration.replace(/\B(?=(\d{3})+(?!\d))/g, ','), {
+				id: 'registration',
+				header: 'registration',
+				minSize: 105,
+				footer: info => getTotal(info),
+			}),
+			columnHelper.accessor('etc1', {
+				header: 'etc1',
+				size: 80,
+				minSize: 50,
+				footer: info => getTotal(info),
+			}),
+			columnHelper.accessor('etc2', { header: 'etc2', size: 55, footer: info => getTotal(info) }),
+			columnHelper.accessor('etc3', { header: 'etc3', size: 55, footer: info => getTotal(info) }),
+			columnHelper.accessor('etc4', { header: 'etc4', size: 55, footer: info => getTotal(info) }),
+			columnHelper.accessor('etc5', { header: 'etc5', size: 55, footer: info => getTotal(info) }),
+		],
 		[selectedPlatform],
 	);
 
-	const headerProps = (props: any, { column }: any) => getStyles(props, column.align);
-
-	const cellProps = (props: any, { cell }: any) =>
-		getStyles(props, cell.column.align, cell.column.frozen);
-
-	const getStyles = (props: any, align = 'center', frozen = 'false') => [
-		props,
-		{
-			style: {
-				justifyContent: align === 'left' ? 'flex-start' : 'center',
-				alignItems: 'center',
-				display: 'flex',
-				wordBreak: 'keep-all',
-			},
+	const table = useReactTable({
+		data: dataWithName,
+		columns,
+		getCoreRowModel: getCoreRowModel(),
+		getFilteredRowModel: getFilteredRowModel(),
+		getSortedRowModel: getSortedRowModel(),
+		columnResizeMode: 'onChange',
+		enableColumnResizing: true,
+		initialState: {
+			columnVisibility: { idx: false },
+			sorting: [
+				{ id: 'platform', desc: false },
+				{ id: 'name', desc: false },
+			],
 		},
-	];
+	});
 
-	const defaultColumn = useMemo(
-		() => ({
-			minWidth: 55,
-			width: 110,
-			maxWidth: 400,
-		}),
-		[],
-	);
+	const renderNameFilter = (column: Column<IColumns, unknown>, size: number) => {
+		const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+			column.setFilterValue(e.target.value || undefined);
+		};
+		const handleEscPress = (e: KeyboardEvent) => {
+			if (e.code === 'Escape') {
+				column.setFilterValue(undefined);
+			}
+		};
+		return (
+			size > 100 && (
+				<NameSearchBar
+					value={(column.getFilterValue() as string) || ''}
+					onChange={handleChange}
+					onKeyDown={handleEscPress}
+					prefix={<SearchOutlined />}
+					size="small"
+					allowClear
+				/>
+			)
+		);
+	};
 
-	const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable(
-		{
-			defaultColumn,
-			columns,
-			data: dataWithName,
-			initialState: {
-				hiddenColumns: ['idx'],
-				sortBy: [{ id: 'platform' }, { id: 'name' }],
-			},
-		},
-		useResizeColumns,
-		useFlexLayout,
-		useFilters,
-		useSortBy,
-	);
-
-	const footerGroups = headerGroups.slice().reverse();
+	const renderPlatformFilter = (column: Column<IColumns, unknown>) => {
+		const handleClick = (menuEvent: { key: string }) => {
+			const { key } = menuEvent;
+			if (key === all) {
+				column.setFilterValue(undefined);
+			} else {
+				column.setFilterValue(key);
+			}
+			setSelectedPlatform(key);
+		};
+		return (
+			<Dropdown
+				menu={{
+					onClick: handleClick,
+					items: platforms,
+					selectedKeys: [selectedPlatform],
+					id: 'platform-header',
+				}}
+			>
+				<PlatformHeader>
+					<th>{selectedPlatform === all ? '플랫폼' : selectedPlatform}</th>
+					<DownOutlined />
+				</PlatformHeader>
+			</Dropdown>
+		);
+	};
 
 	return (
 		<TableStyles height="calc(var(--vh, 1vh) * 100 - 20rem)">
-			<table {...getTableProps()} id="dashboard-table" className="sticky">
+			<table id="dashboard-table" className="sticky">
 				<thead>
-					{headerGroups.map(headerGroup => (
-						<tr {...headerGroup.getHeaderGroupProps()} className="tr">
-							{headerGroup.headers.map(column => (
-								<th {...column.getHeaderProps(headerProps)} className="th">
-									{column.render('Header')}
+					{table.getHeaderGroups().map(headerGroup => (
+						<tr key={headerGroup.id} className="tr">
+							{headerGroup.headers.map(header => (
+								<th key={header.id} className="th">
+									{flexRender(header.column.columnDef.header, header.getContext())}
 									<div
-										{...column.getResizerProps()}
-										className={`resizer ${column.isResizing ? 'isResizing' : ''}`}
+										onMouseDown={header.getResizeHandler()}
+										onTouchStart={header.getResizeHandler()}
+										className={`resizer ${header.column.getIsResizing() ? 'isResizing' : ''}`}
 									/>
-									{column.id === 'name' || column.id === 'platform'
-										? column.render('Filter')
-										: null}
+									{header.column.id === 'name'
+										? renderNameFilter(header.column, header.column.getSize())
+										: header.column.id === 'platform'
+											? renderPlatformFilter(header.column)
+											: null}
 								</th>
 							))}
 						</tr>
 					))}
 				</thead>
 
-				<tbody {...getTableBodyProps()}>
-					{rows.map(row => {
-						prepareRow(row);
-						return (
-							<tr {...row.getRowProps()} className="tr">
-								{row.cells.map(cell => {
-									return (
-										<td {...cell.getCellProps(cellProps)} className="td">
-											<div className="ellipsis">{cell.render('Cell')}</div>
-										</td>
-									);
-								})}
-							</tr>
-						);
-					})}
+				<tbody>
+					{table.getRowModel().rows.map(row => (
+						<tr key={row.id} className="tr">
+							{row.getVisibleCells().map(cell => (
+								<td key={cell.id} className="td">
+									<div className="ellipsis">
+										{flexRender(cell.column.columnDef.cell, cell.getContext())}
+									</div>
+								</td>
+							))}
+						</tr>
+					))}
 				</tbody>
 
 				<tfoot className="sticky">
-					{footerGroups.map(group => (
-						<tr {...group.getFooterGroupProps()}>
-							{group.headers.map(column => (
-								<td colSpan={6} {...column.getFooterProps()}>
-									{column.render('Footer')}
+					{table.getFooterGroups().map(footerGroup => (
+						<tr key={footerGroup.id}>
+							{footerGroup.headers.map(header => (
+								<td key={header.id} colSpan={6}>
+									{flexRender(header.column.columnDef.footer, header.getContext())}
 								</td>
 							))}
 						</tr>

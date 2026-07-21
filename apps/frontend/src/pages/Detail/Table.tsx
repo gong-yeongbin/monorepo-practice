@@ -1,5 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { useTable, useResizeColumns, useFlexLayout, Column } from 'react-table';
+import {
+	useReactTable,
+	getCoreRowModel,
+	flexRender,
+	createColumnHelper,
+} from '@tanstack/react-table';
 import { observer } from 'mobx-react';
 import { useNavigate, useParams } from 'react-router';
 import { useStore } from '../../store';
@@ -34,6 +39,8 @@ export interface IColumns {
 	token: string;
 }
 
+const columnHelper = createColumnHelper<IColumns>();
+
 const DetailTable = observer(() => {
 	const [installVisible, setInstallVisible] = useState(false);
 	const [unregisteredVisible, setUnregisteredVisible] = useState(false);
@@ -50,28 +57,21 @@ const DetailTable = observer(() => {
 		navigate(`/${paramId}/daily`);
 	};
 
-	const handleRowClick = (rowValues: any) => {
+	const handleRowClick = (rowValues: IColumns) => {
 		const { mediaName, token } = rowValues;
 		sessionStorage.setItem('mediaName', mediaName);
 		sessionStorage.setItem('detailToken', token);
 	};
 
-	const columns: Column<IColumns>[] = useMemo(
+	const columns = useMemo(
 		() => [
-			{
-				accessor: 'token',
-			},
-			{
-				Header: 'campaign',
-				accessor: 'campaignName',
-				width: 160,
-				minWidth: 80,
-				align: 'left',
-				Cell: (info: any) => {
-					const {
-						row: { values },
-					} = info;
-					const { campaignName } = values;
+			columnHelper.accessor('token', {}),
+			columnHelper.accessor('campaignName', {
+				header: 'campaign',
+				size: 160,
+				minSize: 80,
+				cell: info => {
+					const { campaignName } = info.row.original;
 					return (
 						<span
 							id="campaign-column"
@@ -85,172 +85,119 @@ const DetailTable = observer(() => {
 						</span>
 					);
 				},
-				Footer: () => {
-					return <div className="total frozen">합계</div>;
-				},
-			},
-			{
-				Header: 'media',
-				accessor: 'mediaName',
-				width: 90,
-			},
-			{
-				Header: 'type',
-				accessor: 'type',
-				width: 45,
-			},
-			{
-				Header: 'click',
-				accessor: 'click',
-				width: 100,
-				Cell: info => getCell.normal(info),
-				Footer: info => getTotal(info),
-			},
-			{
-				Header: 'install',
-				accessor: 'install',
-				Cell: info => getCell.linkedInstall(info, setInstallVisible),
-				Footer: info => getTotal(info),
-			},
-			{
-				Header: 'cvr',
-				accessor: 'cvr',
-				width: 75,
-				Cell: info => getCell.cvr(info),
-				Footer: info => getTotal(info),
-			},
-			{
-				Header: 'retention',
-				minWidth: 80,
-				accessor: 'retention',
-				Cell: info => getCell.event(info, setEventVisible),
-				Footer: info => getTotal(info),
-			},
-			{
-				Header: 'purchase',
-				minWidth: 70,
-				accessor: 'purchase',
-				Cell: info => getCell.event(info, setEventVisible),
-				Footer: info => getTotal(info),
-			},
-			{
-				Header: 'revenue',
-				width: 95,
-				minWidth: 65,
-				accessor: 'revenue',
-				Cell: info => getCell.normal(info),
-				Footer: info => getTotal(info),
-			},
-			{
-				Header: 'registration',
-				width: 105,
-				minWidth: 100,
-				accessor: 'registration',
-				Cell: info => getCell.event(info, setEventVisible),
-				Footer: info => getTotal(info),
-			},
-			{
-				Header: 'etc1',
-				accessor: 'etc1',
-				width: 50,
-				minWidth: 40,
-				Cell: info => getCell.event(info, setEventVisible),
-				Footer: info => getTotal(info),
-			},
-			{
-				Header: 'etc2',
-				accessor: 'etc2',
-				width: 50,
-				minWidth: 40,
-				Cell: info => getCell.event(info, setEventVisible),
-				Footer: info => getTotal(info),
-			},
-			{
-				Header: 'etc3',
-				accessor: 'etc3',
-				width: 55,
-				minWidth: 40,
-				Cell: info => getCell.event(info, setEventVisible),
-				Footer: info => getTotal(info),
-			},
-			{
-				Header: 'etc4',
-				accessor: 'etc4',
-				width: 55,
-				minWidth: 40,
-				Cell: info => getCell.event(info, setEventVisible),
-				Footer: info => getTotal(info),
-			},
-			{
-				Header: 'etc5',
-				accessor: 'etc5',
-				width: 55,
-				minWidth: 40,
-				Cell: info => getCell.event(info, setEventVisible),
-				Footer: info => getTotal(info),
-			},
-			{
-				Header: () => (
+				footer: () => <div className="total frozen">합계</div>,
+			}),
+			columnHelper.accessor('mediaName', { header: 'media', size: 90 }),
+			columnHelper.accessor('type', { header: 'type', size: 45 }),
+			columnHelper.accessor('click', {
+				header: 'click',
+				size: 100,
+				cell: info => getCell.normal(info),
+				footer: info => getTotal(info),
+			}),
+			columnHelper.accessor('install', {
+				header: 'install',
+				cell: info => getCell.linkedInstall(info, setInstallVisible),
+				footer: info => getTotal(info),
+			}),
+			columnHelper.accessor('cvr', {
+				header: 'cvr',
+				size: 75,
+				cell: info => getCell.cvr(info),
+				footer: info => getTotal(info),
+			}),
+			columnHelper.accessor('retention', {
+				header: 'retention',
+				minSize: 80,
+				cell: info => getCell.event(info, setEventVisible),
+				footer: info => getTotal(info),
+			}),
+			columnHelper.accessor('purchase', {
+				header: 'purchase',
+				minSize: 70,
+				cell: info => getCell.event(info, setEventVisible),
+				footer: info => getTotal(info),
+			}),
+			columnHelper.accessor('revenue', {
+				header: 'revenue',
+				size: 95,
+				minSize: 65,
+				cell: info => getCell.normal(info),
+				footer: info => getTotal(info),
+			}),
+			columnHelper.accessor('registration', {
+				header: 'registration',
+				size: 105,
+				minSize: 100,
+				cell: info => getCell.event(info, setEventVisible),
+				footer: info => getTotal(info),
+			}),
+			columnHelper.accessor('etc1', {
+				header: 'etc1',
+				size: 50,
+				minSize: 40,
+				cell: info => getCell.event(info, setEventVisible),
+				footer: info => getTotal(info),
+			}),
+			columnHelper.accessor('etc2', {
+				header: 'etc2',
+				size: 50,
+				minSize: 40,
+				cell: info => getCell.event(info, setEventVisible),
+				footer: info => getTotal(info),
+			}),
+			columnHelper.accessor('etc3', {
+				header: 'etc3',
+				size: 55,
+				minSize: 40,
+				cell: info => getCell.event(info, setEventVisible),
+				footer: info => getTotal(info),
+			}),
+			columnHelper.accessor('etc4', {
+				header: 'etc4',
+				size: 55,
+				minSize: 40,
+				cell: info => getCell.event(info, setEventVisible),
+				footer: info => getTotal(info),
+			}),
+			columnHelper.accessor('etc5', {
+				header: 'etc5',
+				size: 55,
+				minSize: 40,
+				cell: info => getCell.event(info, setEventVisible),
+				footer: info => getTotal(info),
+			}),
+			columnHelper.accessor('unregistered', {
+				header: () => (
 					<span style={{ fontSize: '0.5rem', wordBreak: 'keep-all' }}>미등록 이벤트</span>
 				),
-				accessor: 'unregistered',
-				width: 45,
-				minWidth: 45,
-				Cell: info => getCell.unregistered(info, setUnregisteredVisible),
-				Footer: info => getTotal(info),
-			},
-			{
-				Header: '상태',
-				accessor: 'status',
-				width: 55,
-				Cell: info => getCell.status(info),
-			},
-			{
-				Header: '등록일',
-				accessor: 'createdAt',
-				width: 80,
-				Cell: info => getCell.createdAt(info),
-			},
-		] as Column<IColumns>[],
+				size: 45,
+				minSize: 45,
+				cell: info => getCell.unregistered(info, setUnregisteredVisible),
+				footer: info => getTotal(info),
+			}),
+			columnHelper.accessor('status', {
+				header: '상태',
+				size: 55,
+				cell: info => getCell.status(info),
+			}),
+			columnHelper.accessor('createdAt', {
+				header: '등록일',
+				size: 80,
+				cell: info => getCell.createdAt(info),
+			}),
+		],
 		[],
 	);
 
-	const headerProps = (props: any, { column }: any) => getStyles(props, column.frozen);
-
-	const cellProps = (props: any, { cell }: any) =>
-		getStyles(props, cell.column.align, cell.column.frozen);
-
-	const getStyles = (props: any, align = 'center', frozen = 'false') => [
-		props,
-		{
-			style: {
-				display: 'flex',
-				justifyContent: align === 'left' ? 'flex-start' : 'center',
-				alignItems: 'center',
-			},
-		},
-	];
-
-	const defaultColumn = useMemo(
-		() => ({
-			minWidth: 55,
-			width: 85,
-			maxWidth: 400,
-		}),
-		[],
-	);
-
-	const { getTableProps, getTableBodyProps, headerGroups, footerGroups, rows, prepareRow } =
-		useTable(
-			{
-				defaultColumn,
-				columns,
-				data: detail,
-				initialState: { hiddenColumns: ['token'] },
-			},
-			useResizeColumns,
-			useFlexLayout,
-		);
+	const table = useReactTable({
+		data: detail,
+		columns,
+		getCoreRowModel: getCoreRowModel(),
+		columnResizeMode: 'onChange',
+		enableColumnResizing: true,
+		initialState: { columnVisibility: { token: false } },
+	});
 
 	return (
 		<>
@@ -266,16 +213,17 @@ const DetailTable = observer(() => {
 			{eventVisible && <EventModal eventVisible={eventVisible} setEventVisible={setEventVisible} />}
 
 			<TableStyles height="calc(var(--vh, 1vh) * 100 - 15rem)">
-				<table {...getTableProps()} id="detail-table" className="sticky">
+				<table id="detail-table" className="sticky">
 					<thead>
-						{headerGroups.map(headerGroup => (
-							<tr {...headerGroup.getHeaderGroupProps()} className="tr">
-								{headerGroup.headers.map(column => (
-									<th {...column.getHeaderProps(headerProps)} className="th">
-										{column.render('Header')}
+						{table.getHeaderGroups().map(headerGroup => (
+							<tr key={headerGroup.id} className="tr">
+								{headerGroup.headers.map(header => (
+									<th key={header.id} className="th">
+										{flexRender(header.column.columnDef.header, header.getContext())}
 										<div
-											{...column.getResizerProps()}
-											className={`resizer ${column.isResizing ? 'isResizing' : ''}`}
+											onMouseDown={header.getResizeHandler()}
+											onTouchStart={header.getResizeHandler()}
+											className={`resizer ${header.column.getIsResizing() ? 'isResizing' : ''}`}
 										/>
 									</th>
 								))}
@@ -283,35 +231,34 @@ const DetailTable = observer(() => {
 						))}
 					</thead>
 
-					<tbody className="tbody" {...getTableBodyProps()}>
-						{rows.map((row, i) => {
-							prepareRow(row);
-							return (
-								<tr
-									role="button"
-									tabIndex={0}
-									onClick={() => handleRowClick(row.values)}
-									onKeyDown={() => handleRowClick(row.values)}
-									{...row.getRowProps()}
-									className="tr"
-								>
-									{row.cells.map(cell => {
-										return (
-											<td {...cell.getCellProps(cellProps)} className="td">
-												<div className="ellipsis">{cell.render('Cell')}</div>
-											</td>
-										);
-									})}
-								</tr>
-							);
-						})}
+					<tbody className="tbody">
+						{table.getRowModel().rows.map(row => (
+							<tr
+								key={row.id}
+								role="button"
+								tabIndex={0}
+								onClick={() => handleRowClick(row.original)}
+								onKeyDown={() => handleRowClick(row.original)}
+								className="tr"
+							>
+								{row.getVisibleCells().map(cell => (
+									<td key={cell.id} className="td">
+										<div className="ellipsis">
+											{flexRender(cell.column.columnDef.cell, cell.getContext())}
+										</div>
+									</td>
+								))}
+							</tr>
+						))}
 					</tbody>
 
 					<tfoot className="sticky">
-						{footerGroups.map(group => (
-							<tr {...group.getFooterGroupProps()}>
-								{group.headers.map(column => (
-									<td {...column.getFooterProps()}>{column.render('Footer')}</td>
+						{table.getFooterGroups().map(footerGroup => (
+							<tr key={footerGroup.id}>
+								{footerGroup.headers.map(header => (
+									<td key={header.id}>
+										{flexRender(header.column.columnDef.footer, header.getContext())}
+									</td>
 								))}
 							</tr>
 						))}

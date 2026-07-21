@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import React, { createContext, useContext, FC } from 'react';
+import React, { createContext, useContext, FC, PropsWithChildren } from 'react';
 import { IColumns as IDetail } from './pages/Detail/Table';
 import { Iinfo } from './components/InfoCard';
 import { IColumns as ICampaigns } from './pages/Advertising/Campaigns/Table';
@@ -69,7 +69,7 @@ class Store {
 
 const StoreContext = createContext<Store>(new Store());
 
-const StoreProvider: FC<{ store: Store }> = ({ store, children }) => {
+const StoreProvider: FC<PropsWithChildren<{ store: Store }>> = ({ store, children }) => {
 	return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;
 };
 

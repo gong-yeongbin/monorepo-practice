@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { observer } from 'mobx-react';
 import { Button, DatePicker, Skeleton, Tooltip, Table as EmptyTable } from 'antd';
-import { RangeValue } from 'rc-picker/lib/interface';
-import moment, { Moment } from 'moment';
+import dayjs, { Dayjs } from 'dayjs';
 import { SyncOutlined } from '@ant-design/icons';
 import Table from './Table';
 import { useStore } from '../../../../store';
@@ -33,19 +32,14 @@ const DailyDetail = observer(() => {
 		store.setPageTitle('광고 일별 통계 상세');
 	}, []);
 
-	const { isFetching, data } = useQuery(
-		['dailyDetail', { orderType, order }],
-		() => api.getDailyDetail({ date, orderType, order }),
-		{
-			onError: (error: unknown) => {
-				handleErrors(error);
-			},
-			enabled: !!(!isDateOpen && date && date[0] && date[1]),
-		},
-	);
+	const { isFetching, data, error } = useQuery({
+		queryKey: ['dailyDetail', { orderType, order }],
+		queryFn: () => api.getDailyDetail({ date, orderType, order }),
+		enabled: !!(!isDateOpen && date && date[0] && date[1]),
+	});
 
-	const handleErrors = (error: unknown) => {
-		if (error instanceof Error && error.message.includes('400')) {
+	const handleErrors = (err: unknown) => {
+		if (err instanceof Error && err.message.includes('400')) {
 			navigate('/');
 		} else {
 			sessionStorage.clear();
@@ -53,11 +47,17 @@ const DailyDetail = observer(() => {
 		}
 	};
 
+	useEffect(() => {
+		if (error) {
+			handleErrors(error);
+		}
+	}, [error]);
+
 	const handleRefreshBtn = () => {
-		queryClient.invalidateQueries('dailyDetail');
+		queryClient.invalidateQueries({ queryKey: ['dailyDetail'] });
 	};
 
-	const onDateChange = (_dates: RangeValue<Moment>, dateStrings: [string, string]) => {
+	const onDateChange = (_dates: (Dayjs | null)[] | null, dateStrings: [string, string]) => {
 		setDate([dateStrings[0], dateStrings[1]]);
 		sessionStorage.setItem('dailyDetailStartDate', dateStrings[0]);
 		sessionStorage.setItem('dailyDetailEndDate', dateStrings[1]);
@@ -67,8 +67,8 @@ const DailyDetail = observer(() => {
 		setIsDateOpen(open);
 	};
 
-	const disabledDate = (selectedDate: Moment): boolean => {
-		return selectedDate && selectedDate > moment().endOf('day');
+	const disabledDate = (selectedDate: Dayjs): boolean => {
+		return selectedDate && selectedDate > dayjs().endOf('day');
 	};
 
 	return (
@@ -79,11 +79,11 @@ const DailyDetail = observer(() => {
 				<NavLeft>
 					<RangePicker
 						ranges={{
-							오늘: [moment(), moment()],
-							'이번 달': [moment().startOf('month'), moment()],
+							오늘: [dayjs(), dayjs()],
+							'이번 달': [dayjs().startOf('month'), dayjs()],
 						}}
 						style={{ marginRight: '1rem', marginBottom: '1rem' }}
-						value={[moment(date[0]), moment(date[1])]}
+						value={[dayjs(date[0]), dayjs(date[1])]}
 						allowClear={false}
 						onChange={onDateChange}
 						onOpenChange={onOpenChange}

@@ -1,8 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
-import { QueryClient, QueryClientProvider } from 'react-query';
-import { ReactQueryDevtools } from 'react-query/devtools';
+import { QueryClient, QueryClientProvider, QueryCache } from '@tanstack/react-query';
 import koKR from 'antd/lib/locale/ko_KR';
 import Home from './pages/Home/Home';
 import Login from './pages/Login/Login';
@@ -23,7 +22,15 @@ import PrivateRoute from './components/PrivateRoute';
 
 const store = new Store();
 
+// react-query v5는 useQuery별 onError를 제거해, 공통 인증 에러(세션 만료 → 로그인 이동)를
+// QueryCache 전역 핸들러로 처리한다. 컴포넌트 밖이라 navigate 대신 location으로 이동한다.
 const queryClient = new QueryClient({
+	queryCache: new QueryCache({
+		onError: () => {
+			sessionStorage.clear();
+			window.location.href = '/login';
+		},
+	}),
 	defaultOptions: {
 		queries: {
 			refetchOnWindowFocus: false,
@@ -66,7 +73,6 @@ function App() {
 					</BrowserRouter>
 				</ConfigProvider>
 			</StoreProvider>
-			<ReactQueryDevtools initialIsOpen={false} />
 		</QueryClientProvider>
 	);
 }

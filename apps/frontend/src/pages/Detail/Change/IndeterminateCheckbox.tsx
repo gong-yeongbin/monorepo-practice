@@ -1,6 +1,6 @@
 import React, { forwardRef, useEffect, useRef } from 'react';
 
-interface ICheckBoxProps {
+interface ICheckBoxProps extends React.InputHTMLAttributes<HTMLInputElement> {
 	indeterminate?: boolean;
 }
 

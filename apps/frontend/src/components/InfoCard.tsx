@@ -7,7 +7,7 @@ import { CopyOutlined, InfoCircleFilled, SearchOutlined } from '@ant-design/icon
 import { v4 as uuidv4 } from 'uuid';
 import { useNavigate, useParams, useMatch } from 'react-router';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import { useQueryClient, useMutation, useQuery } from 'react-query';
+import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import {
 	DataContainer,
 	Container,
@@ -96,28 +96,20 @@ const InfoCard = observer(() => {
 		return res.data.data;
 	};
 
-	const { isFetching } = useQuery(['info', paramId], getAdInfo, {
-		onError: (error: unknown) => {
-			handleErrors(error);
-		},
-		onSuccess: data => {
-			handleNoMatchRoute(data);
-		},
+	const { isFetching, data: adInfo, error: adInfoError } = useQuery({
+		queryKey: ['info', paramId],
+		queryFn: getAdInfo,
 	});
 
-	const { isFetching: isFetchingSecond, data: secondInfo } = useQuery(
-		['secondInfo', paramId],
-		getSecondInfo,
-		{
-			onError: (error: unknown) => {
-				handleErrors(error);
-			},
-			onSuccess: data => {
-				handleNoMatchRoute(data);
-			},
-			enabled: !!isPageAdvertisingEvent,
-		},
-	);
+	const {
+		isFetching: isFetchingSecond,
+		data: secondInfo,
+		error: secondInfoError,
+	} = useQuery({
+		queryKey: ['secondInfo', paramId],
+		queryFn: getSecondInfo,
+		enabled: !!isPageAdvertisingEvent,
+	});
 
 	const handleNoMatchRoute = (data: any) => {
 		if (!data) {
@@ -133,6 +125,16 @@ const InfoCard = observer(() => {
 			navigate('/login');
 		}
 	};
+
+	useEffect(() => {
+		if (adInfoError) handleErrors(adInfoError);
+		else if (adInfo !== undefined) handleNoMatchRoute(adInfo);
+	}, [adInfo, adInfoError]);
+
+	useEffect(() => {
+		if (secondInfoError) handleErrors(secondInfoError);
+		else if (secondInfo !== undefined) handleNoMatchRoute(secondInfo);
+	}, [secondInfo, secondInfoError]);
 
 	const handleCancel = () => {
 		setTrackerUrlVisible(false);
@@ -153,25 +155,23 @@ const InfoCard = observer(() => {
 		mutationImage.mutate();
 	};
 
-	const mutationImage = useMutation(
-		() => {
+	const mutationImage = useMutation({
+		mutationFn: () => {
 			const { image } = form.getFieldsValue();
 			formData.append('image', image.file);
 			return axiosInstance.post(`/fileupload/${paramId}`, formData);
 		},
-		{
-			onSuccess: () => {
-				setShowUpdatedImage(true);
-				setSelectedFile(null);
-				URL.revokeObjectURL(selectedFile);
-				queryClient.invalidateQueries('info');
-			},
-			onError: () => {
-				sessionStorage.clear();
-				navigate('/login');
-			},
+		onSuccess: () => {
+			setShowUpdatedImage(true);
+			setSelectedFile(null);
+			URL.revokeObjectURL(selectedFile);
+			queryClient.invalidateQueries({ queryKey: ['info'] });
 		},
-	);
+		onError: () => {
+			sessionStorage.clear();
+			navigate('/login');
+		},
+	});
 
 	const alertMessage = selectedFile && newImageUrl && (
 		<div

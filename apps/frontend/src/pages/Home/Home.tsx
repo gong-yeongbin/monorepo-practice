@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { Avatar, Layout, Menu, Breadcrumb, Select, Popover, Button, Dropdown } from 'antd';
+import { Avatar, Layout, Breadcrumb, Select, Popover, Button, Dropdown } from 'antd';
 import type { MenuProps } from 'antd';
 import {
 	ApartmentOutlined,
@@ -9,10 +9,10 @@ import {
 	SettingOutlined,
 } from '@ant-design/icons';
 import { observer } from 'mobx-react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAd, faChartLine } from '@fortawesome/free-solid-svg-icons';
-import { debounce } from 'debounce';
+import debounce from 'debounce';
 import {
 	SkeletonSelect,
 	StyledSelect,
@@ -94,30 +94,27 @@ const Home = observer(() => {
 		navigate('/login');
 	};
 
-	const { isFetching: isFetchingProfile, data: profile } = useQuery(
-		['profile'],
-		api.getUserProfile,
-		{
-			onError: handleLogout,
-			onSuccess: data => {
-				if (data.type === 'advertiser' || data.type === 'media') {
-					handleLogout();
-				} else {
-					sessionStorage.setItem('userType', data.type);
-				}
-			},
-			enabled: !!accessToken,
-		},
-	);
+	const { isFetching: isFetchingProfile, data: profile } = useQuery({
+		queryKey: ['profile'],
+		queryFn: api.getUserProfile,
+		enabled: !!accessToken,
+	});
 
-	const { isFetching: isFetchingSelectList, data: selectList } = useQuery(
-		['selectList'],
-		api.getSelectList,
-		{
-			onError: handleLogout,
-			enabled: !!accessToken,
-		},
-	);
+	useEffect(() => {
+		if (profile) {
+			if (profile.type === 'advertiser' || profile.type === 'media') {
+				handleLogout();
+			} else {
+				sessionStorage.setItem('userType', profile.type);
+			}
+		}
+	}, [profile]);
+
+	const { isFetching: isFetchingSelectList, data: selectList } = useQuery({
+		queryKey: ['selectList'],
+		queryFn: api.getSelectList,
+		enabled: !!accessToken,
+	});
 
 	const aosAd = selectList?.filter((ad: ISelectList) => ad.platform === 'AOS');
 	const iosAd = selectList?.filter((ad: ISelectList) => ad.platform === 'iOS');
@@ -193,15 +190,13 @@ const Home = observer(() => {
 					</Logo>
 
 					<Dropdown
-						overlay={
-							<Menu
-								id="menu-list"
-								onClick={handleMenuClick}
-								items={menuItems}
-								selectedKeys={[selectedMenu]}
-								theme="dark"
-							/>
-						}
+						menu={{
+							id: 'menu-list',
+							onClick: handleMenuClick,
+							items: menuItems,
+							selectedKeys: [selectedMenu],
+							theme: 'dark',
+						}}
 					>
 						<Button id="menu-button">
 							<AppstoreOutlined />

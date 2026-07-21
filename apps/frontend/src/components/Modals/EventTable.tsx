@@ -24,7 +24,7 @@ export interface IColumns {
 }
 
 const EventTable = observer(
-	(props: { data: Array<IColumns>; titleRef: React.RefObject<HTMLSpanElement> }) => {
+	(props: { data: Array<IColumns>; titleRef: React.RefObject<HTMLSpanElement | null> }) => {
 		const { data, titleRef } = props;
 
 		const rows = data.map((obj, i) => ({ ...obj, id: i + 1 }));
@@ -45,7 +45,7 @@ const EventTable = observer(
 				width: 85,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info => info.value || '-',
+				valueGetter: value => value || '-',
 			},
 			{
 				headerName: 'COUNTRY',
@@ -54,7 +54,7 @@ const EventTable = observer(
 				width: 80,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info => info.value || '-',
+				valueGetter: value => value || '-',
 			},
 			{
 				headerName: 'LANGUAGE',
@@ -63,11 +63,11 @@ const EventTable = observer(
 				width: 90,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info => {
-					if (!info.value) {
+				valueGetter: value => {
+					if (!value) {
 						return '-';
 					}
-					return info.value === '한국어' ? 'KO' : info.value;
+					return value === '한국어' ? 'KO' : value;
 				},
 			},
 			{
@@ -77,7 +77,7 @@ const EventTable = observer(
 				width: 120,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info => info.value || '-',
+				valueGetter: value => value || '-',
 			},
 			{
 				headerName: 'ADID',
@@ -87,7 +87,7 @@ const EventTable = observer(
 				minWidth: 150,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info => info.value || '-',
+				valueGetter: value => value || '-',
 			},
 			{
 				headerName: 'CLICK ID',
@@ -97,7 +97,7 @@ const EventTable = observer(
 				minWidth: 150,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info => info.value || '-',
+				valueGetter: value => value || '-',
 			},
 			{
 				headerName: 'VIEW CODE',
@@ -107,7 +107,7 @@ const EventTable = observer(
 				minWidth: 150,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info => info.value || '-',
+				valueGetter: value => value || '-',
 			},
 			{
 				headerName: 'PUB ID',
@@ -117,7 +117,7 @@ const EventTable = observer(
 				minWidth: 100,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info => info.value || '-',
+				valueGetter: value => value || '-',
 			},
 			{
 				headerName: 'SUB ID',
@@ -127,7 +127,7 @@ const EventTable = observer(
 				minWidth: 120,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info => info.value || '-',
+				valueGetter: value => value || '-',
 			},
 			{
 				headerName: 'MEDIA',
@@ -145,7 +145,7 @@ const EventTable = observer(
 				minWidth: 100,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info => info.value || '-',
+				valueGetter: value => value || '-',
 			},
 			{
 				headerName: 'EVENT TIME (tracker)',
@@ -154,7 +154,7 @@ const EventTable = observer(
 				width: 90,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info => getCell.time(info),
+				renderCell: info => getCell.time(info),
 			},
 			{
 				headerName: 'INSTALL TIME (tracker)',
@@ -163,7 +163,7 @@ const EventTable = observer(
 				width: 100,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info => getCell.time(info),
+				renderCell: info => getCell.time(info),
 			},
 			{
 				headerName: 'SENDING TIME',
@@ -177,7 +177,6 @@ const EventTable = observer(
 			{
 				headerName: 'SEND URL',
 				field: 'sendUrl',
-				hide: true,
 			},
 			{
 				headerName: 'REVENUE',
@@ -187,8 +186,8 @@ const EventTable = observer(
 				minWidth: 100,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info =>
-					info.value ? info.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') : 0,
+				valueGetter: value =>
+					value ? String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ',') : 0,
 			},
 			{
 				headerName: 'CURRENCY',
@@ -197,7 +196,7 @@ const EventTable = observer(
 				width: 85,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info => info.value || '-',
+				valueGetter: value => value || '-',
 			},
 		];
 
@@ -229,10 +228,11 @@ const EventTable = observer(
 				<StyledDataGrid
 					rows={rows}
 					columns={columns}
-					components={{ Toolbar: CustomToolbar }}
+					slots={{ toolbar: CustomToolbar }}
+					initialState={{ columns: { columnVisibilityModel: { sendUrl: false } } }}
 					disableColumnFilter
 					disableColumnMenu
-					disableSelectionOnClick
+					disableRowSelectionOnClick
 					rowHeight={70}
 					sx={{ border: 0 }}
 				/>

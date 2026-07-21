@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Skeleton, Table as EmptyTable } from 'antd';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { PaddingContainer, TableContainer } from '../../globalStyles';
 import { useStore } from '../../store';
 import Table from './Table';
@@ -10,18 +9,11 @@ import { api } from '../../api';
 const Media = () => {
 	const store = useStore();
 
-	const navigate = useNavigate();
-
 	useEffect(() => {
 		store.setPageTitle('매체 관리');
 	}, []);
 
-	const { isFetching, data } = useQuery(['media'], api.getMedia, {
-		onError: () => {
-			sessionStorage.clear();
-			navigate('/login');
-		},
-	});
+	const { isFetching, data } = useQuery({ queryKey: ['media'], queryFn: api.getMedia });
 
 	return (
 		<PaddingContainer>

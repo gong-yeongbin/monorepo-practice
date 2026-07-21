@@ -2,7 +2,12 @@ import React, { useState, useMemo } from 'react';
 import { CaretDownOutlined, CaretUpOutlined } from '@ant-design/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSort } from '@fortawesome/free-solid-svg-icons';
-import { useTable, useResizeColumns, useFlexLayout, useSortBy, Column } from 'react-table';
+import {
+	useReactTable,
+	getCoreRowModel,
+	flexRender,
+	createColumnHelper,
+} from '@tanstack/react-table';
 import { TableStyles } from '../../../../globalStyles';
 import { getCell } from '../../../../getCell';
 import InstallModal from '../../../../components/Modals/InstallModal';
@@ -26,6 +31,8 @@ export interface IColumns {
 	etc5: string;
 }
 
+const columnHelper = createColumnHelper<IColumns>();
+
 const DailyDetailTable = (props: {
 	orderType: string;
 	setOrderType: React.Dispatch<React.SetStateAction<string>>;
@@ -38,141 +45,90 @@ const DailyDetailTable = (props: {
 	const [installVisible, setInstallVisible] = useState(false);
 	const [eventVisible, setEventVisible] = useState(false);
 
-	const handleRowClick = (rowValues: any) => {
+	const handleRowClick = (rowValues: IColumns) => {
 		const { viewCode } = rowValues;
 		sessionStorage.setItem('viewCode', viewCode);
 	};
 
-	const columns: Column<IColumns>[] = useMemo(
+	const columns = useMemo(
 		() => [
-			{
-				Header: 'no',
+			columnHelper.display({
 				id: 'no',
-				width: 40,
-				accessor: (_originalRow, rowIndex) => rowIndex + 1,
-				disableSortBy: true,
-			},
-			{
-				Header: 'view code',
-				accessor: 'viewCode',
-				minWidth: 250,
-				disableSortBy: true,
-			},
-			{
-				Header: 'pub id',
-				accessor: 'pubId',
-				minWidth: 70,
-				disableSortBy: true,
-			},
-			{
-				Header: 'sub id',
-				accessor: 'subId',
-				minWidth: 70,
-				disableSortBy: true,
-			},
-			{
-				Header: 'click',
-				accessor: 'click',
-				minWidth: 80,
-				Cell: info => getCell.normal(info),
-			},
-			{
-				Header: 'install',
-				accessor: 'install',
-				minWidth: 90,
-				Cell: info => getCell.linkedInstall(info, setInstallVisible),
-			},
-			{
-				Header: 'cvr',
-				accessor: 'cvr',
-				width: 75,
-				Cell: info => getCell.cvr(info),
-				disableSortBy: true,
-			},
-			{
-				Header: 'retention',
-				accessor: 'retention',
-				minWidth: 105,
-				Cell: info => getCell.event(info, setEventVisible),
-			},
-			{
-				Header: 'purchase',
-				accessor: 'purchase',
-				minWidth: 100,
-				Cell: info => getCell.event(info, setEventVisible),
-			},
-			{
-				Header: 'revenue',
-				accessor: 'revenue',
-				minWidth: 95,
-				Cell: info => getCell.normal(info),
-			},
-			{
-				Header: 'registration',
-				accessor: 'registration',
-				minWidth: 125,
-				Cell: info => getCell.event(info, setEventVisible),
-			},
-			{
-				Header: 'etc1',
-				accessor: 'etc1',
-				Cell: info => getCell.event(info, setEventVisible),
-			},
-			{
-				Header: 'etc2',
-				accessor: 'etc2',
-				Cell: info => getCell.event(info, setEventVisible),
-			},
-			{
-				Header: 'etc3',
-				accessor: 'etc3',
-				Cell: info => getCell.event(info, setEventVisible),
-			},
-			{
-				Header: 'etc4',
-				accessor: 'etc4',
-				Cell: info => getCell.event(info, setEventVisible),
-			},
-			{
-				Header: 'etc5',
-				accessor: 'etc5',
-				Cell: info => getCell.event(info, setEventVisible),
-			},
-		] as Column<IColumns>[],
+				header: 'no',
+				size: 40,
+				enableSorting: false,
+				cell: info => info.row.index + 1,
+			}),
+			columnHelper.accessor('viewCode', { header: 'view code', minSize: 250, enableSorting: false }),
+			columnHelper.accessor('pubId', { header: 'pub id', minSize: 70, enableSorting: false }),
+			columnHelper.accessor('subId', { header: 'sub id', minSize: 70, enableSorting: false }),
+			columnHelper.accessor('click', {
+				header: 'click',
+				minSize: 80,
+				cell: info => getCell.normal(info),
+			}),
+			columnHelper.accessor('install', {
+				header: 'install',
+				minSize: 90,
+				cell: info => getCell.linkedInstall(info, setInstallVisible),
+			}),
+			columnHelper.accessor('cvr', {
+				header: 'cvr',
+				size: 75,
+				cell: info => getCell.cvr(info),
+				enableSorting: false,
+			}),
+			columnHelper.accessor('retention', {
+				header: 'retention',
+				minSize: 105,
+				cell: info => getCell.event(info, setEventVisible),
+			}),
+			columnHelper.accessor('purchase', {
+				header: 'purchase',
+				minSize: 100,
+				cell: info => getCell.event(info, setEventVisible),
+			}),
+			columnHelper.accessor('revenue', {
+				header: 'revenue',
+				minSize: 95,
+				cell: info => getCell.normal(info),
+			}),
+			columnHelper.accessor('registration', {
+				header: 'registration',
+				minSize: 125,
+				cell: info => getCell.event(info, setEventVisible),
+			}),
+			columnHelper.accessor('etc1', {
+				header: 'etc1',
+				cell: info => getCell.event(info, setEventVisible),
+			}),
+			columnHelper.accessor('etc2', {
+				header: 'etc2',
+				cell: info => getCell.event(info, setEventVisible),
+			}),
+			columnHelper.accessor('etc3', {
+				header: 'etc3',
+				cell: info => getCell.event(info, setEventVisible),
+			}),
+			columnHelper.accessor('etc4', {
+				header: 'etc4',
+				cell: info => getCell.event(info, setEventVisible),
+			}),
+			columnHelper.accessor('etc5', {
+				header: 'etc5',
+				cell: info => getCell.event(info, setEventVisible),
+			}),
+		],
 		[],
 	);
 
-	const cellProps = (props: any, { cell }: any) => getStyles(props, cell.column.align);
-
-	const getStyles = (props: any, align = 'center') => [
-		props,
-		{
-			style: {
-				display: 'flex',
-				justifyContent: align === 'left' ? 'flex-start' : 'center',
-				alignItems: 'center',
-			},
-		},
-	];
-
-	const defaultColumn = useMemo(
-		() => ({
-			width: 55,
-			maxWidth: 400,
-		}),
-		[],
-	);
-
-	const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable(
-		{
-			defaultColumn,
-			columns,
-			data,
-		},
-		useResizeColumns,
-		useFlexLayout,
-		useSortBy,
-	);
+	const table = useReactTable({
+		data,
+		columns,
+		getCoreRowModel: getCoreRowModel(),
+		columnResizeMode: 'onChange',
+		enableColumnResizing: true,
+	});
 
 	return (
 		<>
@@ -182,73 +138,79 @@ const DailyDetailTable = (props: {
 			{eventVisible && <EventModal eventVisible={eventVisible} setEventVisible={setEventVisible} />}
 
 			<TableStyles height="calc(var(--vh, 1vh) * 100 - 15rem)">
-				<table {...getTableProps()} id="daily-detail-table" className="sticky">
+				<table id="daily-detail-table" className="sticky">
 					<thead>
-						{headerGroups.map(headerGroup => (
-							<tr {...headerGroup.getHeaderGroupProps()} className="tr">
-								{headerGroup.headers.map(column => (
-									<th {...column.getHeaderProps()} className="th">
-										{column.render('Header')}
-										<div
-											{...column.getResizerProps()}
-											className={`resizer ${column.isResizing ? 'isResizing' : ''}`}
-										/>
-										<span
-											style={{
-												verticalAlign: 'middle',
-												marginLeft: '4px',
-											}}
-										>
-											{column.canSort && column.Header?.toString() === orderType ? (
-												order === 'desc' ? (
-													<CaretDownOutlined
-														style={{ color: 'var(--blue)' }}
-														onClick={() => setOrder('asc')}
-													/>
+						{table.getHeaderGroups().map(headerGroup => (
+							<tr key={headerGroup.id} className="tr">
+								{headerGroup.headers.map(header => {
+									const canSort = header.column.getCanSort();
+									const headerLabel = header.column.columnDef.header;
+									return (
+										<th key={header.id} className="th">
+											{flexRender(headerLabel, header.getContext())}
+											<div
+												onMouseDown={header.getResizeHandler()}
+												onTouchStart={header.getResizeHandler()}
+												className={`resizer ${header.column.getIsResizing() ? 'isResizing' : ''}`}
+											/>
+											<span
+												style={{
+													verticalAlign: 'middle',
+													marginLeft: '4px',
+												}}
+											>
+												{canSort && headerLabel === orderType ? (
+													order === 'desc' ? (
+														<CaretDownOutlined
+															style={{ color: 'var(--blue)' }}
+															onClick={() => setOrder('asc')}
+														/>
+													) : (
+														<CaretUpOutlined
+															style={{ color: 'var(--blue)' }}
+															onClick={() => setOrder('desc')}
+														/>
+													)
 												) : (
-													<CaretUpOutlined
-														style={{ color: 'var(--blue)' }}
-														onClick={() => setOrder('desc')}
-													/>
-												)
-											) : (
-												column.canSort && (
-													<FontAwesomeIcon
-														style={{ cursor: 'pointer' }}
-														icon={faSort}
-														onClick={() => setOrderType(column.Header?.toString() || 'install')}
-													/>
-												)
-											)}
-										</span>
-									</th>
-								))}
+													canSort && (
+														<FontAwesomeIcon
+															style={{ cursor: 'pointer' }}
+															icon={faSort}
+															onClick={() =>
+																setOrderType(
+																	typeof headerLabel === 'string' ? headerLabel : 'install',
+																)
+															}
+														/>
+													)
+												)}
+											</span>
+										</th>
+									);
+								})}
 							</tr>
 						))}
 					</thead>
 
-					<tbody {...getTableBodyProps()}>
-						{rows.map((row, i) => {
-							prepareRow(row);
-							return (
-								<tr
-									role="button"
-									tabIndex={0}
-									onClick={() => handleRowClick(row.values)}
-									onKeyDown={() => handleRowClick(row.values)}
-									{...row.getRowProps()}
-									className="tr"
-								>
-									{row.cells.map(cell => {
-										return (
-											<td {...cell.getCellProps(cellProps)} className="td">
-												<div className="ellipsis">{cell.render('Cell')}</div>
-											</td>
-										);
-									})}
-								</tr>
-							);
-						})}
+					<tbody>
+						{table.getRowModel().rows.map(row => (
+							<tr
+								key={row.id}
+								role="button"
+								tabIndex={0}
+								onClick={() => handleRowClick(row.original)}
+								onKeyDown={() => handleRowClick(row.original)}
+								className="tr"
+							>
+								{row.getVisibleCells().map(cell => (
+									<td key={cell.id} className="td">
+										<div className="ellipsis">
+											{flexRender(cell.column.columnDef.cell, cell.getContext())}
+										</div>
+									</td>
+								))}
+							</tr>
+						))}
 					</tbody>
 				</table>
 			</TableStyles>

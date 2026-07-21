@@ -5,7 +5,7 @@ import { Skeleton, Table as EmptyTable, Button, Popconfirm, message } from 'antd
 import { ArrowLeftOutlined, CheckOutlined } from '@ant-design/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWrench } from '@fortawesome/free-solid-svg-icons';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useStore } from '../../../../store';
 import InfoCard from '../../../../components/InfoCard';
 import { axiosInstance } from '../../../../axios';
@@ -38,27 +38,24 @@ const Events = observer(() => {
 		store.setPageTitle('캠페인 이벤트');
 	}, []);
 
-	const { isFetching } = useQuery(
-		['campaignEvents'],
-		() => api.getCampaignEvents(paramCampaignIdx),
-		{
-			onSuccess: data => {
-				store.setCampaignEvents(data);
-			},
-			onError: error => {
-				handleErrors(error);
-			},
-		},
-	);
+	const { isFetching, data, error } = useQuery({
+		queryKey: ['campaignEvents'],
+		queryFn: () => api.getCampaignEvents(paramCampaignIdx),
+	});
 
-	const handleErrors = (error: unknown) => {
-		if (error instanceof Error && error.message.includes('400')) {
+	const handleErrors = (err: unknown) => {
+		if (err instanceof Error && err.message.includes('400')) {
 			navigate('/');
 		} else {
 			sessionStorage.clear();
 			navigate('/login');
 		}
 	};
+
+	useEffect(() => {
+		if (error) handleErrors(error);
+		else if (data) store.setCampaignEvents(data);
+	}, [data, error]);
 
 	const handleManageBtn = async () => {
 		setEditMode(true);
@@ -67,7 +64,7 @@ const Events = observer(() => {
 	const handleSubmit = async () => {
 		try {
 			await axiosInstance.patch(`/campaign/${paramCampaignIdx}/event`, newEvents);
-			queryClient.invalidateQueries('campaignEvents');
+			queryClient.invalidateQueries({ queryKey: ['campaignEvents'] });
 			setEditMode(false);
 			message.success('변경 사항을 저장했습니다.');
 		} catch (error) {

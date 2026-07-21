@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Input, Form, Col, Button, message, Tooltip } from 'antd';
 import { useNavigate } from 'react-router';
 import { CaretUpOutlined, PlusCircleOutlined } from '@ant-design/icons';
-import { useQueryClient } from 'react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { NewRow } from './styles';
 import { axiosInstance } from '../../axios';
 
@@ -27,7 +27,7 @@ const NewAdvertiserForm = (props: {
 		const name = form.getFieldValue('newAdvertiser');
 		try {
 			await axiosInstance.put(`/advertiser?name=${name}`);
-			queryClient.invalidateQueries('advertisers');
+			queryClient.invalidateQueries({ queryKey: ['advertisers'] });
 			form.resetFields();
 			setNewVisible(false);
 			message.success('추가되었습니다.');

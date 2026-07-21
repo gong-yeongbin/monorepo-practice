@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { observer } from 'mobx-react';
 import { Button, DatePicker, Skeleton, Tooltip, Table as EmptyTable } from 'antd';
-import { RangeValue } from 'rc-picker/lib/interface';
-import moment, { Moment } from 'moment';
+import dayjs, { Dayjs } from 'dayjs';
 import { SyncOutlined } from '@ant-design/icons';
 import { useStore } from '../../../store';
 import { Nav, NavLeft, TableContainer } from '../../../globalStyles';
@@ -18,11 +16,9 @@ const Daily = observer(() => {
 	const store = useStore();
 
 	const endDate = sessionStorage.getItem('endDate');
-	const dateWeekAgo = moment(endDate).subtract(7, 'd').format('YYYY-MM-DD').toString();
+	const dateWeekAgo = dayjs(endDate).subtract(7, 'd').format('YYYY-MM-DD').toString();
 	const [date, setDate] = useState([dateWeekAgo, endDate]);
 	const [isDateOpen, setIsDateOpen] = useState(false);
-
-	const navigate = useNavigate();
 
 	const queryClient = useQueryClient();
 
@@ -30,19 +26,17 @@ const Daily = observer(() => {
 		store.setPageTitle('광고 일별 통계');
 	}, []);
 
-	const { isFetching, data } = useQuery(['daily'], () => api.getDaily(date), {
-		onError: () => {
-			sessionStorage.clear();
-			navigate('/login');
-		},
+	const { isFetching, data } = useQuery({
+		queryKey: ['daily'],
+		queryFn: () => api.getDaily(date),
 		enabled: !!(!isDateOpen && date && date[0] && date[1]),
 	});
 
 	const handleRefreshBtn = () => {
-		queryClient.invalidateQueries('daily');
+		queryClient.invalidateQueries({ queryKey: ['daily'] });
 	};
 
-	const onDateChange = (_dates: RangeValue<Moment>, dateStrings: [string, string]) => {
+	const onDateChange = (_dates: (Dayjs | null)[] | null, dateStrings: [string, string]) => {
 		setDate([dateStrings[0], dateStrings[1]]);
 	};
 
@@ -50,8 +44,8 @@ const Daily = observer(() => {
 		setIsDateOpen(open);
 	};
 
-	const disabledDate = (selectedDate: Moment): boolean => {
-		return selectedDate && selectedDate > moment().endOf('day');
+	const disabledDate = (selectedDate: Dayjs): boolean => {
+		return selectedDate && selectedDate > dayjs().endOf('day');
 	};
 
 	return (
@@ -62,11 +56,11 @@ const Daily = observer(() => {
 				<NavLeft>
 					<RangePicker
 						ranges={{
-							오늘: [moment(), moment()],
-							'이번 달': [moment().startOf('month'), moment()],
+							오늘: [dayjs(), dayjs()],
+							'이번 달': [dayjs().startOf('month'), dayjs()],
 						}}
 						style={{ marginRight: '1rem', marginBottom: '1rem' }}
-						value={[moment(date[0]), moment(date[1])]}
+						value={[dayjs(date[0]), dayjs(date[1])]}
 						allowClear={false}
 						onChange={onDateChange}
 						onOpenChange={onOpenChange}

@@ -13,7 +13,7 @@ import {
 	Spin,
 	message,
 } from 'antd';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { DownloadOutlined, LoadingOutlined } from '@ant-design/icons';
 import { CSVLink } from 'react-csv';
 import { useStore } from '../../store';
@@ -67,8 +67,8 @@ const Excel = observer(() => {
 	useEffect(() => {
 		if (dates && dates.length > 0)
 			setDateStrings([
-				moment(dates[0]).format('YYYY-MM-DD'),
-				moment(dates[1]).format('YYYY-MM-DD'),
+				dayjs(dates[0]).format('YYYY-MM-DD'),
+				dayjs(dates[1]).format('YYYY-MM-DD'),
 			]);
 	}, [dates]);
 
@@ -122,11 +122,11 @@ const Excel = observer(() => {
 
 	const disableDate = (current: any) => {
 		if (!dates || dates.length === 0) {
-			return current && current > moment().endOf('day');
+			return current && current > dayjs().endOf('day');
 		}
 		const tooLate = dates[0] && current.diff(dates[0], 'days') > 30;
 		const tooEarly = dates[1] && dates[1].diff(current, 'days') > 30;
-		return tooEarly || tooLate || current > moment().endOf('day');
+		return tooEarly || tooLate || current > dayjs().endOf('day');
 	};
 
 	const handleEscPress = useCallback((event: KeyboardEvent) => {
@@ -165,8 +165,8 @@ const Excel = observer(() => {
 	// 				onChange={onAllDatesSelected}
 	// 				onOpenChange={onCalendarOpenChange}
 	// 				defaultPickerValue={[
-	// 					moment().subtract(1, 'months').startOf('month'),
-	// 					moment().endOf('month'),
+	// 					dayjs().subtract(1, 'months').startOf('month'),
+	// 					dayjs().endOf('month'),
 	// 				]}
 	// 			/>
 
@@ -225,8 +225,8 @@ const Excel = observer(() => {
 						onChange={onAllDatesSelected}
 						onOpenChange={onCalendarOpenChange}
 						defaultPickerValue={[
-							moment().subtract(1, 'months').startOf('month'),
-							moment().endOf('month'),
+							dayjs().subtract(1, 'months').startOf('month'),
+							dayjs().endOf('month'),
 						]}
 					/>
 

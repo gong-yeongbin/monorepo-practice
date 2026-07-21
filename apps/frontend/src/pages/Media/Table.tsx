@@ -2,7 +2,13 @@ import React, { useState, useMemo } from 'react';
 import { CopyOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, message, Modal } from 'antd';
 import CopyToClipboard from 'react-copy-to-clipboard';
-import { useTable, useFlexLayout, Column } from 'react-table';
+import {
+	useReactTable,
+	getCoreRowModel,
+	flexRender,
+	createColumnHelper,
+	CellContext,
+} from '@tanstack/react-table';
 import { TableStyles } from '../../globalStyles';
 
 export interface IColumns {
@@ -12,7 +18,9 @@ export interface IColumns {
 	campaign: number;
 }
 
-const MediaTable = (props: { data: [] }) => {
+const columnHelper = createColumnHelper<IColumns>();
+
+const MediaTable = (props: { data: IColumns[] }) => {
 	const { data } = props;
 
 	const [InstallUrlVisible, setInstallUrlVisible] = useState(false);
@@ -24,13 +32,13 @@ const MediaTable = (props: { data: [] }) => {
 		setEventUrlVisible(false);
 	};
 
-	const TableButtons = (props: { column: any; cell: any }) => {
-		const { column, cell } = props;
-		const { value: url } = cell;
+	const TableButtons = (info: CellContext<IColumns, string>) => {
+		const url = info.getValue();
+		const columnId = info.column.id;
 
 		const handleUrlButtonClick = () => {
 			setUrlText(url);
-			if (column.id === 'mediaPostbackInstallUrlTemplate') {
+			if (columnId === 'mediaPostbackInstallUrlTemplate') {
 				setInstallUrlVisible(true);
 			} else {
 				setEventUrlVisible(true);
@@ -62,60 +70,27 @@ const MediaTable = (props: { data: [] }) => {
 		);
 	};
 
-	const columns: Column<IColumns>[] = useMemo(
+	const columns = useMemo(
 		() => [
-			{
-				Header: 'media',
-				accessor: 'name',
-			},
-			{
-				Header: 'INSTALL URL',
-				accessor: 'mediaPostbackInstallUrlTemplate',
-				Cell: TableButtons,
-			},
-			{
-				Header: 'EVENT URL',
-				accessor: 'mediaPostbackEventUrlTemplate',
-				Cell: TableButtons,
-			},
-			{
-				Header: '전체 광고',
-				accessor: 'campaign',
-			},
+			columnHelper.accessor('name', { header: 'media' }),
+			columnHelper.accessor('mediaPostbackInstallUrlTemplate', {
+				header: 'INSTALL URL',
+				cell: TableButtons,
+			}),
+			columnHelper.accessor('mediaPostbackEventUrlTemplate', {
+				header: 'EVENT URL',
+				cell: TableButtons,
+			}),
+			columnHelper.accessor('campaign', { header: '전체 광고' }),
 		],
 		[],
 	);
 
-	const cellProps = (props: any, { cell }: any) => getStyles(props, cell.column.align);
-
-	const getStyles = (props: any, align = 'center') => [
-		props,
-		{
-			style: {
-				justifyContent: align === 'left' ? 'flex-start' : 'center',
-				alignItems: 'flex-start',
-				display: 'flex',
-			},
-		},
-	];
-
-	const defaultColumn = useMemo(
-		() => ({
-			minWidth: 55,
-			width: 110,
-			maxWidth: 400,
-		}),
-		[],
-	);
-
-	const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable(
-		{
-			defaultColumn,
-			columns,
-			data,
-		},
-		useFlexLayout,
-	);
+	const table = useReactTable({
+		data,
+		columns,
+		getCoreRowModel: getCoreRowModel(),
+	});
 
 	return (
 		<TableStyles height="calc(var(--vh, 1vh) * 100 - 16.3rem)">
@@ -124,7 +99,7 @@ const MediaTable = (props: { data: [] }) => {
 					title="INSTALL URL"
 					footer={false}
 					onCancel={handleModalClose}
-					visible={InstallUrlVisible}
+					open={InstallUrlVisible}
 				>
 					<p>{urlText}</p>
 				</Modal>
@@ -134,39 +109,36 @@ const MediaTable = (props: { data: [] }) => {
 					title="EVENT URL"
 					footer={false}
 					onCancel={handleModalClose}
-					visible={EventUrlVisible}
+					open={EventUrlVisible}
 				>
 					<p>{urlText}</p>
 				</Modal>
 			)}
-			<table {...getTableProps()} id="media-table" className="sticky">
+			<table id="media-table" className="sticky">
 				<thead>
-					{headerGroups.map(headerGroup => (
-						<tr {...headerGroup.getHeaderGroupProps()} className="tr">
-							{headerGroup.headers.map(column => (
-								<th {...column.getHeaderProps()} className="th">
-									{column.render('Header')}
+					{table.getHeaderGroups().map(headerGroup => (
+						<tr key={headerGroup.id} className="tr">
+							{headerGroup.headers.map(header => (
+								<th key={header.id} className="th">
+									{flexRender(header.column.columnDef.header, header.getContext())}
 								</th>
 							))}
 						</tr>
 					))}
 				</thead>
 
-				<tbody {...getTableBodyProps()}>
-					{rows.map((row, i) => {
-						prepareRow(row);
-						return (
-							<tr {...row.getRowProps()} className="tr">
-								{row.cells.map(cell => {
-									return (
-										<td {...cell.getCellProps(cellProps)} className="td">
-											<div className="ellipsis">{cell.render('Cell')}</div>
-										</td>
-									);
-								})}
-							</tr>
-						);
-					})}
+				<tbody>
+					{table.getRowModel().rows.map(row => (
+						<tr key={row.id} className="tr">
+							{row.getVisibleCells().map(cell => (
+								<td key={cell.id} className="td">
+									<div className="ellipsis">
+										{flexRender(cell.column.columnDef.cell, cell.getContext())}
+									</div>
+								</td>
+							))}
+						</tr>
+					))}
 				</tbody>
 			</table>
 		</TableStyles>

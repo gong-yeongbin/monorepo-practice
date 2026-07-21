@@ -1,5 +1,10 @@
 import React, { useMemo } from 'react';
-import { useTable, useResizeColumns, useFlexLayout, Column } from 'react-table';
+import {
+	useReactTable,
+	getCoreRowModel,
+	flexRender,
+	createColumnHelper,
+} from '@tanstack/react-table';
 import { useNavigate } from 'react-router';
 import { Button, message, Popconfirm, Skeleton, Table as EmptyTable } from 'antd';
 import moment from 'moment';
@@ -15,6 +20,8 @@ export interface IColumns {
 	newTrackerTrackingUrl: string;
 	status: boolean;
 }
+
+const columnHelper = createColumnHelper<IColumns>();
 
 const ReservedTable = (props: {
 	setShowUrlModal: React.Dispatch<React.SetStateAction<boolean>>;
@@ -48,41 +55,28 @@ const ReservedTable = (props: {
 		}
 	};
 
-	const columns: Column<IColumns>[] = useMemo(
+	const columns = useMemo(
 		() => [
-			{
-				accessor: 'reservationIdx',
-			},
-			{
-				Header: 'no',
+			columnHelper.accessor('reservationIdx', {}),
+			columnHelper.display({
 				id: 'no',
-				width: 45,
-				accessor: (_originalRow, rowIndex) => rowIndex + 1,
-			},
-			{
-				Header: '매체',
-				accessor: 'mediaName',
-				width: 70,
-			},
-			{
-				Header: '캠페인명',
-				accessor: 'campaignName',
-			},
-			{
-				Header: '변경 시간',
-				accessor: row => {
-					return moment(row.reservedAt).format('YY-MM-DD HH:mm');
-				},
-				width: 70,
-			},
-			{
-				Header: '트랙킹 URL',
-				accessor: 'newTrackerTrackingUrl',
-				width: 55,
-				maxWidth: 55,
-				Cell: (info: any) => {
-					const { cell } = info;
-					const { value } = cell;
+				header: 'no',
+				size: 45,
+				cell: info => info.row.index + 1,
+			}),
+			columnHelper.accessor('mediaName', { header: '매체', size: 70 }),
+			columnHelper.accessor('campaignName', { header: '캠페인명' }),
+			columnHelper.accessor(row => moment(row.reservedAt).format('YY-MM-DD HH:mm'), {
+				id: 'reservedAt',
+				header: '변경 시간',
+				size: 70,
+			}),
+			columnHelper.accessor('newTrackerTrackingUrl', {
+				header: '트랙킹 URL',
+				size: 55,
+				maxSize: 55,
+				cell: info => {
+					const value = info.getValue();
 					return (
 						<Button
 							type="link"
@@ -97,18 +91,14 @@ const ReservedTable = (props: {
 						</Button>
 					);
 				},
-			},
-			{
-				Header: '비고',
-				accessor: 'status',
-				width: 50,
-				maxWidth: 50,
-				Cell: (info: any) => {
-					const {
-						row: { values },
-					} = info;
-					const { reservationIdx, status } = values;
-					return status === 1 ? (
+			}),
+			columnHelper.accessor('status', {
+				header: '비고',
+				size: 50,
+				maxSize: 50,
+				cell: info => {
+					const { reservationIdx, status } = info.row.original;
+					return status ? (
 						'완료'
 					) : (
 						<Popconfirm
@@ -123,59 +113,34 @@ const ReservedTable = (props: {
 						</Popconfirm>
 					);
 				},
-			},
-		] as Column<IColumns>[],
+			}),
+		],
 		[],
 	);
 
-	const headerProps = (props: any) => getStyles(props);
-
-	const cellProps = (props: any, { cell }: any) => getStyles(props, cell.column.align);
-
-	const getStyles = (props: any, align = 'center') => [
-		props,
-		{
-			style: {
-				display: 'flex',
-				justifyContent: align === 'left' ? 'flex-start' : 'center',
-				alignItems: 'center',
-			},
-		},
-	];
-
-	const defaultColumn = useMemo(
-		() => ({
-			minWidth: 45,
-			width: 100,
-			maxWidth: 300,
-		}),
-		[],
-	);
-
-	const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable(
-		{
-			defaultColumn,
-			columns,
-			data,
-			initialState: { hiddenColumns: ['reservationIdx'] },
-		},
-		useResizeColumns,
-		useFlexLayout,
-	);
+	const table = useReactTable({
+		data,
+		columns,
+		getCoreRowModel: getCoreRowModel(),
+		columnResizeMode: 'onChange',
+		enableColumnResizing: true,
+		initialState: { columnVisibility: { reservationIdx: false } },
+	});
 
 	return (
 		<ListWrapper>
 			<TableStyles height="calc(var(--vh, 1vh) * 100 - 30rem)">
-				<table {...getTableProps()} id="reserved-table" className="sticky">
+				<table id="reserved-table" className="sticky">
 					<thead>
-						{headerGroups.map(headerGroup => (
-							<tr {...headerGroup.getHeaderGroupProps()} className="tr">
-								{headerGroup.headers.map(column => (
-									<th {...column.getHeaderProps(headerProps)} className="th">
-										{column.render('Header')}
+						{table.getHeaderGroups().map(headerGroup => (
+							<tr key={headerGroup.id} className="tr">
+								{headerGroup.headers.map(header => (
+									<th key={header.id} className="th">
+										{flexRender(header.column.columnDef.header, header.getContext())}
 										<div
-											{...column.getResizerProps()}
-											className={`resizer ${column.isResizing ? 'isResizing' : ''}`}
+											onMouseDown={header.getResizeHandler()}
+											onTouchStart={header.getResizeHandler()}
+											className={`resizer ${header.column.getIsResizing() ? 'isResizing' : ''}`}
 										/>
 									</th>
 								))}
@@ -197,21 +162,18 @@ const ReservedTable = (props: {
 							}}
 						/>
 					) : (
-						<tbody className="tbody" {...getTableBodyProps()}>
-							{rows.map((row, i) => {
-								prepareRow(row);
-								return (
-									<tr {...row.getRowProps()} className="tr">
-										{row.cells.map(cell => {
-											return (
-												<td {...cell.getCellProps(cellProps)} className="td">
-													<div className="ellipsis">{cell.render('Cell')}</div>
-												</td>
-											);
-										})}
-									</tr>
-								);
-							})}
+						<tbody className="tbody">
+							{table.getRowModel().rows.map(row => (
+								<tr key={row.id} className="tr">
+									{row.getVisibleCells().map(cell => (
+										<td key={cell.id} className="td">
+											<div className="ellipsis">
+												{flexRender(cell.column.columnDef.cell, cell.getContext())}
+											</div>
+										</td>
+									))}
+								</tr>
+							))}
 						</tbody>
 					)}
 				</table>

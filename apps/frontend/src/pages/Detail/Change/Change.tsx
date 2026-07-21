@@ -10,7 +10,7 @@ import {
 	message,
 	Modal,
 } from 'antd';
-import moment, { Moment } from 'moment';
+import dayjs, { Dayjs } from 'dayjs';
 import { useNavigate, useParams } from 'react-router';
 import { useStore } from '../../../store';
 import InfoCard from '../../../components/InfoCard';
@@ -19,7 +19,7 @@ import SelectableTable, { IColumns as ICreated } from './SelectableTable';
 import ReservedTable, { IColumns as IReserved } from './ReservedTable';
 import { axiosInstance } from '../../../axios';
 
-const today = moment().format('YYYY-MM-DD');
+const today = dayjs().format('YYYY-MM-DD');
 
 const Change = () => {
 	const [showUrlModal, setShowUrlModal] = useState(false);
@@ -124,8 +124,8 @@ const Change = () => {
 		}
 	};
 
-	const getDisabledDate = (current: Moment): boolean => {
-		return moment().add(-1, 'days') >= current || moment().add(1, 'month') <= current;
+	const getDisabledDate = (current: Dayjs): boolean => {
+		return dayjs().add(-1, 'days') >= current || dayjs().add(1, 'month') <= current;
 	};
 
 	const getDisabledHours = () => {
@@ -133,14 +133,14 @@ const Change = () => {
 		if (selectedDate > today) {
 			return [];
 		}
-		for (let i = 0; i <= moment().hour(); i++) {
+		for (let i = 0; i <= dayjs().hour(); i++) {
 			hours.push(i);
 		}
 		return hours;
 	};
 
-	const handleDateChange = (date: Moment | null, dateString: string) => {
-		setSelectedDate(dateString);
+	const handleDateChange = (date: Dayjs | null, dateString: string | string[] | null) => {
+		setSelectedDate(Array.isArray(dateString) ? dateString[0] : dateString ?? '');
 	};
 
 	const handleCancel = () => {
@@ -171,8 +171,8 @@ const Change = () => {
 				id="change-form"
 				form={form}
 				initialValues={{
-					date: moment(today, 'YYYY-MM-DD'),
-					time: moment().add(1, 'hours'),
+					date: dayjs(today, 'YYYY-MM-DD'),
+					time: dayjs().add(1, 'hours'),
 				}}
 				onFieldsChange={handleFormChange}
 				requiredMark={false}

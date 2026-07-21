@@ -1,12 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
-	useTable,
-	useResizeColumns,
-	useFlexLayout,
-	Column,
-	useRowSelect,
-	useMountedLayoutEffect,
-} from 'react-table';
+	useReactTable,
+	getCoreRowModel,
+	flexRender,
+	createColumnHelper,
+	RowSelectionState,
+} from '@tanstack/react-table';
 import { Button, Skeleton, Table as EmptyTable } from 'antd';
 import { TableStyles } from '../../../globalStyles';
 import IndeterminateCheckbox from './IndeterminateCheckbox';
@@ -19,6 +18,8 @@ export interface IColumns {
 	mediaName: string;
 	trackerTrackingUrl: string;
 }
+
+const columnHelper = createColumnHelper<IColumns>();
 
 const SelectableTable = (props: {
 	setShowUrlModal: React.Dispatch<React.SetStateAction<boolean>>;
@@ -36,32 +37,42 @@ const SelectableTable = (props: {
 }) => {
 	const { setShowUrlModal, setURL, setSelectedRows, loading, data } = props;
 
-	const columns: Column<IColumns>[] = useMemo(
+	const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+
+	const columns = useMemo(
 		() => [
-			{
-				Header: '매체',
-				accessor: 'mediaName',
-				width: 70,
-			},
-			{
-				Header: '캠페인명',
-				accessor: 'campaignName',
-			},
-			{
-				Header: '등록일',
-				accessor: row => {
-					return row.createdAt.slice(2, 16).replace('T', ' ');
-				},
-				width: 70,
-			},
-			{
-				Header: '트랙킹 URL',
-				accessor: 'trackerTrackingUrl',
-				width: 55,
-				maxWidth: 55,
-				Cell: (info: any) => {
-					const { cell } = info;
-					const { value } = cell;
+			columnHelper.display({
+				id: 'selection',
+				size: 30,
+				maxSize: 30,
+				header: ({ table }) => (
+					<IndeterminateCheckbox
+						checked={table.getIsAllRowsSelected()}
+						indeterminate={table.getIsSomeRowsSelected()}
+						onChange={table.getToggleAllRowsSelectedHandler()}
+					/>
+				),
+				cell: ({ row }) => (
+					<IndeterminateCheckbox
+						checked={row.getIsSelected()}
+						indeterminate={row.getIsSomeSelected()}
+						onChange={row.getToggleSelectedHandler()}
+					/>
+				),
+			}),
+			columnHelper.accessor('mediaName', { header: '매체', size: 70 }),
+			columnHelper.accessor('campaignName', { header: '캠페인명' }),
+			columnHelper.accessor(row => row.createdAt.slice(2, 16).replace('T', ' '), {
+				id: 'createdAt',
+				header: '등록일',
+				size: 70,
+			}),
+			columnHelper.accessor('trackerTrackingUrl', {
+				header: '트랙킹 URL',
+				size: 55,
+				maxSize: 55,
+				cell: info => {
+					const value = info.getValue();
 					return (
 						<Button
 							type="link"
@@ -76,83 +87,40 @@ const SelectableTable = (props: {
 						</Button>
 					);
 				},
-			},
+			}),
 		],
 		[],
 	);
 
-	const headerProps = (props: any) => getStyles(props);
+	const table = useReactTable({
+		data,
+		columns,
+		getCoreRowModel: getCoreRowModel(),
+		columnResizeMode: 'onChange',
+		enableColumnResizing: true,
+		enableRowSelection: true,
+		state: { rowSelection },
+		onRowSelectionChange: setRowSelection,
+	});
 
-	const cellProps = (props: any, { cell }: any) => getStyles(props, cell.column.align);
-
-	const getStyles = (props: any, align = 'center') => [
-		props,
-		{
-			style: {
-				display: 'flex',
-				justifyContent: align === 'left' ? 'flex-start' : 'center',
-				alignItems: 'center',
-			},
-		},
-	];
-
-	const defaultColumn = useMemo(
-		() => ({
-			minWidth: 55,
-			width: 100,
-			maxWidth: 300,
-		}),
-		[],
-	);
-
-	const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow, selectedFlatRows } =
-		useTable(
-			{
-				defaultColumn,
-				columns,
-				data,
-			},
-			useResizeColumns,
-			useFlexLayout,
-			useRowSelect,
-			hooks => {
-				hooks.visibleColumns.push(columns => [
-					{
-						id: 'selection',
-						width: 30,
-						maxWidth: 30,
-						Header: ({ getToggleAllRowsSelectedProps }) => (
-							<IndeterminateCheckbox {...getToggleAllRowsSelectedProps({ title: undefined })} />
-						),
-						Cell: (props: any) => {
-							const { row } = props;
-							return (
-								<IndeterminateCheckbox {...row.getToggleRowSelectedProps({ title: undefined })} />
-							);
-						},
-					},
-					...columns,
-				]);
-			},
-		);
-
-	useMountedLayoutEffect(() => {
-		const selectedArray = selectedFlatRows.map(d => d.original.campaignIdx);
+	useEffect(() => {
+		const selectedArray = table.getSelectedRowModel().flatRows.map(d => d.original.campaignIdx);
 		setSelectedRows(selectedArray);
-	}, [selectedFlatRows]);
+	}, [rowSelection]);
 
 	return (
 		<TableStyles height="calc(var(--vh, 1vh) * 100 - 40.2rem)">
-			<table {...getTableProps()} id="selectable-table">
+			<table id="selectable-table">
 				<thead>
-					{headerGroups.map(headerGroup => (
-						<tr {...headerGroup.getHeaderGroupProps()} className="tr">
-							{headerGroup.headers.map(column => (
-								<th {...column.getHeaderProps(headerProps)} className="th">
-									{column.render('Header')}
+					{table.getHeaderGroups().map(headerGroup => (
+						<tr key={headerGroup.id} className="tr">
+							{headerGroup.headers.map(header => (
+								<th key={header.id} className="th">
+									{flexRender(header.column.columnDef.header, header.getContext())}
 									<div
-										{...column.getResizerProps()}
-										className={`resizer ${column.isResizing ? 'isResizing' : ''}`}
+										onMouseDown={header.getResizeHandler()}
+										onTouchStart={header.getResizeHandler()}
+										className={`resizer ${header.column.getIsResizing() ? 'isResizing' : ''}`}
 									/>
 								</th>
 							))}
@@ -174,21 +142,18 @@ const SelectableTable = (props: {
 						}}
 					/>
 				) : (
-					<tbody className="tbody" {...getTableBodyProps()}>
-						{rows.map((row, i) => {
-							prepareRow(row);
-							return (
-								<tr {...row.getRowProps()} className="tr">
-									{row.cells.map(cell => {
-										return (
-											<td {...cell.getCellProps(cellProps)} className="td">
-												<div className="ellipsis">{cell.render('Cell')}</div>
-											</td>
-										);
-									})}
-								</tr>
-							);
-						})}
+					<tbody className="tbody">
+						{table.getRowModel().rows.map(row => (
+							<tr key={row.id} className="tr">
+								{row.getVisibleCells().map(cell => (
+									<td key={cell.id} className="td">
+										<div className="ellipsis">
+											{flexRender(cell.column.columnDef.cell, cell.getContext())}
+										</div>
+									</td>
+								))}
+							</tr>
+						))}
 					</tbody>
 				)}
 			</table>

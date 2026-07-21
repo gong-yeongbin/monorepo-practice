@@ -13,8 +13,9 @@ import {
 	Skeleton,
 	Switch,
 } from 'antd';
-import { useQuery } from 'react-query';
-import Amplify, { Auth } from 'aws-amplify';
+import { useQuery } from '@tanstack/react-query';
+import { Amplify } from 'aws-amplify';
+import { signUp } from 'aws-amplify/auth';
 import { axiosInstance } from '../../axios';
 import { useStore } from '../../store';
 import { Wrapper, TitleWrapper, Title, ContentsWrapper, Section, StyledForm } from './styles';
@@ -37,31 +38,25 @@ const Developer = observer(() => {
 
 	useEffect(() => {
 		Amplify.configure({
-			aws_cognito_region: import.meta.env.VITE_REGION,
 			Auth: {
-				region: import.meta.env.VITE_REGION,
-				userPoolId:
-					listType === 'advertiser'
-						? import.meta.env.VITE_USER_POOL_ID_ADVERTISER
-						: import.meta.env.VITE_USER_POOL_ID_PARTNER,
-				userPoolWebClientId:
-					listType === 'advertiser'
-						? import.meta.env.VITE_USER_POOL_CLIENT_ID_ADVERTISER
-						: import.meta.env.VITE_USER_POOL_CLIENT_ID_PARTNER,
+				Cognito: {
+					userPoolId:
+						listType === 'advertiser'
+							? import.meta.env.VITE_USER_POOL_ID_ADVERTISER
+							: import.meta.env.VITE_USER_POOL_ID_PARTNER,
+					userPoolClientId:
+						listType === 'advertiser'
+							? import.meta.env.VITE_USER_POOL_CLIENT_ID_ADVERTISER
+							: import.meta.env.VITE_USER_POOL_CLIENT_ID_PARTNER,
+				},
 			},
 		});
 	}, [listType]);
 
-	const { isFetching, data } = useQuery(
-		['developer', { listType }],
-		() => api.getDeveloperList(listType),
-		{
-			onError: () => {
-				sessionStorage.clear();
-				navigate('/login');
-			},
-		},
-	);
+	const { isFetching, data } = useQuery({
+		queryKey: ['developer', { listType }],
+		queryFn: () => api.getDeveloperList(listType),
+	});
 
 	const handleRadioChange = (e: RadioChangeEvent) => {
 		form.resetFields(['typeIdx']);
@@ -86,12 +81,12 @@ const Developer = observer(() => {
 				password,
 				type: listType,
 			};
-			const { user: cognitoUser } = await Auth.signUp({
+			const { userId: cognitoUserId } = await signUp({
 				username: id,
 				password,
-				attributes: { name: id },
+				options: { userAttributes: { name: id } },
 			});
-			if (cognitoUser) {
+			if (cognitoUserId) {
 				await axiosInstance.post(`/user`, formValues);
 				message.success('계정이 생성되었습니다.');
 				form.resetFields();

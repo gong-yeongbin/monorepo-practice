@@ -21,7 +21,7 @@ export interface IColumns {
 }
 
 const InstallTable = observer(
-	(props: { data: Array<IColumns>; titleRef: React.RefObject<HTMLSpanElement> }) => {
+	(props: { data: Array<IColumns>; titleRef: React.RefObject<HTMLSpanElement | null> }) => {
 		const { data, titleRef } = props;
 
 		const rows = data.map((obj, i) => ({ ...obj, id: i + 1 }));
@@ -42,7 +42,7 @@ const InstallTable = observer(
 				width: 85,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info => info.value || '-',
+				valueGetter: value => value || '-',
 			},
 			{
 				headerName: 'COUNTRY',
@@ -51,7 +51,7 @@ const InstallTable = observer(
 				width: 80,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info => info.value || '-',
+				valueGetter: value => value || '-',
 			},
 			{
 				headerName: 'LANGUAGE',
@@ -60,11 +60,11 @@ const InstallTable = observer(
 				width: 90,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info => {
-					if (!info.value) {
+				valueGetter: value => {
+					if (!value) {
 						return '-';
 					}
-					return info.value === '한국어' ? 'KO' : info.value;
+					return value === '한국어' ? 'KO' : value;
 				},
 			},
 			{
@@ -74,7 +74,7 @@ const InstallTable = observer(
 				width: 120,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info => info.value || '-',
+				valueGetter: value => value || '-',
 			},
 			{
 				headerName: 'ADID',
@@ -84,7 +84,7 @@ const InstallTable = observer(
 				minWidth: 150,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info => info.value || '-',
+				valueGetter: value => value || '-',
 			},
 			{
 				headerName: 'CLICK ID',
@@ -94,7 +94,7 @@ const InstallTable = observer(
 				minWidth: 150,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info => info.value || '-',
+				valueGetter: value => value || '-',
 			},
 			{
 				headerName: 'VIEW CODE',
@@ -104,7 +104,7 @@ const InstallTable = observer(
 				minWidth: 150,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info => info.value || '-',
+				valueGetter: value => value || '-',
 			},
 			{
 				headerName: 'PUB ID',
@@ -114,7 +114,7 @@ const InstallTable = observer(
 				minWidth: 100,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info => info.value || '-',
+				valueGetter: value => value || '-',
 			},
 			{
 				headerName: 'SUB ID',
@@ -124,7 +124,7 @@ const InstallTable = observer(
 				minWidth: 120,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info => info.value || '-',
+				valueGetter: value => value || '-',
 			},
 			{
 				headerName: 'MEDIA',
@@ -142,7 +142,7 @@ const InstallTable = observer(
 				width: 90,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info => getCell.time(info),
+				renderCell: info => getCell.time(info),
 			},
 			{
 				headerName: 'INSTALL TIME (tracker)',
@@ -151,7 +151,7 @@ const InstallTable = observer(
 				width: 100,
 				align: 'center',
 				headerAlign: 'center',
-				valueGetter: info => getCell.time(info),
+				renderCell: info => getCell.time(info),
 			},
 			{
 				headerName: 'SENDING TIME',
@@ -165,7 +165,6 @@ const InstallTable = observer(
 			{
 				headerName: 'SEND URL',
 				field: 'sendUrl',
-				hide: true,
 			},
 		];
 
@@ -197,10 +196,11 @@ const InstallTable = observer(
 				<StyledDataGrid
 					rows={rows}
 					columns={columns}
-					components={{ Toolbar: CustomToolbar }}
+					slots={{ toolbar: CustomToolbar }}
+					initialState={{ columns: { columnVisibilityModel: { sendUrl: false } } }}
 					disableColumnFilter
 					disableColumnMenu
-					disableSelectionOnClick
+					disableRowSelectionOnClick
 					rowHeight={70}
 					sx={{ border: 0 }}
 				/>

@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
 
 const getTotal = (info: any) => {
-	const { rows } = info;
+	const rows = info.table.getRowModel().rows;
 	const columnName = info.column.id;
 	if (columnName === 'cvr') {
 		const total = useMemo(
-			() => rows.reduce((sum: any, row: { values: { cvr: number } }) => row.values.cvr + sum, 0),
+			() => rows.reduce((sum: any, row: any) => row.original.cvr + sum, 0),
 			[rows],
 		);
 		return (
@@ -21,11 +21,11 @@ const getTotal = (info: any) => {
 	const total = useMemo(
 		() =>
 			rows.reduce(
-				(sum: number, row: { values: { [x: string]: string } }) =>
+				(sum: number, row: any) =>
 					parseInt(
-						row.values[columnName].includes(',')
-							? row.values[columnName].replaceAll(',', '')
-							: row.values[columnName],
+						row.original[columnName].includes(',')
+							? row.original[columnName].replaceAll(',', '')
+							: row.original[columnName],
 						10,
 					) + sum,
 				0,

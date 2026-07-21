@@ -1,5 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { useTable, useResizeColumns, useFlexLayout, Column, usePagination } from 'react-table';
+import {
+	useReactTable,
+	getCoreRowModel,
+	getPaginationRowModel,
+	flexRender,
+	createColumnHelper,
+} from '@tanstack/react-table';
 import { observer } from 'mobx-react';
 import { Avatar, Pagination, Popconfirm, Switch } from 'antd';
 import { useNavigate } from 'react-router';
@@ -21,6 +27,8 @@ export interface IColumns {
 }
 
 const rowsPerPage = 25;
+
+const columnHelper = createColumnHelper<IColumns>();
 
 const AdvertisingTable = observer((props: { data: Array<IColumns> }) => {
 	const { data: dataProp } = props;
@@ -56,41 +64,24 @@ const AdvertisingTable = observer((props: { data: Array<IColumns> }) => {
 		navigate(`/advertising/${idx}`);
 	};
 
-	const columns: Column<IColumns>[] = useMemo(
+	const columns = useMemo(
 		() => [
-			{
-				accessor: 'idx',
-			},
-			{
-				accessor: 'status',
-			},
-			{
-				accessor: 'imageUrl',
-			},
-			{
-				accessor: 'platform',
-			},
-			{
-				Header: 'no',
+			columnHelper.accessor('idx', {}),
+			columnHelper.accessor('status', {}),
+			columnHelper.accessor('imageUrl', {}),
+			columnHelper.accessor('platform', {}),
+			columnHelper.display({
 				id: 'no',
-				width: 25,
-				maxWidth: 25,
-				Cell: (info: any) => {
-					const { rows, row } = info;
-					return rows.length - row.index;
-				},
-			},
-			{
-				Header: '광고명',
-				accessor: 'name',
-				width: 110,
-				align: 'left',
-				Cell: (info: any) => {
-					const {
-						row: {
-							values: { idx, imageUrl, name },
-						},
-					} = info;
+				header: 'no',
+				size: 25,
+				maxSize: 25,
+				cell: info => info.table.getRowModel().rows.length - info.row.index,
+			}),
+			columnHelper.accessor('name', {
+				header: '광고명',
+				size: 110,
+				cell: info => {
+					const { idx, imageUrl, name } = info.row.original;
 					return (
 						<>
 							<ImageContainer>
@@ -117,22 +108,17 @@ const AdvertisingTable = observer((props: { data: Array<IColumns> }) => {
 						</>
 					);
 				},
-			},
-			{
-				Header: () => <span style={{ wordBreak: 'keep-all' }}>운영 캠페인</span>,
-				accessor: 'campaign',
-				width: 50,
-			},
-			{
-				Header: 'ON/OFF',
+			}),
+			columnHelper.accessor('campaign', {
+				header: () => <span style={{ wordBreak: 'keep-all' }}>운영 캠페인</span>,
+				size: 50,
+			}),
+			columnHelper.display({
 				id: 'status-switch',
-				width: 40,
-				Cell: (info: any) => {
-					const {
-						row: {
-							values: { idx, status },
-						},
-					} = info;
+				header: 'ON/OFF',
+				size: 40,
+				cell: info => {
+					const { idx, status } = info.row.original;
 					return (
 						<Popconfirm
 							title="진행하시겠습니까?"
@@ -140,78 +126,55 @@ const AdvertisingTable = observer((props: { data: Array<IColumns> }) => {
 							okText="Yes"
 							cancelText="No"
 						>
-							<Switch checked={status} size="small" />
+							<Switch checked={!!status} size="small" />
 						</Popconfirm>
 					);
 				},
-			},
-		] as Column<IColumns>[],
+			}),
+		],
 		[],
 	);
 
-	const headerProps = (props: any) => getStyles(props);
-
-	const cellProps = (props: any, { cell }: any) => getStyles(props, cell.column.align);
-
-	const getStyles = (props: any, align = 'center') => [
-		props,
-		{
-			style: {
-				display: 'flex',
-				justifyContent: align === 'left' ? 'flex-start' : 'center',
-				alignItems: 'center',
-			},
+	const table = useReactTable({
+		data,
+		columns,
+		getCoreRowModel: getCoreRowModel(),
+		getPaginationRowModel: getPaginationRowModel(),
+		columnResizeMode: 'onChange',
+		enableColumnResizing: true,
+		initialState: {
+			columnVisibility: { idx: false, status: false, imageUrl: false, platform: false },
+			pagination: { pageIndex: 0, pageSize: rowsPerPage },
 		},
-	];
-
-	const defaultColumn = useMemo(() => ({}), []);
-
-	const { getTableProps, getTableBodyProps, headerGroups, prepareRow, page, gotoPage } = useTable(
-		{
-			defaultColumn,
-			columns,
-			data,
-			initialState: {
-				hiddenColumns: ['idx', 'status', 'imageUrl', 'platform'],
-				pageIndex: 0,
-				pageSize: rowsPerPage,
-			},
-		},
-		useResizeColumns,
-		useFlexLayout,
-		usePagination,
-	);
+	});
 
 	return (
 		<TableStyles>
-			<table {...getTableProps()} id="ad-table">
+			<table id="ad-table">
 				<thead>
-					{headerGroups.map(headerGroup => (
-						<tr {...headerGroup.getHeaderGroupProps()} className="tr">
-							{headerGroup.headers.map(column => (
-								<th {...column.getHeaderProps(headerProps)} className="th">
-									{column.render('Header')}
+					{table.getHeaderGroups().map(headerGroup => (
+						<tr key={headerGroup.id} className="tr">
+							{headerGroup.headers.map(header => (
+								<th key={header.id} className="th">
+									{flexRender(header.column.columnDef.header, header.getContext())}
 								</th>
 							))}
 						</tr>
 					))}
 				</thead>
 
-				<tbody className="tbody" {...getTableBodyProps()}>
-					{page.map((row, i) => {
-						prepareRow(row);
-						return (
-							<tr {...row.getRowProps()} className="tr">
-								{row.cells.map(cell => {
-									return (
-										<td {...cell.getCellProps(cellProps)} className="td">
-											<div className="ellipsis">{cell.render('Cell')}</div>
-										</td>
-									);
-								})}
-							</tr>
-						);
-					})}
+				<tbody className="tbody">
+					{table.getRowModel().rows.map(row => (
+						<tr key={row.id} className="tr">
+							{row.getVisibleCells().map(cell => (
+								<td key={cell.id} className="td">
+									<div className="ellipsis">
+										{flexRender(cell.column.columnDef.cell, cell.getContext())}
+									</div>
+								</td>
+							))}
+						</tr>
+					))}
 				</tbody>
 			</table>
 
@@ -220,7 +183,7 @@ const AdvertisingTable = observer((props: { data: Array<IColumns> }) => {
 					size="small"
 					pageSize={rowsPerPage}
 					total={data.length}
-					onChange={(page, _pageSize) => gotoPage(page - 1)}
+					onChange={(page, _pageSize) => table.setPageIndex(page - 1)}
 				/>
 			</PageContainer>
 		</TableStyles>

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { observer } from 'mobx-react';
 import { Select, Input, Drawer, Form, Col, Row, Popconfirm, Button, Radio, message } from 'antd';
 import { QuestionCircleOutlined } from '@ant-design/icons';
-import { useQueryClient } from 'react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { axiosInstance } from '../../../axios';
 import { useStore } from '../../../store';
 import { TextContent, URL, UrlWrapper } from '../styles';
@@ -132,7 +132,7 @@ const AddForm = observer(
 				await axiosInstance.put(`/campaign`, formValues);
 				handleReset();
 				setDrawerVisible(false);
-				queryClient.invalidateQueries('campaignList');
+				queryClient.invalidateQueries({ queryKey: ['campaignList'] });
 				message.success('등록되었습니다.');
 			} catch (error) {
 				if (error instanceof Error && error.message.includes('412')) {
@@ -169,7 +169,7 @@ const AddForm = observer(
 		};
 
 		return (
-			<Drawer title="캠페인 등록" onClose={onDrawerClose} visible={drawerVisible && !loading}>
+			<Drawer title="캠페인 등록" onClose={onDrawerClose} open={drawerVisible && !loading}>
 				<Form
 					id="campaign-add-form"
 					form={form}

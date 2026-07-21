@@ -1,5 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { useTable, useResizeColumns, useFlexLayout, Column } from 'react-table';
+import {
+	useReactTable,
+	getCoreRowModel,
+	flexRender,
+	createColumnHelper,
+} from '@tanstack/react-table';
 import { observer } from 'mobx-react';
 import { Popconfirm, Switch } from 'antd';
 import { useNavigate, useParams } from 'react-router';
@@ -17,6 +22,8 @@ export interface IColumns {
 	campaignStatus: number;
 	campaignBlock: number;
 }
+
+const columnHelper = createColumnHelper<IColumns>();
 
 const CampaignsTable = observer(() => {
 	const store = useStore();
@@ -65,46 +72,24 @@ const CampaignsTable = observer(() => {
 		navigate(`/advertising/${paramId}/events/${campaignIdx}`);
 	};
 
-	const handleRowClick = (rowValues: any) => {
+	const handleRowClick = (rowValues: IColumns) => {
 		const { mediaName } = rowValues;
 		sessionStorage.setItem('eventMediaName', mediaName);
 	};
 
-	const columns: Column<IColumns>[] = useMemo(
+	const columns = useMemo(
 		() => [
-			{
-				accessor: 'campaignIdx',
-			},
-			{
-				accessor: 'campaignStatus',
-			},
-			{
-				accessor: 'campaignBlock',
-			},
-			{
-				accessor: 'token',
-			},
-			{
-				Header: '매체',
-				accessor: 'mediaName',
-				maxWidth: 60,
-			},
-			{
-				Header: '타입',
-				accessor: 'campaignType',
-				align: 'left',
-				maxWidth: 30,
-			},
-			{
-				Header: '캠페인명',
-				accessor: 'campaignName',
-				align: 'left',
-				width: 160,
-				Cell: (info: any) => {
-					const {
-						row: { values },
-					} = info;
-					const { campaignIdx, campaignName } = values;
+			columnHelper.accessor('campaignIdx', {}),
+			columnHelper.accessor('campaignStatus', {}),
+			columnHelper.accessor('campaignBlock', {}),
+			columnHelper.accessor('token', {}),
+			columnHelper.accessor('mediaName', { header: '매체', maxSize: 60 }),
+			columnHelper.accessor('campaignType', { header: '타입', maxSize: 30 }),
+			columnHelper.accessor('campaignName', {
+				header: '캠페인명',
+				size: 160,
+				cell: info => {
+					const { campaignIdx, campaignName } = info.row.original;
 					return (
 						<span
 							id="campaign-column"
@@ -118,16 +103,12 @@ const CampaignsTable = observer(() => {
 						</span>
 					);
 				},
-			},
-			{
-				Header: '예약 변경',
+			}),
+			columnHelper.display({
 				id: 'change-switch',
-				Cell: (info: any) => {
-					const {
-						row: {
-							values: { campaignIdx, campaignStatus },
-						},
-					} = info;
+				header: '예약 변경',
+				cell: info => {
+					const { campaignIdx, campaignStatus } = info.row.original;
 					return (
 						<Popconfirm
 							title="진행하시겠습니까?"
@@ -135,20 +116,16 @@ const CampaignsTable = observer(() => {
 							okText="Yes"
 							cancelText="No"
 						>
-							<Switch checked={campaignStatus} size="small" />
+							<Switch checked={!!campaignStatus} size="small" />
 						</Popconfirm>
 					);
 				},
-			},
-			{
-				Header: 'block',
+			}),
+			columnHelper.display({
 				id: 'block-switch',
-				Cell: (info: any) => {
-					const {
-						row: {
-							values: { campaignIdx, campaignBlock },
-						},
-					} = info;
+				header: 'block',
+				cell: info => {
+					const { campaignIdx, campaignBlock } = info.row.original;
 					return (
 						<Popconfirm
 							title="진행하시겠습니까?"
@@ -156,96 +133,69 @@ const CampaignsTable = observer(() => {
 							okText="Yes"
 							cancelText="No"
 						>
-							<Switch checked={campaignBlock} size="small" />
+							<Switch checked={!!campaignBlock} size="small" />
 						</Popconfirm>
 					);
 				},
-			},
+			}),
 		],
 		[],
 	);
 
-	const headerProps = (props: any, { column }: any) => getStyles(props, column.align);
-
-	const cellProps = (props: any, { cell }: any) => getStyles(props, cell.column.align);
-
-	const rowProps = (props: any, { row }: any) => getRowStyles(props, row.values.campaignStatus);
-
-	const getRowStyles = (props: any, campaignStatus: number) => [
-		props,
-		{
-			style: {
-				backgroundColor: campaignStatus === 0 && '#f8f8f8',
-				color: campaignStatus === 0 && 'grey',
+	const table = useReactTable({
+		data,
+		columns,
+		getCoreRowModel: getCoreRowModel(),
+		columnResizeMode: 'onChange',
+		enableColumnResizing: true,
+		initialState: {
+			columnVisibility: {
+				campaignIdx: false,
+				campaignStatus: false,
+				token: false,
+				campaignBlock: false,
 			},
 		},
-	];
-
-	const getStyles = (props: any, align = 'center') => [
-		props,
-		{
-			style: {
-				display: 'flex',
-				justifyContent: align === 'left' ? 'flex-start' : 'center',
-				alignItems: 'center',
-			},
-		},
-	];
-
-	const defaultColumn = useMemo(
-		() => ({
-			minWidth: 45,
-			width: 70,
-			maxWidth: 300,
-		}),
-		[],
-	);
-
-	const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable(
-		{
-			defaultColumn,
-			columns,
-			data,
-			initialState: { hiddenColumns: ['campaignIdx', 'campaignStatus', 'token', 'campaignBlock'] },
-		},
-		useResizeColumns,
-		useFlexLayout,
-	);
+	});
 
 	return (
 		<TableStyles>
-			<table {...getTableProps()} id="campaign-list-table">
+			<table id="campaign-list-table">
 				<thead>
-					{headerGroups.map(headerGroup => (
-						<tr {...headerGroup.getHeaderGroupProps()} className="tr">
-							{headerGroup.headers.map(column => (
-								<th {...column.getHeaderProps(headerProps)} className="th">
-									{column.render('Header')}
+					{table.getHeaderGroups().map(headerGroup => (
+						<tr key={headerGroup.id} className="tr">
+							{headerGroup.headers.map(header => (
+								<th key={header.id} className="th">
+									{flexRender(header.column.columnDef.header, header.getContext())}
 								</th>
 							))}
 						</tr>
 					))}
 				</thead>
 
-				<tbody className="tbody" {...getTableBodyProps()}>
-					{rows.map((row, i) => {
-						prepareRow(row);
+				<tbody className="tbody">
+					{table.getRowModel().rows.map(row => {
+						const { campaignStatus } = row.original;
 						return (
 							<tr
+								key={row.id}
 								role="button"
 								tabIndex={0}
-								onClick={() => handleRowClick(row.values)}
-								onKeyDown={() => handleRowClick(row.values)}
-								{...row.getRowProps(rowProps)}
+								onClick={() => handleRowClick(row.original)}
+								onKeyDown={() => handleRowClick(row.original)}
 								className="tr"
+								style={{
+									backgroundColor: campaignStatus === 0 ? '#f8f8f8' : undefined,
+									color: campaignStatus === 0 ? 'grey' : undefined,
+								}}
 							>
-								{row.cells.map(cell => {
-									return (
-										<td {...cell.getCellProps(cellProps)} className="td">
-											<div className="ellipsis">{cell.render('Cell')}</div>
-										</td>
-									);
-								})}
+								{row.getVisibleCells().map(cell => (
+									<td key={cell.id} className="td">
+										<div className="ellipsis">
+											{flexRender(cell.column.columnDef.cell, cell.getContext())}
+										</div>
+									</td>
+								))}
 							</tr>
 						);
 					})}

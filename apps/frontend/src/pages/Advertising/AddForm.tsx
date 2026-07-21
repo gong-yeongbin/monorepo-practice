@@ -14,7 +14,7 @@ import {
 	Upload,
 	message,
 } from 'antd';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CaretDownOutlined, PlusOutlined } from '@ant-design/icons';
 import { axiosInstance } from '../../axios';
 import NewAdvertiserForm from './NewAdvertiserForm';
@@ -51,19 +51,15 @@ const AddForm = observer(
 			}
 		}, [selectedFile]);
 
-		const { data: trackers } = useQuery(['trackers'], api.getTrackers, {
-			onError: () => {
-				sessionStorage.clear();
-				navigate('/login');
-			},
+		const { data: trackers } = useQuery({
+			queryKey: ['trackers'],
+			queryFn: api.getTrackers,
 			enabled: !!drawerVisible,
 		});
 
-		const { data: advertisers } = useQuery(['advertisers'], api.getAdvertisers, {
-			onError: () => {
-				sessionStorage.clear();
-				navigate('/login');
-			},
+		const { data: advertisers } = useQuery({
+			queryKey: ['advertisers'],
+			queryFn: api.getAdvertisers,
 			enabled: !!drawerVisible,
 		});
 
@@ -91,7 +87,7 @@ const AddForm = observer(
 				await axiosInstance.put(`/advertising`, formData);
 				handleReset();
 				setDrawerVisible(false);
-				queryClient.invalidateQueries('advertising');
+				queryClient.invalidateQueries({ queryKey: ['advertising'] });
 				message.success('등록되었습니다.');
 			} catch (error) {
 				sessionStorage.clear();
@@ -134,7 +130,7 @@ const AddForm = observer(
 			<Drawer
 				title="광고 등록"
 				onClose={closeDrawer}
-				visible={drawerVisible && trackers && advertisers}
+				open={drawerVisible && trackers && advertisers}
 			>
 				<Form
 					id="advertising-add-form"

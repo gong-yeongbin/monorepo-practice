@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { Skeleton, Table as EmptyTable } from 'antd';
-import { useQuery } from 'react-query';
-import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { PaddingContainer, TableContainer } from '../../globalStyles';
 import { useStore } from '../../store';
 import Table from './Table';
@@ -10,18 +9,11 @@ import { api } from '../../api';
 const Trackers = () => {
 	const store = useStore();
 
-	const navigate = useNavigate();
-
 	useEffect(() => {
 		store.setPageTitle('트래커 관리');
 	}, []);
 
-	const { isFetching, data } = useQuery(['trackers'], api.getTrackers, {
-		onError: () => {
-			sessionStorage.clear();
-			navigate('/login');
-		},
-	});
+	const { isFetching, data } = useQuery({ queryKey: ['trackers'], queryFn: api.getTrackers });
 
 	return (
 		<PaddingContainer>
