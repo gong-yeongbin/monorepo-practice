@@ -5,6 +5,7 @@ import { TrackingModule } from '@tracking/tracking.module';
 import { PostbackModule } from '@postback/postback.module';
 import { PrismaModule } from '@infra/prisma/prisma.module';
 import { UserModule } from '@user/user.module';
+import { AuthModule } from '@auth/auth.module';
 import { AdvertiserModule } from '@advertiser/advertiser.module';
 import { AdvertisingModule } from '@advertising/advertising.module';
 import { MediaModule } from '@media/media.module';
@@ -21,6 +22,7 @@ import { DashboardModule } from '@dashboard/dashboard.module';
 		TrackingModule,
 		PostbackModule,
 		UserModule,
+		AuthModule,
 		AdvertiserModule,
 		AdvertisingModule,
 		MediaModule,

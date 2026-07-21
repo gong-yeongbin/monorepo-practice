@@ -32,3 +32,16 @@
 - [x] user.controller.spec·prisma-user.repository.spec 갱신
 - [x] README `.env` 예시에 AWS_REGION·AWS_ACCESS_KEY_ID·AWS_SECRET_ACCESS_KEY·SES_FROM_EMAIL
 - [ ] `pnpm test` / `pnpm test:cov` (modules 4지표 90%+) — generate 이후 전체 통과 확인
+
+## auth 모듈 분리 (2026-07-21)
+
+signup 엔드포인트를 user 모듈에서 auth 모듈로 분리(모듈명은 사용자 결정). 라우트 변경: `POST /user` → `POST /auth/signup`, `POST /user/verify` → `POST /auth/signup/verify`.
+
+- [x] `@auth/*` alias 추가 (tsconfig paths + jest moduleNameMapper)
+- [x] signup 파일 7개 mv → `modules/auth/application/` (use-case 2 + spec 2 + constants 1 + dto 2)
+- [x] `auth.controller.ts` + spec 신규 (signup 200, signup/verify 201)
+- [x] `auth.module.ts` 신규 — CacheModule·MailModule·UserModule import
+- [x] `user.module.ts` — signup provider·CacheModule·MailModule 제거, USER_REPOSITORY export
+- [x] `user.controller.ts` + spec — signup 엔드포인트 제거
+- [x] `app.module.ts`에 AuthModule 등록
+- [x] `pnpm test` — 88/89 스위트·234 테스트 통과. 유일한 실패는 `prisma-user.repository.spec.ts`로 이번 변경과 무관(이전 세션의 `pnpm generate` 미실행으로 Prisma Client가 구 스키마 상태, 위 체크리스트의 미완 항목). generate 후 재확인 필요

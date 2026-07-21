@@ -28,3 +28,11 @@
 
 - `pnpm deploy`/`pnpm generate`는 사용자가 직접 실행(prisma/CLAUDE.md 규칙). generate 전까지 password/email_verified 관련 타입 에러는 정상.
 - 직전 작업(인증 제거)의 백업: scratchpad의 `pre-auth-removal-tracked.patch`(+untracked.tar.gz). 세션 임시 디렉터리라 필요하면 옮길 것.
+
+## auth 모듈 분리 (2026-07-21)
+
+- signup 두 엔드포인트를 별도 모듈로 분리하기로 함(사용자 결정). 근거는 세 가지. CacheModule·MailModule이 signup 전용이라 user 모듈의 의존이 비대칭했음. signup은 상태를 가진 플로우고 나머지는 리소스 CRUD라 관심사가 다름. `POST /user`가 user를 생성하지 않아 200으로 우회하던 라우팅 어색함 해소.
+- 모듈명은 auth vs signup 논의 끝에 **auth**(사용자 선택). 현재 내용은 registration뿐이지만 이후 login·token이 이 모듈에 들어오는 것을 전제로 한 이름.
+- 라우트 변경: `POST /auth/signup`(200 유지, user 미생성) / `POST /auth/signup/verify`(201, user 생성). 클라이언트 입장에서 breaking change.
+- auth에는 domain·infrastructure 계층을 만들지 않음 — signup의 산출물이 user 생성이라 user domain의 `USER_REPOSITORY`를 재사용한다(UserModule이 export → AuthModule이 import). 내용 없는 빈 계층 폴더는 만들지 않기로 함(4계층 규칙의 예외, 단순함 우선).
+- `pending-signup.constants`·signup DTO 2개도 auth로 이동 — signup 전용이라 user에 남길 이유 없음.

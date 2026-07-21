@@ -5,7 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { USER_REPOSITORY, UserRepository } from '@user/domain/user.repository';
 import { CACHE_PORT, CachePort } from '@infra/cache/cache.port';
 import { MAIL_PORT, MailPort } from '@infra/mail/mail.port';
-import { PENDING_SIGNUP_TTL, PendingSignup, pendingSignupKey } from '@user/application/pending-signup.constants';
+import { PENDING_SIGNUP_TTL, PendingSignup, pendingSignupKey } from '@auth/application/pending-signup.constants';
 
 const BCRYPT_SALT_ROUNDS = 10;
 

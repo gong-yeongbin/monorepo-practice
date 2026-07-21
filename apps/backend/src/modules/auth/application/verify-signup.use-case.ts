@@ -2,7 +2,7 @@
 import { BadRequestException, ConflictException, Inject, Injectable } from '@nestjs/common';
 import { USER_REPOSITORY, UserRepository } from '@user/domain/user.repository';
 import { CACHE_PORT, CachePort } from '@infra/cache/cache.port';
-import { PendingSignup, pendingSignupKey } from '@user/application/pending-signup.constants';
+import { PendingSignup, pendingSignupKey } from '@auth/application/pending-signup.constants';
 
 @Injectable()
 export class VerifySignupUseCase {
