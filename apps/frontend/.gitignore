@@ -9,12 +9,16 @@
 /coverage
 
 # production
-/build
+/dist
 
 # misc
 .DS_Store
 .env.staging
 .env.production
+
+# work notes
+checklist.md
+context-notes.md
 
 npm-debug.log*
 yarn-debug.log*

@@ -211,7 +211,7 @@ const DetailTable = observer(() => {
 				width: 80,
 				Cell: info => getCell.createdAt(info),
 			},
-		],
+		] as Column<IColumns>[],
 		[],
 	);
 

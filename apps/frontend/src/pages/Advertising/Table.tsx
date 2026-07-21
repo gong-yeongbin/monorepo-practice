@@ -145,7 +145,7 @@ const AdvertisingTable = observer((props: { data: Array<IColumns> }) => {
 					);
 				},
 			},
-		],
+		] as Column<IColumns>[],
 		[],
 	);
 

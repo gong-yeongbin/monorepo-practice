@@ -180,7 +180,7 @@ const DailyTable = (props: { data: any }) => {
 					);
 				},
 			},
-		],
+		] as Column<IColumns>[],
 		[],
 	);
 

@@ -24,7 +24,7 @@ const Login = observer(() => {
 	const onLogin = async (data: { id: string; password: string }) => {
 		try {
 			setLoading(true);
-			const response = await axios.post(`${process.env.REACT_APP_API_URL}/login`, data);
+			const response = await axios.post(`${import.meta.env.VITE_API_URL}/login`, data);
 			setAccessToken(response);
 		} catch (error: unknown) {
 			setLoading(false);

@@ -138,7 +138,7 @@ const DailyDetailTable = (props: {
 				accessor: 'etc5',
 				Cell: info => getCell.event(info, setEventVisible),
 			},
-		],
+		] as Column<IColumns>[],
 		[],
 	);
 

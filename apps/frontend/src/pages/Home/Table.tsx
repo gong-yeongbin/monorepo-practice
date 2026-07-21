@@ -115,7 +115,7 @@ const DashboardTable = (props: { data: Array<IColumns> }) => {
 					};
 					return (
 						width &&
-						width > 100 && (
+						Number(width) > 100 && (
 							<NameSearchBar
 								value={filterValue || ''}
 								onChange={handleClick}
@@ -233,7 +233,7 @@ const DashboardTable = (props: { data: Array<IColumns> }) => {
 				width: 55,
 				Footer: info => getTotal(info),
 			},
-		],
+		] as Column<IColumns>[],
 		[selectedPlatform],
 	);
 

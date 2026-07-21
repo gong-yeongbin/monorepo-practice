@@ -65,10 +65,16 @@
 
 ### Installing
 
-    npm install --force
+모노레포 루트에서 pnpm으로 설치한다.
 
-`npm i` 입력시 에러  
-<img src="https://user-images.githubusercontent.com/61957322/175189084-6d336882-c20a-48b6-bb3d-6d11b643d6e4.png" width="60%" height="60%"></img>
+    pnpm install
+
+개발 서버(Vite, 포트 3000) / 빌드는 루트 또는 앱에서 실행한다.
+
+    pnpm --filter=frontend dev
+    pnpm --filter=frontend build
+
+> CRA(react-scripts)에서 Vite로 전환되었으므로 환경변수 프리픽스는 `REACT_APP_`이 아니라 `VITE_`이며, 코드에서는 `import.meta.env.VITE_*`로 참조한다. env 파일은 gitignore되므로 아래 키를 로컬에 직접 둔다.
 
 ### Actions Secrets
 
@@ -78,32 +84,30 @@
 ##### .env.staging
 
 ```
-SKIP_PREFLIGHT_CHECK=true
-REACT_APP_API_URL=http://3.38.15.191
-REACT_APP_BUCKET=admin.mecrosspro.com
-REACT_APP_USER_POOL_ID=ap-northeast-2_LJNZrOOIY
-REACT_APP_USER_POOL_CLIENT_ID=4365iskqu3mull89so0kugbol9
-REACT_APP_REGION=ap-northeast-2
-REACT_APP_OAUTH_DOMAIN=admin-mecrosspro.auth.ap-northeast-2.amazoncognito.com
-REACT_APP_REDIRECT_SIGN_IN=http://localhost:3000/
-REACT_APP_REDIRECT_SIGN_OUT=http://localhost:3000/login
-REACT_APP_IDENTITY_POOL_ID=ap-northeast-2:b2f375c0-5a04-454d-b66f-1259fcc96abc
-REACT_APP_USER_POOL_ID_ADVERTISER=ap-northeast-2_6UiiWuevH
-REACT_APP_USER_POOL_ID_PARTNER=ap-northeast-2_drkLCbha3
-REACT_APP_USER_POOL_CLIENT_ID_ADVERTISER=56aanu4dlo5n5tol0ad8s6dbvd
-REACT_APP_USER_POOL_CLIENT_ID_PARTNER=1cuu7mknumn8v4s0krlmq1hotc
+VITE_API_URL=http://3.38.15.191
+VITE_BUCKET=admin.mecrosspro.com
+VITE_USER_POOL_ID=ap-northeast-2_LJNZrOOIY
+VITE_USER_POOL_CLIENT_ID=4365iskqu3mull89so0kugbol9
+VITE_REGION=ap-northeast-2
+VITE_OAUTH_DOMAIN=admin-mecrosspro.auth.ap-northeast-2.amazoncognito.com
+VITE_REDIRECT_SIGN_IN=http://localhost:3000/
+VITE_REDIRECT_SIGN_OUT=http://localhost:3000/login
+VITE_IDENTITY_POOL_ID=ap-northeast-2:b2f375c0-5a04-454d-b66f-1259fcc96abc
+VITE_USER_POOL_ID_ADVERTISER=ap-northeast-2_6UiiWuevH
+VITE_USER_POOL_ID_PARTNER=ap-northeast-2_drkLCbha3
+VITE_USER_POOL_CLIENT_ID_ADVERTISER=56aanu4dlo5n5tol0ad8s6dbvd
+VITE_USER_POOL_CLIENT_ID_PARTNER=1cuu7mknumn8v4s0krlmq1hotc
 ```
 
 ##### .env.production
 
 ```
-REACT_APP_API_URL=http://3.38.88.48:3000
-SKIP_PREFLIGHT_CHECK=true
-REACT_APP_USER_POOL_ID_ADVERTISER=ap-northeast-2_6UiiWuevH
-REACT_APP_USER_POOL_ID_PARTNER=ap-northeast-2_drkLCbha3
-REACT_APP_USER_POOL_CLIENT_ID_ADVERTISER=56aanu4dlo5n5tol0ad8s6dbvd
-REACT_APP_USER_POOL_CLIENT_ID_PARTNER=1cuu7mknumn8v4s0krlmq1hotc
-REACT_APP_REGION=ap-northeast-2
+VITE_API_URL=http://3.38.88.48:3000
+VITE_USER_POOL_ID_ADVERTISER=ap-northeast-2_6UiiWuevH
+VITE_USER_POOL_ID_PARTNER=ap-northeast-2_drkLCbha3
+VITE_USER_POOL_CLIENT_ID_ADVERTISER=56aanu4dlo5n5tol0ad8s6dbvd
+VITE_USER_POOL_CLIENT_ID_PARTNER=1cuu7mknumn8v4s0krlmq1hotc
+VITE_REGION=ap-northeast-2
 ```
 
 ## Deployment

@@ -180,7 +180,7 @@ const EditTable = observer((props: { events: Array<IColumns>; setNewEvents: any 
 				width: 45,
 				Cell: TableDeleteButton,
 			},
-		],
+		] as Column<IColumns>[],
 		[],
 	);
 

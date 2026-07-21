@@ -124,7 +124,7 @@ const ReservedTable = (props: {
 					);
 				},
 			},
-		],
+		] as Column<IColumns>[],
 		[],
 	);
 

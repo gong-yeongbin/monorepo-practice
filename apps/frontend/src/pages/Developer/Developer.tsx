@@ -37,17 +37,17 @@ const Developer = observer(() => {
 
 	useEffect(() => {
 		Amplify.configure({
-			aws_cognito_region: process.env.REACT_APP_REGION,
+			aws_cognito_region: import.meta.env.VITE_REGION,
 			Auth: {
-				region: process.env.REACT_APP_REGION,
+				region: import.meta.env.VITE_REGION,
 				userPoolId:
 					listType === 'advertiser'
-						? process.env.REACT_APP_USER_POOL_ID_ADVERTISER
-						: process.env.REACT_APP_USER_POOL_ID_PARTNER,
+						? import.meta.env.VITE_USER_POOL_ID_ADVERTISER
+						: import.meta.env.VITE_USER_POOL_ID_PARTNER,
 				userPoolWebClientId:
 					listType === 'advertiser'
-						? process.env.REACT_APP_USER_POOL_CLIENT_ID_ADVERTISER
-						: process.env.REACT_APP_USER_POOL_CLIENT_ID_PARTNER,
+						? import.meta.env.VITE_USER_POOL_CLIENT_ID_ADVERTISER
+						: import.meta.env.VITE_USER_POOL_CLIENT_ID_PARTNER,
 			},
 		});
 	}, [listType]);

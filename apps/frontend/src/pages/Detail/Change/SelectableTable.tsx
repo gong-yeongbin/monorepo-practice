@@ -5,7 +5,6 @@ import {
 	useFlexLayout,
 	Column,
 	useRowSelect,
-	TableInstance,
 	useMountedLayoutEffect,
 } from 'react-table';
 import { Button, Skeleton, Table as EmptyTable } from 'antd';
@@ -125,7 +124,7 @@ const SelectableTable = (props: {
 						Header: ({ getToggleAllRowsSelectedProps }) => (
 							<IndeterminateCheckbox {...getToggleAllRowsSelectedProps({ title: undefined })} />
 						),
-						Cell: (props: TableInstance) => {
+						Cell: (props: any) => {
 							const { row } = props;
 							return (
 								<IndeterminateCheckbox {...row.getToggleRowSelectedProps({ title: undefined })} />

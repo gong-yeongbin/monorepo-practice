@@ -1,6 +1,6 @@
 import { rest } from 'msw';
 
-const baseURL = process.env.REACT_APP_API_URL;
+const baseURL = import.meta.env.VITE_API_URL;
 
 export const handlers = [
 	rest.post(`${baseURL}/login`, (req, res, ctx) => {
