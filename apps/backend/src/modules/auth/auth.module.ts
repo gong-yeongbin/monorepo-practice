@@ -4,12 +4,12 @@ import { CacheModule } from '@infra/cache/cache.module';
 import { MailModule } from '@infra/mail/mail.module';
 import { UserModule } from '@user/user.module';
 import { AuthController } from '@auth/presentation/auth.controller';
-import { RequestSignupUseCase } from '@auth/application/request-signup.use-case';
-import { VerifySignupUseCase } from '@auth/application/verify-signup.use-case';
+import { SignupUseCase } from '@auth/application/signup.use-case';
+import { VerifyUseCase } from '@auth/application/verify.use-case';
 
 @Module({
 	imports: [CacheModule, MailModule, UserModule],
 	controllers: [AuthController],
-	providers: [RequestSignupUseCase, VerifySignupUseCase],
+	providers: [SignupUseCase, VerifyUseCase],
 })
 export class AuthModule {}

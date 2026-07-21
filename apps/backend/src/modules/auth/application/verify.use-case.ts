@@ -5,7 +5,7 @@ import { CACHE_PORT, CachePort } from '@infra/cache/cache.port';
 import { PendingSignup, pendingSignupKey } from '@auth/application/pending-signup.constants';
 
 @Injectable()
-export class VerifySignupUseCase {
+export class VerifyUseCase {
 	constructor(
 		@Inject(USER_REPOSITORY) private readonly userRepository: UserRepository,
 		@Inject(CACHE_PORT) private readonly cache: CachePort

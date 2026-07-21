@@ -1,14 +1,14 @@
 // 코드 검증 통과 시에만 대기 정보의 해시로 가입되는지(중복 409·코드 오류 400 포함)를 검증
 import { Test } from '@nestjs/testing';
 import { BadRequestException, ConflictException } from '@nestjs/common';
-import { VerifySignupUseCase } from './verify-signup.use-case';
+import { VerifyUseCase } from './verify.use-case';
 import { USER_REPOSITORY } from '@user/domain/user.repository';
 import { CACHE_PORT } from '@infra/cache/cache.port';
 
-describe('VerifySignupUseCase', () => {
+describe('VerifyUseCase', () => {
 	const userRepository = { findByEmail: jest.fn(), create: jest.fn() };
 	const cache = { get: jest.fn(), set: jest.fn(), del: jest.fn() };
-	let useCase: VerifySignupUseCase;
+	let useCase: VerifyUseCase;
 
 	const pending = JSON.stringify({ password: 'hashed-password', code: '123456' });
 
@@ -16,10 +16,10 @@ describe('VerifySignupUseCase', () => {
 		jest.clearAllMocks();
 
 		const module = await Test.createTestingModule({
-			providers: [VerifySignupUseCase, { provide: USER_REPOSITORY, useValue: userRepository }, { provide: CACHE_PORT, useValue: cache }],
+			providers: [VerifyUseCase, { provide: USER_REPOSITORY, useValue: userRepository }, { provide: CACHE_PORT, useValue: cache }],
 		}).compile();
 
-		useCase = module.get(VerifySignupUseCase);
+		useCase = module.get(VerifyUseCase);
 	});
 
 	it('코드가 일치하면 대기 정보의 해시로 user를 생성하고 대기 정보를 삭제한다', async () => {

@@ -1,7 +1,7 @@
 // POST /auth/signup/verify 요청 body — 이메일과 메일로 받은 6자리 인증 코드
 import { IsEmail, IsNotEmpty, Matches } from 'class-validator';
 
-export class VerifySignupDto {
+export class VerifyDto {
 	@IsNotEmpty()
 	@IsEmail()
 	email: string;

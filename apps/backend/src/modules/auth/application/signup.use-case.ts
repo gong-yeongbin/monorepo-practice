@@ -10,7 +10,7 @@ import { PENDING_SIGNUP_TTL, PendingSignup, pendingSignupKey } from '@auth/appli
 const BCRYPT_SALT_ROUNDS = 10;
 
 @Injectable()
-export class RequestSignupUseCase {
+export class SignupUseCase {
 	constructor(
 		@Inject(USER_REPOSITORY) private readonly userRepository: UserRepository,
 		@Inject(CACHE_PORT) private readonly cache: CachePort,

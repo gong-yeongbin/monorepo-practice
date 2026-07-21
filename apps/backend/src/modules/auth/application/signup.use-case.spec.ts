@@ -2,7 +2,7 @@
 import { Test } from '@nestjs/testing';
 import { ConflictException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { RequestSignupUseCase } from './request-signup.use-case';
+import { SignupUseCase } from './signup.use-case';
 import { PendingSignup } from './pending-signup.constants';
 import { USER_REPOSITORY } from '@user/domain/user.repository';
 import { CACHE_PORT } from '@infra/cache/cache.port';
@@ -10,11 +10,11 @@ import { MAIL_PORT } from '@infra/mail/mail.port';
 
 jest.mock('bcrypt', () => ({ hash: jest.fn() }));
 
-describe('RequestSignupUseCase', () => {
+describe('SignupUseCase', () => {
 	const userRepository = { findByEmail: jest.fn() };
 	const cache = { get: jest.fn(), set: jest.fn(), del: jest.fn() };
 	const mail = { send: jest.fn() };
-	let useCase: RequestSignupUseCase;
+	let useCase: SignupUseCase;
 
 	const savedPending = (): PendingSignup => JSON.parse((cache.set as jest.Mock).mock.calls[0][1] as string) as PendingSignup;
 
@@ -24,14 +24,14 @@ describe('RequestSignupUseCase', () => {
 
 		const module = await Test.createTestingModule({
 			providers: [
-				RequestSignupUseCase,
+				SignupUseCase,
 				{ provide: USER_REPOSITORY, useValue: userRepository },
 				{ provide: CACHE_PORT, useValue: cache },
 				{ provide: MAIL_PORT, useValue: mail },
 			],
 		}).compile();
 
-		useCase = module.get(RequestSignupUseCase);
+		useCase = module.get(SignupUseCase);
 	});
 
 	it('비밀번호 해시와 6자리 코드를 가입 대기 정보로 10분 TTL 저장한다', async () => {
