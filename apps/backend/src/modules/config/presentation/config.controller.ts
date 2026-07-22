@@ -1,6 +1,6 @@
 // campaign 이벤트 매핑(config) 조회·교체를 처리하는 컨트롤러
 import { Body, Controller, Get, Param, ParseArrayPipe, Patch, UseInterceptors } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ListConfigUseCase } from '@config/application/list-config.use-case';
 import { ReplaceConfigUseCase } from '@config/application/replace-config.use-case';
 import { CampaignIdDto } from '@config/application/dto/campaign-id.dto';
@@ -18,6 +18,8 @@ export class ConfigController {
 
 	@Get(':campaignId')
 	@ApiOperation({ summary: 'campaign 이벤트 매핑 목록 조회' })
+	@ApiResponse({ status: 200, description: '조회 성공' })
+	@ApiResponse({ status: 400, description: '요청 값 검증 실패' })
 	async list(@Param() param: CampaignIdDto) {
 		return this.listConfigUseCase.execute(param.campaignId);
 	}
@@ -25,6 +27,9 @@ export class ConfigController {
 	@Patch(':campaignId')
 	@ApiOperation({ summary: 'campaign 이벤트 매핑 전체 교체' })
 	@ApiBody({ type: [ReplaceConfigDto] })
+	@ApiResponse({ status: 200, description: '교체 성공' })
+	@ApiResponse({ status: 400, description: '요청 값 검증 실패' })
+	@ApiResponse({ status: 404, description: 'campaign 없음' })
 	async replace(@Param() param: CampaignIdDto, @Body(new ParseArrayPipe({ items: ReplaceConfigDto })) body: ReplaceConfigDto[]): Promise<void> {
 		await this.replaceConfigUseCase.execute(param.campaignId, body);
 	}
