@@ -11,6 +11,8 @@ import { UpdateAdvertisingDto } from '@advertising/application/dto/update-advert
 import { ListAdvertisingDto } from '@advertising/application/dto/list-advertising.dto';
 import { AdvertisingIdDto } from '@advertising/application/dto/advertising-id.dto';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
+import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
+import { AdvertisingInfoResponse, AdvertisingListItemResponse, AdvertisingResponse } from '@advertising/presentation/dto/advertising.response.dto';
 
 @ApiTags('advertising')
 @Controller('advertising')
@@ -27,7 +29,7 @@ export class AdvertisingController {
 	// admin 원본은 @Put이었으나 REST 표준대로 POST로 이관한다.
 	@Post()
 	@ApiOperation({ summary: 'advertising 생성' })
-	@ApiResponse({ status: 201, description: '생성 성공' })
+	@ApiWrappedResponse({ status: 201, description: '생성 성공', type: AdvertisingResponse })
 	@ApiResponse({ status: 400, description: '요청 값 검증 실패' })
 	@ApiResponse({ status: 404, description: 'tracker 또는 advertiser 없음' })
 	@ApiResponse({ status: 409, description: '이미 존재하는 advertising 이름' })
@@ -37,7 +39,7 @@ export class AdvertisingController {
 
 	@Get()
 	@ApiOperation({ summary: 'advertising 목록 조회 (search·offset·limit)' })
-	@ApiResponse({ status: 200, description: '조회 성공' })
+	@ApiWrappedResponse({ status: 200, description: '조회 성공', type: AdvertisingListItemResponse, isArray: true })
 	@ApiResponse({ status: 400, description: '요청 값 검증 실패' })
 	async list(@Query() query: ListAdvertisingDto) {
 		return this.listAdvertisingUseCase.execute(query);
@@ -45,7 +47,7 @@ export class AdvertisingController {
 
 	@Get(':id')
 	@ApiOperation({ summary: 'advertising 단건 조회' })
-	@ApiResponse({ status: 200, description: '조회 성공' })
+	@ApiWrappedResponse({ status: 200, description: '조회 성공', type: AdvertisingInfoResponse })
 	@ApiResponse({ status: 404, description: 'advertising 없음' })
 	async get(@Param() param: AdvertisingIdDto) {
 		return this.getAdvertisingUseCase.execute(param.id);
@@ -53,7 +55,7 @@ export class AdvertisingController {
 
 	@Put(':id')
 	@ApiOperation({ summary: 'advertising 수정 (전체 교체)' })
-	@ApiResponse({ status: 200, description: '수정 성공' })
+	@ApiWrappedResponse({ status: 200, description: '수정 성공', type: AdvertisingResponse })
 	@ApiResponse({ status: 400, description: '요청 값 검증 실패' })
 	@ApiResponse({ status: 404, description: 'advertising·tracker·advertiser 중 하나 없음' })
 	@ApiResponse({ status: 409, description: '이미 존재하는 advertising 이름' })
@@ -63,7 +65,7 @@ export class AdvertisingController {
 
 	@Delete(':id')
 	@ApiOperation({ summary: 'advertising 삭제' })
-	@ApiResponse({ status: 200, description: '삭제 성공' })
+	@ApiWrappedResponse({ status: 200, description: '삭제 성공' })
 	@ApiResponse({ status: 404, description: 'advertising 없음' })
 	@ApiResponse({ status: 409, description: 'campaign에서 참조 중이라 삭제 불가' })
 	async delete(@Param() param: AdvertisingIdDto): Promise<void> {

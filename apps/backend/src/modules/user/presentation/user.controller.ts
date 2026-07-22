@@ -8,6 +8,8 @@ import { GetUserUseCase } from '@user/application/get-user.use-case';
 import { UpdateUserUseCase } from '@user/application/update-user.use-case';
 import { DeleteUserUseCase } from '@user/application/delete-user.use-case';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
+import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
+import { UserResponse } from '@user/presentation/dto/user.response.dto';
 
 @ApiTags('user')
 @Controller('user')
@@ -22,14 +24,14 @@ export class UserController {
 
 	@Get()
 	@ApiOperation({ summary: 'user 목록 조회' })
-	@ApiResponse({ status: 200, description: '조회 성공' })
+	@ApiWrappedResponse({ status: 200, description: '조회 성공', type: UserResponse, isArray: true })
 	async list() {
 		return this.listUserUseCase.execute();
 	}
 
 	@Get(':id')
 	@ApiOperation({ summary: 'user 단건 조회' })
-	@ApiResponse({ status: 200, description: '조회 성공' })
+	@ApiWrappedResponse({ status: 200, description: '조회 성공', type: UserResponse })
 	@ApiResponse({ status: 404, description: 'user 없음' })
 	async get(@Param() param: UserIdDto) {
 		return this.getUserUseCase.execute(param.id);
@@ -37,7 +39,7 @@ export class UserController {
 
 	@Patch(':id')
 	@ApiOperation({ summary: 'user 수정 (role·approved 부분 수정)' })
-	@ApiResponse({ status: 200, description: '수정 성공' })
+	@ApiWrappedResponse({ status: 200, description: '수정 성공', type: UserResponse })
 	@ApiResponse({ status: 400, description: '요청 값 검증 실패' })
 	@ApiResponse({ status: 404, description: 'user 없음' })
 	async update(@Param() param: UserIdDto, @Body() body: UpdateUserDto) {
@@ -46,7 +48,7 @@ export class UserController {
 
 	@Delete(':id')
 	@ApiOperation({ summary: 'user 삭제' })
-	@ApiResponse({ status: 200, description: '삭제 성공' })
+	@ApiWrappedResponse({ status: 200, description: '삭제 성공' })
 	@ApiResponse({ status: 404, description: 'user 없음' })
 	async delete(@Param() param: UserIdDto): Promise<void> {
 		await this.deleteUserUseCase.execute(param.id);

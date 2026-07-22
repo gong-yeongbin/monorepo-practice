@@ -10,6 +10,8 @@ import { CreateMediaDto } from '@media/application/dto/create-media.dto';
 import { UpdateMediaDto } from '@media/application/dto/update-media.dto';
 import { MediaIdDto } from '@media/application/dto/media-id.dto';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
+import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
+import { MediaListItemResponse, MediaResponse } from '@media/presentation/dto/media.response.dto';
 
 @ApiTags('media')
 @Controller('media')
@@ -25,14 +27,14 @@ export class MediaController {
 
 	@Get()
 	@ApiOperation({ summary: 'media 목록 조회' })
-	@ApiResponse({ status: 200, description: '조회 성공' })
+	@ApiWrappedResponse({ status: 200, description: '조회 성공', type: MediaListItemResponse, isArray: true })
 	async list() {
 		return this.listMediaUseCase.execute();
 	}
 
 	@Get(':id')
 	@ApiOperation({ summary: 'media 단건 조회' })
-	@ApiResponse({ status: 200, description: '조회 성공' })
+	@ApiWrappedResponse({ status: 200, description: '조회 성공', type: MediaResponse })
 	@ApiResponse({ status: 404, description: 'media 없음' })
 	async get(@Param() param: MediaIdDto) {
 		return this.getMediaUseCase.execute(param.id);
@@ -40,7 +42,7 @@ export class MediaController {
 
 	@Post()
 	@ApiOperation({ summary: 'media 생성' })
-	@ApiResponse({ status: 201, description: '생성 성공' })
+	@ApiWrappedResponse({ status: 201, description: '생성 성공', type: MediaResponse })
 	@ApiResponse({ status: 400, description: '요청 값 검증 실패' })
 	@ApiResponse({ status: 409, description: '이미 존재하는 media 이름' })
 	async create(@Body() body: CreateMediaDto) {
@@ -49,7 +51,7 @@ export class MediaController {
 
 	@Patch(':id')
 	@ApiOperation({ summary: 'media 수정 (전체 교체)' })
-	@ApiResponse({ status: 200, description: '수정 성공' })
+	@ApiWrappedResponse({ status: 200, description: '수정 성공', type: MediaResponse })
 	@ApiResponse({ status: 400, description: '요청 값 검증 실패' })
 	@ApiResponse({ status: 404, description: 'media 없음' })
 	@ApiResponse({ status: 409, description: '이미 존재하는 media 이름' })
@@ -59,7 +61,7 @@ export class MediaController {
 
 	@Delete(':id')
 	@ApiOperation({ summary: 'media 삭제' })
-	@ApiResponse({ status: 200, description: '삭제 성공' })
+	@ApiWrappedResponse({ status: 200, description: '삭제 성공' })
 	@ApiResponse({ status: 404, description: 'media 없음' })
 	@ApiResponse({ status: 409, description: 'campaign에서 참조 중이라 삭제 불가' })
 	async delete(@Param() param: MediaIdDto): Promise<void> {

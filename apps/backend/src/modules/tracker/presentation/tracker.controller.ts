@@ -10,6 +10,8 @@ import { CreateTrackerDto } from '@tracker/application/dto/create-tracker.dto';
 import { UpdateTrackerDto } from '@tracker/application/dto/update-tracker.dto';
 import { TrackerIdDto } from '@tracker/application/dto/tracker-id.dto';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
+import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
+import { TrackerResponse } from '@tracker/presentation/dto/tracker.response.dto';
 
 @ApiTags('tracker')
 @Controller('tracker')
@@ -25,14 +27,14 @@ export class TrackerController {
 
 	@Get()
 	@ApiOperation({ summary: 'tracker 목록 조회' })
-	@ApiResponse({ status: 200, description: '조회 성공' })
+	@ApiWrappedResponse({ status: 200, description: '조회 성공', type: TrackerResponse, isArray: true })
 	async list() {
 		return this.listTrackerUseCase.execute();
 	}
 
 	@Get(':id')
 	@ApiOperation({ summary: 'tracker 단건 조회' })
-	@ApiResponse({ status: 200, description: '조회 성공' })
+	@ApiWrappedResponse({ status: 200, description: '조회 성공', type: TrackerResponse })
 	@ApiResponse({ status: 404, description: 'tracker 없음' })
 	async get(@Param() param: TrackerIdDto) {
 		return this.getTrackerUseCase.execute(param.id);
@@ -40,7 +42,7 @@ export class TrackerController {
 
 	@Post()
 	@ApiOperation({ summary: 'tracker 생성' })
-	@ApiResponse({ status: 201, description: '생성 성공' })
+	@ApiWrappedResponse({ status: 201, description: '생성 성공', type: TrackerResponse })
 	@ApiResponse({ status: 400, description: '요청 값 검증 실패' })
 	@ApiResponse({ status: 409, description: '이미 존재하는 tracker 이름' })
 	async create(@Body() body: CreateTrackerDto) {
@@ -49,7 +51,7 @@ export class TrackerController {
 
 	@Patch(':id')
 	@ApiOperation({ summary: 'tracker 수정 (전체 교체)' })
-	@ApiResponse({ status: 200, description: '수정 성공' })
+	@ApiWrappedResponse({ status: 200, description: '수정 성공', type: TrackerResponse })
 	@ApiResponse({ status: 400, description: '요청 값 검증 실패' })
 	@ApiResponse({ status: 404, description: 'tracker 없음' })
 	@ApiResponse({ status: 409, description: '이미 존재하는 tracker 이름' })
@@ -59,7 +61,7 @@ export class TrackerController {
 
 	@Delete(':id')
 	@ApiOperation({ summary: 'tracker 삭제' })
-	@ApiResponse({ status: 200, description: '삭제 성공' })
+	@ApiWrappedResponse({ status: 200, description: '삭제 성공' })
 	@ApiResponse({ status: 404, description: 'tracker 없음' })
 	@ApiResponse({ status: 409, description: 'advertising에서 참조 중이라 삭제 불가' })
 	async delete(@Param() param: TrackerIdDto): Promise<void> {

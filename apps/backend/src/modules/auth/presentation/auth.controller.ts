@@ -10,6 +10,8 @@ import { SigninResult, SigninUseCase } from '@auth/application/signin.use-case';
 import { SignupUseCase } from '@auth/application/signup.use-case';
 import { VerifyUseCase } from '@auth/application/verify.use-case';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
+import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
+import { RefreshResponse, SigninResponse } from '@auth/presentation/dto/auth.response.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -26,7 +28,7 @@ export class AuthController {
 	@Post('signup')
 	@HttpCode(200)
 	@ApiOperation({ summary: '가입 1단계 — 인증 코드 발송' })
-	@ApiResponse({ status: 200, description: '인증 코드 발송 성공' })
+	@ApiWrappedResponse({ status: 200, description: '인증 코드 발송 성공' })
 	@ApiResponse({ status: 400, description: '요청 값 검증 실패' })
 	@ApiResponse({ status: 409, description: '이미 가입된 email' })
 	async signup(@Body() body: SignupDto): Promise<void> {
@@ -36,7 +38,7 @@ export class AuthController {
 	// 가입 2단계 — 메일로 받은 코드 검증을 통과하면 user가 생성된다
 	@Post('signup/verify')
 	@ApiOperation({ summary: '가입 2단계 — 인증 코드 검증 후 user 생성' })
-	@ApiResponse({ status: 201, description: '검증 통과, user 생성' })
+	@ApiWrappedResponse({ status: 201, description: '검증 통과, user 생성' })
 	@ApiResponse({ status: 400, description: '요청 값 검증 실패 또는 인증 코드 불일치·만료' })
 	@ApiResponse({ status: 409, description: '이미 가입된 email' })
 	async verify(@Body() body: VerifyDto): Promise<void> {
@@ -47,7 +49,7 @@ export class AuthController {
 	@Post('signin')
 	@HttpCode(200)
 	@ApiOperation({ summary: '로그인 — access·refresh token 발급' })
-	@ApiResponse({ status: 200, description: '로그인 성공, access·refresh token 반환' })
+	@ApiWrappedResponse({ status: 200, description: '로그인 성공, access·refresh token 반환', type: SigninResponse })
 	@ApiResponse({ status: 400, description: '요청 값 검증 실패' })
 	@ApiResponse({ status: 401, description: 'email 없음 또는 비밀번호 불일치' })
 	@ApiResponse({ status: 403, description: '미승인 계정' })
@@ -59,7 +61,7 @@ export class AuthController {
 	@Post('refresh')
 	@HttpCode(200)
 	@ApiOperation({ summary: 'refresh token으로 access token 재발급' })
-	@ApiResponse({ status: 200, description: '재발급 성공' })
+	@ApiWrappedResponse({ status: 200, description: '재발급 성공', type: RefreshResponse })
 	@ApiResponse({ status: 400, description: '요청 값 검증 실패' })
 	@ApiResponse({ status: 401, description: 'refresh token 무효·만료' })
 	@ApiResponse({ status: 403, description: '미승인 계정' })
