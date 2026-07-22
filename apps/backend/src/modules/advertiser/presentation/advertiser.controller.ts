@@ -1,5 +1,6 @@
 // advertiser CRUD를 처리하는 컨트롤러
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseInterceptors } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ListAdvertiserUseCase } from '@advertiser/application/list-advertiser.use-case';
 import { GetAdvertiserUseCase } from '@advertiser/application/get-advertiser.use-case';
 import { CreateAdvertiserUseCase } from '@advertiser/application/create-advertiser.use-case';
@@ -9,6 +10,7 @@ import { CreateAdvertiserDto } from '@advertiser/application/dto/create-advertis
 import { AdvertiserIdDto } from '@advertiser/application/dto/advertiser-id.dto';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 
+@ApiTags('advertiser')
 @Controller('advertiser')
 @UseInterceptors(ResponseInterceptor)
 export class AdvertiserController {
@@ -21,27 +23,32 @@ export class AdvertiserController {
 	) {}
 
 	@Get()
+	@ApiOperation({ summary: 'advertiser 목록 조회' })
 	async list() {
 		return this.listAdvertiserUseCase.execute();
 	}
 
 	@Get(':id')
+	@ApiOperation({ summary: 'advertiser 단건 조회' })
 	async get(@Param() param: AdvertiserIdDto) {
 		return this.getAdvertiserUseCase.execute(param.id);
 	}
 
 	// admin 원본은 @Put + @Query였으나(주석에 Put->Post 의도 명시) REST 표준대로 POST + body로 이관한다.
 	@Post()
+	@ApiOperation({ summary: 'advertiser 생성' })
 	async create(@Body() body: CreateAdvertiserDto) {
 		return this.createAdvertiserUseCase.execute(body);
 	}
 
 	@Patch(':id')
+	@ApiOperation({ summary: 'advertiser 수정' })
 	async update(@Param() param: AdvertiserIdDto, @Body() body: CreateAdvertiserDto) {
 		return this.updateAdvertiserUseCase.execute(param.id, body);
 	}
 
 	@Delete(':id')
+	@ApiOperation({ summary: 'advertiser 삭제' })
 	async delete(@Param() param: AdvertiserIdDto): Promise<void> {
 		await this.deleteAdvertiserUseCase.execute(param.id);
 	}
