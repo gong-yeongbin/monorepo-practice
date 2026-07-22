@@ -1,0 +1,14 @@
+### 대시보드 — 특정 일자 집계
+GET {{host}}/dashboard?date=2026-07-22
+
+### 일별 통계 — 날짜 범위 (token 생략 시 전체 합산)
+GET {{host}}/dashboard/daily?start_date=2026-07-01&end_date=2026-07-22
+
+### 일별 통계 — 특정 campaign token 기준
+GET {{host}}/dashboard/daily?start_date=2026-07-01&end_date=2026-07-22&token=CAMPAIGN_TOKEN
+
+### 상세 통계 — advertising 단위, media_id 필터 선택
+GET {{host}}/dashboard/detail/1?start_date=2026-07-01&end_date=2026-07-22
+
+### 상세 통계 — media_id 필터 포함
+GET {{host}}/dashboard/detail/1?start_date=2026-07-01&end_date=2026-07-22&media_id=1

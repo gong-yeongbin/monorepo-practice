@@ -1,0 +1,3 @@
+### 트래킹 클릭 — 트래커 URL로 302 리다이렉트
+# token·click_id 필수, pub_id·sub_id·adid·idfa·uuid 선택
+GET {{host}}/tracking?token=CAMPAIGN_TOKEN&click_id=click-0001&pub_id=pub-1&sub_id=sub-1&adid=38400000-8cf0-11bd-b23e-10b96e40000d

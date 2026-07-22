@@ -1,0 +1,39 @@
+### 가입 1단계 — 인증 코드 발송 (user는 아직 생성되지 않음, 200 반환)
+POST {{host}}/auth/signup
+Content-Type: application/json
+
+{
+	"email": "test@example.com",
+	"password": "password1234"
+}
+
+### 가입 2단계 — 메일로 받은 6자리 코드 검증 (통과 시 user 생성)
+POST {{host}}/auth/signup/verify
+Content-Type: application/json
+
+{
+	"email": "test@example.com",
+	"code": "123456"
+}
+
+### 로그인 — access·refresh token 발급 (전역 변수에 저장)
+POST {{host}}/auth/signin
+Content-Type: application/json
+
+{
+	"email": "test@example.com",
+	"password": "password1234"
+}
+
+> {%
+	client.global.set("access_token", response.body.data.access_token);
+	client.global.set("refresh_token", response.body.data.refresh_token);
+%}
+
+### access token 재발급
+POST {{host}}/auth/refresh
+Content-Type: application/json
+
+{
+	"refresh_token": "{{refresh_token}}"
+}

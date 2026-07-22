@@ -1,0 +1,24 @@
+### advertiser 목록 조회
+GET {{host}}/advertiser
+
+### advertiser 단건 조회
+GET {{host}}/advertiser/1
+
+### advertiser 생성
+POST {{host}}/advertiser
+Content-Type: application/json
+
+{
+	"name": "테스트 광고주"
+}
+
+### advertiser 수정
+PATCH {{host}}/advertiser/1
+Content-Type: application/json
+
+{
+	"name": "수정된 광고주"
+}
+
+### advertiser 삭제
+DELETE {{host}}/advertiser/1

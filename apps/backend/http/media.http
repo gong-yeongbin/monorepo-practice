@@ -1,0 +1,28 @@
+### media 목록 조회
+GET {{host}}/media
+
+### media 단건 조회
+GET {{host}}/media/1
+
+### media 생성
+POST {{host}}/media
+Content-Type: application/json
+
+{
+	"name": "테스트 매체",
+	"install_postback_url": "https://media.example.com/install?click_id={click_id}",
+	"event_postback_url": "https://media.example.com/event?click_id={click_id}&event={event}"
+}
+
+### media 수정 — 전체 교체 방식 (3개 필드 모두 필요)
+PATCH {{host}}/media/1
+Content-Type: application/json
+
+{
+	"name": "수정된 매체",
+	"install_postback_url": "https://media.example.com/install2?click_id={click_id}",
+	"event_postback_url": "https://media.example.com/event2?click_id={click_id}&event={event}"
+}
+
+### media 삭제
+DELETE {{host}}/media/1

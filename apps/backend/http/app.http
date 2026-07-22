@@ -1,0 +1,2 @@
+### 헬스체크
+GET {{host}}/health

@@ -1,0 +1,5 @@
+### partner 통계 조회 — advertiser 기준 집계 (type 생략)
+GET {{host}}/partner/1
+
+### partner 통계 조회 — media 기준 집계
+GET {{host}}/partner/1?type=media

@@ -1,0 +1,15 @@
+### 트래커 install 포스트백 — :name은 appsflyer | airbridge | adjust | adbrix-remaster
+# 아래는 appsflyer 파라미터 예시 (트래커별로 쿼리 키가 다름)
+GET {{host}}/appsflyer/install?clickid=click-0001&af_siteid=site-1&af_c_id=CAMPAIGN_TOKEN&advertising_id=38400000-8cf0-11bd-b23e-10b96e40000d&device_ip=1.2.3.4&country_code=KR&click_time=2026-07-22T10:00:00Z&install_time=2026-07-22T10:05:00Z
+
+### 트래커 event 포스트백 (appsflyer 예시)
+GET {{host}}/appsflyer/event?clickid=click-0001&af_siteid=site-1&af_c_id=CAMPAIGN_TOKEN&advertising_id=38400000-8cf0-11bd-b23e-10b96e40000d&device_ip=1.2.3.4&country_code=KR&install_time=2026-07-22T10:05:00Z&event_time=2026-07-22T11:00:00Z&event_name=af_purchase&event_revenue=1000&event_revenue_currency=KRW
+
+### adjust install 포스트백 예시
+GET {{host}}/adjust/install?clickid=click-0002&af_siteid=site-1&af_c_id=CAMPAIGN_TOKEN
+
+### airbridge install 포스트백 예시
+GET {{host}}/airbridge/install?clickid=click-0003&af_siteid=site-1&af_c_id=CAMPAIGN_TOKEN
+
+### adbrix-remaster install 포스트백 예시
+GET {{host}}/adbrix-remaster/install?clickid=click-0004&af_siteid=site-1&af_c_id=CAMPAIGN_TOKEN

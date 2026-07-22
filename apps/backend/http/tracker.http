@@ -1,0 +1,30 @@
+### tracker 목록 조회
+GET {{host}}/tracker
+
+### tracker 단건 조회
+GET {{host}}/tracker/1
+
+### tracker 생성
+POST {{host}}/tracker
+Content-Type: application/json
+
+{
+	"name": "appsflyer",
+	"tracking_url": "https://app.appsflyer.com/com.example.app",
+	"install_postback_url": "https://backend.example.com/appsflyer/install",
+	"event_postback_url": "https://backend.example.com/appsflyer/event"
+}
+
+### tracker 수정 — 전체 교체 방식 (4개 필드 모두 필요)
+PATCH {{host}}/tracker/1
+Content-Type: application/json
+
+{
+	"name": "adjust",
+	"tracking_url": "https://app.adjust.com/abc123",
+	"install_postback_url": "https://backend.example.com/adjust/install",
+	"event_postback_url": "https://backend.example.com/adjust/event"
+}
+
+### tracker 삭제
+DELETE {{host}}/tracker/1

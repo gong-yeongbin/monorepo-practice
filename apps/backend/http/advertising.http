@@ -1,0 +1,30 @@
+### advertising 목록 조회 — search·offset·limit 모두 선택 (기본 offset=0, limit=20)
+GET {{host}}/advertising?search=&offset=0&limit=20
+
+### advertising 단건 조회
+GET {{host}}/advertising/1
+
+### advertising 생성 — image는 URL 직접 입력 (선택)
+POST {{host}}/advertising
+Content-Type: application/json
+
+{
+	"name": "테스트 광고",
+	"advertiser_id": 1,
+	"tracker_id": 1,
+	"image": "https://example.com/image.png"
+}
+
+### advertising 수정 — 전체 교체 방식 (create와 동일 필드 모두 필요)
+PUT {{host}}/advertising/1
+Content-Type: application/json
+
+{
+	"name": "수정된 광고",
+	"advertiser_id": 1,
+	"tracker_id": 1,
+	"image": "https://example.com/image2.png"
+}
+
+### advertising 삭제
+DELETE {{host}}/advertising/1

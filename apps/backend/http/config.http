@@ -1,0 +1,21 @@
+### campaign 이벤트 매핑(config) 목록 조회
+GET {{host}}/config/1
+
+### campaign 이벤트 매핑 전체 교체 — body는 배열
+PATCH {{host}}/config/1
+Content-Type: application/json
+
+[
+	{
+		"tracker_event_name": "af_purchase",
+		"admin_event_name": "purchase",
+		"media_event_name": "purchase",
+		"send_media": true
+	},
+	{
+		"tracker_event_name": "af_login",
+		"admin_event_name": "login",
+		"media_event_name": "login",
+		"send_media": false
+	}
+]
