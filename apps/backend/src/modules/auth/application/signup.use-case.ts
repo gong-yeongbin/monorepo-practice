@@ -7,6 +7,7 @@ import { ensureEmailNotRegistered } from '@auth/application/ensure-email-not-reg
 import { CACHE_PORT, CachePort } from '@infra/cache/cache.port';
 import { MAIL_PORT, MailPort } from '@infra/mail/mail.port';
 import { PENDING_SIGNUP_TTL, PendingSignup, pendingSignupKey } from '@auth/application/pending-signup.constants';
+import { buildVerificationEmail } from '@auth/application/verification-email.template';
 
 const BCRYPT_SALT_ROUNDS = 10;
 
@@ -26,6 +27,7 @@ export class SignupUseCase {
 		const pending: PendingSignup = { password: hashed, code };
 
 		await this.cache.set(pendingSignupKey(email), JSON.stringify(pending), PENDING_SIGNUP_TTL);
-		await this.mail.send(email, '이메일 인증 코드', `인증 코드: ${code} (10분 안에 입력해주세요)`);
+		const { subject, text, html } = buildVerificationEmail(code);
+		await this.mail.send(email, subject, text, html);
 	}
 }

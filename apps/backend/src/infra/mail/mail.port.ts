@@ -2,5 +2,5 @@
 export const MAIL_PORT = Symbol('MAIL_PORT');
 
 export interface MailPort {
-	send(to: string, subject: string, body: string): Promise<void>;
+	send(to: string, subject: string, body: string, html?: string): Promise<void>;
 }

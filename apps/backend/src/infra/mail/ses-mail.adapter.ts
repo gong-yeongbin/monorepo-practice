@@ -12,14 +12,17 @@ export class SesMailAdapter implements MailPort {
 		private readonly configService: ConfigService
 	) {}
 
-	async send(to: string, subject: string, body: string): Promise<void> {
+	async send(to: string, subject: string, body: string, html?: string): Promise<void> {
 		await this.ses.send(
 			new SendEmailCommand({
 				Source: this.configService.get<string>('SES_FROM_EMAIL'),
 				Destination: { ToAddresses: [to] },
 				Message: {
 					Subject: { Data: subject, Charset: 'UTF-8' },
-					Body: { Text: { Data: body, Charset: 'UTF-8' } },
+					Body: {
+						Text: { Data: body, Charset: 'UTF-8' },
+						...(html ? { Html: { Data: html, Charset: 'UTF-8' } } : {}),
+					},
 				},
 			})
 		);

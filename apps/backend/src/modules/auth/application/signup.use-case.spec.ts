@@ -44,12 +44,12 @@ describe('SignupUseCase', () => {
 		expect(savedPending()).toEqual({ password: 'hashed-password', code: expect.stringMatching(/^\d{6}$/) as string });
 	});
 
-	it('저장한 코드와 같은 코드를 메일 본문에 담아 발송한다', async () => {
+	it('저장한 코드와 같은 코드를 텍스트·HTML 본문에 담아 발송한다', async () => {
 		userRepository.findByEmail.mockResolvedValue(null);
 
 		await useCase.execute('new@example.com', 'password123');
 
-		expect(mail.send).toHaveBeenCalledWith('new@example.com', expect.any(String), expect.stringContaining(savedPending().code));
+		expect(mail.send).toHaveBeenCalledWith('new@example.com', expect.any(String), expect.stringContaining(savedPending().code), expect.stringContaining(savedPending().code));
 	});
 
 	it('이미 가입된 email이면 ConflictException을 던지고 저장·발송하지 않는다', async () => {
