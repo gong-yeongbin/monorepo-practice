@@ -1,4 +1,36 @@
 {
+	"hooks": {
+		"PostToolUse": [
+			{
+				"matcher": "Write|Edit",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/backend-endpoint-reminder.sh",
+						"timeout": 10
+					},
+					{
+						"type": "command",
+						"command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/backend-lint.sh",
+						"timeout": 60,
+						"statusMessage": "backend ESLint 검사 중..."
+					}
+				]
+			}
+		],
+		"Stop": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/backend-verify.sh",
+						"timeout": 600,
+						"statusMessage": "backend 테스트·타입 검증 중..."
+					}
+				]
+			}
+		]
+	},
 	"permissions": {
 		"allow": [
 			"Bash(git status *)",
