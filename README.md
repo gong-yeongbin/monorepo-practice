@@ -392,12 +392,17 @@ pnpm migrate
 # 마이그레이션 적용
 pnpm deploy
 
-# 데이터베이스 초기화 (주의: 데이터 삭제)
+# 데이터베이스 초기화 (주의: 데이터 삭제, 초기화 후 seed 자동 실행)
 pnpm reset
+
+# 로컬 테스트 데이터 생성 (재실행해도 안전)
+pnpm seed
 
 # Prisma Studio (DB GUI)
 npx prisma studio
 ```
+
+`pnpm seed`는 로그인 가능한 계정(`admin@test.com` / `test1234!`)과 광고주·트래커·매체·광고·캠페인, 최근 7일치 대시보드 통계를 생성합니다. SES 인증 코드 수신이 어려운 로컬 환경에서 이 계정으로 바로 로그인할 수 있습니다.
 
 스키마는 `apps/backend/prisma/schema.prisma`에 있고, datasource URL은 `prisma.config.ts`가 `DATABASE_URL`에서 주입합니다.
 

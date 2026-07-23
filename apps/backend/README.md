@@ -146,10 +146,13 @@ PORT=3001
 pnpm migrate     # 마이그레이션 생성 (--create-only)
 pnpm deploy      # 마이그레이션 적용
 pnpm generate    # 클라이언트 생성
-pnpm reset       # DB 초기화
+pnpm reset       # DB 초기화 (초기화 후 seed 자동 실행)
+pnpm seed        # 로컬 테스트 데이터 생성 (prisma/seed.ts, 재실행해도 안전)
 ```
 
 스키마는 `prisma/schema.prisma`에 있고, datasource URL은 `prisma.config.ts`가 `DATABASE_URL`에서 주입합니다.
+
+seed는 로그인 가능한 유저(`admin@test.com` / `test1234!`, 승인 완료 상태)와 광고주→트래커→매체→광고→캠페인→캠페인 config 그래프, 최근 7일치 daily_report 통계를 생성합니다. SES 이메일 인증 없이 바로 로그인해 어드민 화면과 대시보드를 확인할 수 있습니다.
 
 ## 테스트
 

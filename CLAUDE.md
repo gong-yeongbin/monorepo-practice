@@ -11,7 +11,7 @@ pnpm@9 + Turborepo 모노레포. 광고 관리 플랫폼(광고주/캠페인/매
 - `pnpm build` / `pnpm lint` / `pnpm check-types` / `pnpm test`
 - `pnpm docker:up` / `pnpm docker:down` — MySQL + Redis 컨테이너
 
-Prisma는 `apps/backend`에서 실행: `pnpm migrate`(--create-only), `pnpm deploy`, `pnpm generate`, `pnpm reset`.
+Prisma는 `apps/backend`에서 실행: `pnpm migrate`(--create-only), `pnpm deploy`, `pnpm generate`, `pnpm reset`, `pnpm seed`(로컬 테스트 데이터, `reset` 시 자동 실행).
 
 backend(NestJS) 테스트는 Jest: `pnpm test`, `pnpm test:e2e`(`./test/jest-e2e.json`). 단일 테스트는 `pnpm test -- -t "테스트명"`.
 

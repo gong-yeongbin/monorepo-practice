@@ -7,9 +7,10 @@
 - `pnpm migrate` — `prisma migrate dev --create-only`. **SQL만 생성하고 적용은 하지 않는다.** 생성된 migration.sql을 검토한 뒤 `pnpm deploy`로 적용한다.
 - `pnpm deploy` — `prisma migrate deploy`. 미적용 마이그레이션을 순서대로 적용.
 - `pnpm generate` — Prisma Client 재생성. **스키마를 바꾸면 반드시 실행**해야 타입이 맞는다(빌드/타입체크 전 필수).
-- `pnpm reset` — DB 초기화. **데이터가 삭제되므로** 로컬에서만.
+- `pnpm reset` — DB 초기화. **데이터가 삭제되므로** 로컬에서만. 초기화 후 seed가 자동 실행된다.
+- `pnpm seed` — `seed.ts` 실행(로컬 테스트 데이터 생성). upsert 기반이라 재실행해도 안전. 로그인 가능한 유저(`admin@test.com` / `test1234!`, `approved: true`)와 advertiser→tracker→media→advertising→campaign→campaign_config 그래프, daily_report 7일치를 만든다.
 
-**이 Prisma 명령어(`migrate`/`deploy`/`generate`/`reset`)는 에이전트가 직접 실행하지 않고 사용자가 직접 실행한다.** 실제 DB에 연결·변경을 가하고 `.env`의 `DATABASE_URL`에 의존하기 때문이다. 에이전트는 `schema.prisma` 수정과 마이그레이션 `migration.sql`을 손으로 작성하는 데까지만 하고, 적용(`deploy` 등)은 사용자에게 명령어를 안내한다. 사용자가 세션에서 직접 돌리려면 `!` 접두사로 실행하면 된다(예: `! pnpm deploy`).
+**이 Prisma 명령어(`migrate`/`deploy`/`generate`/`reset`/`seed`)는 에이전트가 직접 실행하지 않고 사용자가 직접 실행한다.** 실제 DB에 연결·변경을 가하고 `.env`의 `DATABASE_URL`에 의존하기 때문이다. 에이전트는 `schema.prisma` 수정과 마이그레이션 `migration.sql`을 손으로 작성하는 데까지만 하고, 적용(`deploy` 등)은 사용자에게 명령어를 안내한다. 사용자가 세션에서 직접 돌리려면 `!` 접두사로 실행하면 된다(예: `! pnpm deploy`).
 
 ## datasource url은 schema가 아니라 config/service에서 주입 (주의)
 

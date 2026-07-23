@@ -17,6 +17,7 @@
     "deploy": "prisma migrate deploy",
     "generate": "prisma generate",
     "reset": "prisma migrate reset",
+    "seed": "prisma db seed",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
