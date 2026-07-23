@@ -4,15 +4,24 @@ import { SignupUseCase } from '@auth/application/signup.use-case';
 import { VerifyUseCase } from '@auth/application/verify.use-case';
 import { SigninUseCase } from '@auth/application/signin.use-case';
 import { RefreshUseCase } from '@auth/application/refresh.use-case';
+import { CheckEmailAvailabilityUseCase } from '@auth/application/check-email-availability.use-case';
 
 describe('AuthController', () => {
 	const signupUseCase = { execute: jest.fn() } as unknown as SignupUseCase;
 	const verifyUseCase = { execute: jest.fn() } as unknown as VerifyUseCase;
 	const signinUseCase = { execute: jest.fn() } as unknown as SigninUseCase;
 	const refreshUseCase = { execute: jest.fn() } as unknown as RefreshUseCase;
-	const controller = new AuthController(signupUseCase, verifyUseCase, signinUseCase, refreshUseCase);
+	const checkEmailAvailabilityUseCase = { execute: jest.fn() } as unknown as CheckEmailAvailabilityUseCase;
+	const controller = new AuthController(signupUseCase, verifyUseCase, signinUseCase, refreshUseCase, checkEmailAvailabilityUseCase);
 
 	beforeEach(() => jest.clearAllMocks());
+
+	it('emailAvailability는 조회 use-case에 email을 위임하고 결과를 반환한다', async () => {
+		(checkEmailAvailabilityUseCase.execute as jest.Mock).mockResolvedValue({ available: true });
+
+		expect(await controller.emailAvailability({ email: 'new@example.com' })).toEqual({ available: true });
+		expect(checkEmailAvailabilityUseCase.execute).toHaveBeenCalledWith('new@example.com');
+	});
 
 	it('signup은 신청 use-case에 email·password를 위임한다', async () => {
 		await controller.signup({ email: 'new@example.com', password: 'password123' });

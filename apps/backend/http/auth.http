@@ -1,3 +1,6 @@
+### 가입 전 이메일 사용 가능 여부 조회 (available true/false)
+GET {{host}}/auth/email-availability?email=test@example.com
+
 ### 가입 1단계 — 인증 코드 발송 (user는 아직 생성되지 않음, 200 반환)
 POST {{host}}/auth/signup
 Content-Type: application/json

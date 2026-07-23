@@ -1,17 +1,19 @@
 // 회원가입(2단계 이메일 인증)·로그인·토큰 재발급을 처리하는 컨트롤러
-import { Body, Controller, HttpCode, Post, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, Query, UseInterceptors } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { EmailAvailabilityDto } from '@auth/application/dto/email-availability.dto';
 import { RefreshDto } from '@auth/application/dto/refresh.dto';
 import { SigninDto } from '@auth/application/dto/signin.dto';
 import { SignupDto } from '@auth/application/dto/signup.dto';
 import { VerifyDto } from '@auth/application/dto/verify.dto';
+import { CheckEmailAvailabilityUseCase, EmailAvailabilityResult } from '@auth/application/check-email-availability.use-case';
 import { RefreshResult, RefreshUseCase } from '@auth/application/refresh.use-case';
 import { SigninResult, SigninUseCase } from '@auth/application/signin.use-case';
 import { SignupUseCase } from '@auth/application/signup.use-case';
 import { VerifyUseCase } from '@auth/application/verify.use-case';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
-import { RefreshResponse, SigninResponse } from '@auth/presentation/dto/auth.response.dto';
+import { EmailAvailabilityResponse, RefreshResponse, SigninResponse } from '@auth/presentation/dto/auth.response.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -21,8 +23,18 @@ export class AuthController {
 		private readonly signupUseCase: SignupUseCase,
 		private readonly verifyUseCase: VerifyUseCase,
 		private readonly signinUseCase: SigninUseCase,
-		private readonly refreshUseCase: RefreshUseCase
+		private readonly refreshUseCase: RefreshUseCase,
+		private readonly checkEmailAvailabilityUseCase: CheckEmailAvailabilityUseCase
 	) {}
+
+	// 가입 전 이메일 사용 가능 여부 조회 — 클라이언트 사전 확인용이며 최종 방어는 signup·verify의 중복 검사가 담당한다
+	@Get('email-availability')
+	@ApiOperation({ summary: '가입 전 이메일 사용 가능 여부 조회' })
+	@ApiWrappedResponse({ status: 200, description: '조회 성공', type: EmailAvailabilityResponse })
+	@ApiResponse({ status: 400, description: '요청 값 검증 실패' })
+	async emailAvailability(@Query() query: EmailAvailabilityDto): Promise<EmailAvailabilityResult> {
+		return this.checkEmailAvailabilityUseCase.execute(query.email);
+	}
 
 	// 가입 1단계 — email·password를 받아 인증 코드를 발송한다. 이 시점에는 user가 생성되지 않으므로 201 대신 200을 반환한다
 	@Post('signup')
