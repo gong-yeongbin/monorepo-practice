@@ -14,8 +14,8 @@ import { ResponseInterceptor } from '@interceptors/response.interceptor';
 import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
 import { CampaignListItemResponse, CampaignResponse } from '@campaign/presentation/dto/campaign.response.dto';
 
-@ApiTags('campaign')
-@Controller('campaign')
+@ApiTags('campaigns')
+@Controller('campaigns')
 @UseInterceptors(ResponseInterceptor)
 export class CampaignController {
 	constructor(

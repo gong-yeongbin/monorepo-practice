@@ -62,7 +62,7 @@ const Events = () => {
 
 	const handleSubmit = async () => {
 		try {
-			await axiosInstance.patch(`/campaign/${paramCampaignIdx}/event`, newEvents);
+			await axiosInstance.patch(`/campaigns/${paramCampaignIdx}/event`, newEvents);
 			queryClient.invalidateQueries({ queryKey: ['campaignEvents'] });
 			setEditMode(false);
 			message.success('변경 사항을 저장했습니다.');

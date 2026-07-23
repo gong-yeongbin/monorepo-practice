@@ -4,7 +4,7 @@ MSW(Mock Service Worker) 목 API. **개발 모드에서 항상 켜진다** — `
 
 ## 파일
 
-- `handlers.ts` — 목 응답 정의. `VITE_API_URL` 기준으로 backend 엔드포인트를 가로챈다. 현재 목킹하는 경로 — `POST /login`, `GET /advertising/dashboard`, `/profile`, `/advertising/list`, `/advertising`, `/advertising/:id`, `/campaign/:id`, `/advertising/campaign/:id`, `/campaign/:id/event`.
+- `handlers.ts` — 목 응답 정의. `VITE_API_URL` 기준으로 backend 엔드포인트를 가로챈다. 현재 목킹하는 경로 — `POST /login`, `GET /advertising/dashboard`, `/profile`, `/advertising/list`, `/advertising`, `/advertising/:id`, `/campaigns/:id`, `/advertising/campaign/:id`, `/campaigns/:id/event`.
 - `browser.ts` — `setupWorker(...handlers)`로 워커 생성. `app/index.tsx`가 이 `worker`를 start 한다.
 - 워커 스크립트(`mockServiceWorker.js`)는 `public/`에 있다(`package.json`의 `msw.workerDirectory: "public"`).
 

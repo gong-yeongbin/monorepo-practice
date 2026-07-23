@@ -1,11 +1,11 @@
 ### tracker 목록 조회
-GET {{host}}/tracker
+GET {{host}}/trackers
 
 ### tracker 단건 조회
-GET {{host}}/tracker/1
+GET {{host}}/trackers/1
 
 ### tracker 생성
-POST {{host}}/tracker
+POST {{host}}/trackers
 Content-Type: application/json
 
 {
@@ -16,7 +16,7 @@ Content-Type: application/json
 }
 
 ### tracker 수정 — 전체 교체 방식 (4개 필드 모두 필요)
-PATCH {{host}}/tracker/1
+PATCH {{host}}/trackers/1
 Content-Type: application/json
 
 {
@@ -27,4 +27,4 @@ Content-Type: application/json
 }
 
 ### tracker 삭제
-DELETE {{host}}/tracker/1
+DELETE {{host}}/trackers/1

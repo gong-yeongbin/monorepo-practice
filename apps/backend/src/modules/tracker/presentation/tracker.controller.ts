@@ -13,8 +13,8 @@ import { ResponseInterceptor } from '@interceptors/response.interceptor';
 import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
 import { TrackerResponse } from '@tracker/presentation/dto/tracker.response.dto';
 
-@ApiTags('tracker')
-@Controller('tracker')
+@ApiTags('trackers')
+@Controller('trackers')
 @UseInterceptors(ResponseInterceptor)
 export class TrackerController {
 	constructor(

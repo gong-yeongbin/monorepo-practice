@@ -43,12 +43,12 @@ const getMedia = async () => {
 };
 
 const getTrackers = async () => {
-	const res = await axiosInstance.get(`/tracker`);
+	const res = await axiosInstance.get(`/trackers`);
 	return res.data;
 };
 
 const getAdvertisers = async () => {
-	const res = await axiosInstance.get(`/advertiser`);
+	const res = await axiosInstance.get(`/advertisers`);
 	return res.data.data;
 };
 
@@ -115,7 +115,8 @@ const getAdvertising = async (obj: {
 };
 
 const getDeveloperList = async (listType: string) => {
-	const res = await axiosInstance.get(`/${listType}`);
+	// listType은 Radio 값('advertiser' | 'media') — advertiser만 복수형 API 경로로 매핑
+	const res = await axiosInstance.get(listType === 'advertiser' ? `/advertisers` : `/${listType}`);
 	return res.data.data;
 };
 
@@ -125,7 +126,7 @@ const getCampaigns = async (paramId?: string) => {
 };
 
 const getCampaignEvents = async (campaignIdx?: string) => {
-	const res = await axiosInstance.get(`/campaign/${campaignIdx}/event`);
+	const res = await axiosInstance.get(`/campaigns/${campaignIdx}/event`);
 	return res.data.data;
 };
 

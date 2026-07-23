@@ -104,7 +104,7 @@ const InfoCard = observer(() => {
 	};
 
 	const getSecondInfo = async () => {
-		const res = await axiosInstance.get(`/campaign/${paramCampaignIdx}`);
+		const res = await axiosInstance.get(`/campaigns/${paramCampaignIdx}`);
 		return res.data.data;
 	};
 

@@ -129,7 +129,7 @@ const CampaignForm = observer(
 			type: string;
 		}) => {
 			try {
-				await axiosInstance.put(`/campaign`, formValues);
+				await axiosInstance.put(`/campaigns`, formValues);
 				handleReset();
 				setDrawerVisible(false);
 				queryClient.invalidateQueries({ queryKey: ['campaignList'] });

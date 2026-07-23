@@ -1,12 +1,12 @@
 ### campaign 목록 조회 — advertisingId 필터 필수
-GET {{host}}/campaign?advertisingId=1
+GET {{host}}/campaigns?advertisingId=1
 
 ### campaign 단건 조회
-GET {{host}}/campaign/1
+GET {{host}}/campaigns/1
 
 ### campaign 생성
 # type: CPI | CPA
-POST {{host}}/campaign
+POST {{host}}/campaigns
 Content-Type: application/json
 
 {
@@ -17,7 +17,7 @@ Content-Type: application/json
 }
 
 ### campaign 수정 — name·type·media_id·is_active 부분 수정 (advertising_id 불변)
-PATCH {{host}}/campaign/1
+PATCH {{host}}/campaigns/1
 Content-Type: application/json
 
 {
@@ -28,4 +28,4 @@ Content-Type: application/json
 }
 
 ### campaign 삭제
-DELETE {{host}}/campaign/1
+DELETE {{host}}/campaigns/1

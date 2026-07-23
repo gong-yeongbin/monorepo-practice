@@ -7,8 +7,8 @@ import { ResponseInterceptor } from '@interceptors/response.interceptor';
 import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
 import { PartnerStatsResponse } from '@partner/presentation/dto/partner.response.dto';
 
-@ApiTags('partner')
-@Controller('partner')
+@ApiTags('partners')
+@Controller('partners')
 @UseInterceptors(ResponseInterceptor)
 export class PartnerController {
 	constructor(private readonly partnerStatsUseCase: PartnerStatsUseCase) {}

@@ -33,7 +33,7 @@ const CampaignsTable = (props: { data: Array<CampaignColumns> }) => {
 	const confirmBlock = async (idx: string) => {
 		updateData(idx, 'campaignBlock');
 		try {
-			await axiosInstance.patch(`/campaign/${idx}/block`);
+			await axiosInstance.patch(`/campaigns/${idx}/block`);
 		} catch (error) {
 			handleError();
 		}
@@ -42,7 +42,7 @@ const CampaignsTable = (props: { data: Array<CampaignColumns> }) => {
 	const confirmChange = async (idx: string) => {
 		updateData(idx, 'campaignStatus');
 		try {
-			await axiosInstance.patch(`/campaign/${idx}`);
+			await axiosInstance.patch(`/campaigns/${idx}`);
 		} catch (error) {
 			handleError();
 		}

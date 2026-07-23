@@ -87,7 +87,7 @@ const Developer = observer(() => {
 				options: { userAttributes: { name: id } },
 			});
 			if (cognitoUserId) {
-				await axiosInstance.post(`/user`, formValues);
+				await axiosInstance.post(`/users`, formValues);
 				message.success('계정이 생성되었습니다.');
 				form.resetFields();
 			}

@@ -116,14 +116,14 @@ PORT=3001
 
 | 리소스 | 라우트 |
 |---|---|
-| user | GET `/user`, GET `/user/:id`, PATCH `/user/:id`, DELETE `/user/:id` |
-| advertiser | GET, POST `/advertiser`, GET, PATCH, DELETE `/advertiser/:id` |
+| user | GET `/users`, GET `/users/:id`, PATCH `/users/:id`, DELETE `/users/:id` |
+| advertiser | GET, POST `/advertisers`, GET, PATCH, DELETE `/advertisers/:id` |
 | advertising | GET, POST `/advertising`, GET, PUT, DELETE `/advertising/:id` |
 | media | GET, POST `/media`, GET, PATCH, DELETE `/media/:id` |
-| tracker | GET, POST `/tracker`, GET, PATCH, DELETE `/tracker/:id` |
-| campaign | GET, POST `/campaign`, GET, PATCH, DELETE `/campaign/:id` |
+| tracker | GET, POST `/trackers`, GET, PATCH, DELETE `/trackers/:id` |
+| campaign | GET, POST `/campaigns`, GET, PATCH, DELETE `/campaigns/:id` |
 | config | GET, PATCH `/config/:campaignId` |
-| partner | GET `/partner/:id` |
+| partner | GET `/partners/:id` |
 | dashboard | GET `/dashboard`, `/dashboard/daily`(token 생략 시 전체 합산), `/dashboard/detail/:id` |
 
 ### 기타

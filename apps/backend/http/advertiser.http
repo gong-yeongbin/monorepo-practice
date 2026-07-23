@@ -1,11 +1,11 @@
 ### advertiser 목록 조회
-GET {{host}}/advertiser
+GET {{host}}/advertisers
 
 ### advertiser 단건 조회
-GET {{host}}/advertiser/1
+GET {{host}}/advertisers/1
 
 ### advertiser 생성
-POST {{host}}/advertiser
+POST {{host}}/advertisers
 Content-Type: application/json
 
 {
@@ -13,7 +13,7 @@ Content-Type: application/json
 }
 
 ### advertiser 수정
-PATCH {{host}}/advertiser/1
+PATCH {{host}}/advertisers/1
 Content-Type: application/json
 
 {
@@ -21,4 +21,4 @@ Content-Type: application/json
 }
 
 ### advertiser 삭제
-DELETE {{host}}/advertiser/1
+DELETE {{host}}/advertisers/1

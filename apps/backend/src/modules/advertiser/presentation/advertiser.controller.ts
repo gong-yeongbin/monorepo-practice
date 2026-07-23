@@ -12,8 +12,8 @@ import { ResponseInterceptor } from '@interceptors/response.interceptor';
 import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
 import { AdvertiserResponse } from '@advertiser/presentation/dto/advertiser.response.dto';
 
-@ApiTags('advertiser')
-@Controller('advertiser')
+@ApiTags('advertisers')
+@Controller('advertisers')
 @UseInterceptors(ResponseInterceptor)
 export class AdvertiserController {
 	constructor(

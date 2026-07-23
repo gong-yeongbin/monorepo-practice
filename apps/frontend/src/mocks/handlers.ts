@@ -149,7 +149,7 @@ export const handlers = [
 	}),
 
 	// InfoCard (Second)
-	http.get(`${baseURL}/campaign/:id`, () => {
+	http.get(`${baseURL}/campaigns/:id`, () => {
 		return HttpResponse.json({
 			data: {
 				idx: '333',
@@ -207,7 +207,7 @@ export const handlers = [
 	}),
 
 	// Campaign Events
-	http.get(`${baseURL}/campaign/:id/event`, () => {
+	http.get(`${baseURL}/campaigns/:id/event`, () => {
 		return HttpResponse.json({
 			data: [
 				{

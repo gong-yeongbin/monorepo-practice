@@ -11,8 +11,8 @@ import { ResponseInterceptor } from '@interceptors/response.interceptor';
 import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
 import { UserResponse } from '@user/presentation/dto/user.response.dto';
 
-@ApiTags('user')
-@Controller('user')
+@ApiTags('users')
+@Controller('users')
 @UseInterceptors(ResponseInterceptor)
 export class UserController {
 	constructor(
