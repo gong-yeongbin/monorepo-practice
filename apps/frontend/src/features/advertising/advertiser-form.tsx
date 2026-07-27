@@ -39,8 +39,6 @@ const AdvertiserForm = observer(
 
 		const [form] = Form.useForm();
 
-		const formData = new FormData();
-
 		const queryClient = useQueryClient();
 
 		useEffect(() => {
@@ -66,25 +64,25 @@ const AdvertiserForm = observer(
 		const validateForm = () => {
 			setDisabledSubmit(true);
 			const values = form.getFieldsValue();
-			const { image, platform, advertisingName, trackerIdx, advertiserIdx } = values;
-			if (image && platform && advertisingName && trackerIdx && advertiserIdx) {
+			// 이미지 파일 업로드 endpoint가 backend에 없어 이미지는 필수값에서 제외한다
+			const { platform, advertisingName, trackerIdx, advertiserIdx } = values;
+			if (platform && advertisingName && trackerIdx && advertiserIdx) {
 				setDisabledSubmit(false);
 			}
 		};
 
 		const handleFormValues = () => {
-			const { image, platform, advertisingName, trackerIdx, advertiserIdx } = form.getFieldsValue();
-			formData.append('image', image.fileList[0].originFileObj);
-			formData.append('platform', platform);
-			formData.append('advertisingName', `${advertisingName} (${platform})`);
-			formData.append('trackerIdx', trackerIdx);
-			formData.append('advertiserIdx', advertiserIdx);
-			handleSubmit();
+			const { platform, advertisingName, trackerIdx, advertiserIdx } = form.getFieldsValue();
+			handleSubmit({
+				name: `${advertisingName} (${platform})`,
+				advertiser_id: Number(advertiserIdx),
+				tracker_id: Number(trackerIdx),
+			});
 		};
 
-		const handleSubmit = async () => {
+		const handleSubmit = async (body: { name: string; advertiser_id: number; tracker_id: number }) => {
 			try {
-				await axiosInstance.put(`/advertising`, formData);
+				await axiosInstance.post(`/advertising`, body);
 				handleReset();
 				setDrawerVisible(false);
 				queryClient.invalidateQueries({ queryKey: ['advertising'] });

@@ -26,7 +26,7 @@ const NewAdvertiserForm = (props: {
 		e.preventDefault();
 		const name = form.getFieldValue('newAdvertiser');
 		try {
-			await axiosInstance.put(`/advertisers?name=${name}`);
+			await axiosInstance.post(`/advertisers`, { name });
 			queryClient.invalidateQueries({ queryKey: ['advertisers'] });
 			form.resetFields();
 			setNewVisible(false);

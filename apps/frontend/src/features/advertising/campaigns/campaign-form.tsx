@@ -5,6 +5,7 @@ import { Select, Input, Drawer, Form, Col, Row, Popconfirm, Button, Radio, messa
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { axiosInstance } from '@/shared/api/axios';
+import { api } from '@/shared/api/api';
 import { useStore } from '@/app/store';
 import { TextContent, URL, UrlWrapper } from '@/features/advertising/advertising.styles';
 import { ButtonWrapper } from '@/features/detail/change/change.styles';
@@ -80,9 +81,9 @@ const CampaignForm = observer(
 
 		const getMedia = async () => {
 			try {
-				const res = await axiosInstance.get(`/media`);
-				setMedia(res.data.data);
-				setFilteredMedia(res.data.data);
+				const rows = await api.getMedia();
+				setMedia(rows);
+				setFilteredMedia(rows);
 			} catch (error) {
 				sessionStorage.clear();
 				navigate('/login');
@@ -101,35 +102,32 @@ const CampaignForm = observer(
 		const handleFormChange = () => {
 			setDisabledSubmit(true);
 			const values = form.getFieldsValue();
-			const { mediaIdx, campaignName, type, trackerTrackingUrl, appkey } = values;
-			if (mediaIdx && campaignName && type && trackerTrackingUrl && appkey) {
+			// appkey·trackerTrackingUrl은 backend 생성 DTO에 없어 필수값에서 제외한다
+			const { mediaIdx, campaignName, type } = values;
+			if (mediaIdx && campaignName && type) {
 				setDisabledSubmit(false);
 			}
 		};
 
 		const handleFormValues = () => {
 			const formValues = form.getFieldsValue();
-			const { appkey, mediaIdx, campaignName, trackerTrackingUrl, type } = formValues;
+			const { mediaIdx, campaignName, type } = formValues;
 			handleSubmit({
-				advertisingIdx: paramId as string,
-				appkey,
-				mediaIdx,
-				campaignName,
-				trackerTrackingUrl,
+				name: campaignName,
 				type,
+				advertising_id: Number(paramId),
+				media_id: Number(mediaIdx),
 			});
 		};
 
-		const handleSubmit = async (formValues: {
-			advertisingIdx: string;
-			appkey: string;
-			mediaIdx: string;
-			campaignName: string;
-			trackerTrackingUrl: string;
+		const handleSubmit = async (body: {
+			name: string;
 			type: string;
+			advertising_id: number;
+			media_id: number;
 		}) => {
 			try {
-				await axiosInstance.put(`/campaigns`, formValues);
+				await axiosInstance.post(`/campaigns`, body);
 				handleReset();
 				setDrawerVisible(false);
 				queryClient.invalidateQueries({ queryKey: ['campaignList'] });
@@ -245,11 +243,7 @@ const CampaignForm = observer(
 
 					<Row gutter={16}>
 						<Col span={24}>
-							<Form.Item
-								name="trackerTrackingUrl"
-								label="트래커 트래킹 URL"
-								rules={[{ required: true, message: '입력해주세요.' }]}
-							>
+							<Form.Item name="trackerTrackingUrl" label="트래커 트래킹 URL (저장 미지원)">
 								<Input ref={trackingUrlRef} allowClear />
 							</Form.Item>
 						</Col>
@@ -257,11 +251,7 @@ const CampaignForm = observer(
 
 					<Row gutter={16}>
 						<Col span={24}>
-							<Form.Item
-								name="appkey"
-								label="앱 키"
-								rules={[{ required: true, message: '입력해주세요.' }]}
-							>
+							<Form.Item name="appkey" label="앱 키 (저장 미지원)">
 								<Input placeholder="트래커 트래킹 URL의 app key를 입력해주세요" allowClear />
 							</Form.Item>
 							{urlWithAppKey !== 'noAppKey' && (

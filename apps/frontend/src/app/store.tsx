@@ -30,7 +30,7 @@ class Store {
 	}
 
 	setInfo(
-		data = {
+		data: Info = {
 			advertiser: '',
 			tracker: '',
 			advertising: '',

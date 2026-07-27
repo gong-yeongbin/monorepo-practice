@@ -8,6 +8,7 @@ import { Container, FormContainer, Title } from '@/features/login/login.styles';
 import logo from '@/images/logo.png';
 
 const maxLength = 20;
+const emailMaxLength = 50;
 
 const Login = observer(() => {
 	const [loading, setLoading] = useState(false);
@@ -21,15 +22,17 @@ const Login = observer(() => {
 		}
 	}, []);
 
-	const onLogin = async (data: { id: string; password: string }) => {
+	const onLogin = async (data: { email: string; password: string }) => {
 		try {
 			setLoading(true);
-			const response = await axios.post(`${import.meta.env.VITE_API_URL}/login`, data);
+			const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/signin`, data);
 			setAccessToken(response);
 		} catch (error: unknown) {
 			setLoading(false);
 			if (error instanceof Error && error.message.includes('401')) {
-				message.error('아이디와 비밀번호를 확인해주세요.');
+				message.error('이메일과 비밀번호를 확인해주세요.');
+			} else if (error instanceof Error && error.message.includes('403')) {
+				message.error('관리자 승인 대기 중인 계정입니다.');
 			} else {
 				message.error('잠시 후 다시 시도해주세요.');
 			}
@@ -38,11 +41,10 @@ const Login = observer(() => {
 
 	const setAccessToken = (response: {
 		data: {
-			data: { accessToken: string };
-			_meta: { id: string; password: string };
+			data: { access_token: string; refresh_token: string };
 		};
 	}) => {
-		const { accessToken } = response.data.data;
+		const accessToken = response.data.data.access_token;
 		sessionStorage.setItem('accessToken', accessToken);
 		if (accessToken !== '') {
 			navigate('/', { replace: true });
@@ -55,12 +57,18 @@ const Login = observer(() => {
 				<Avatar size="large" src={logo} />
 				<Title>Mecross Pro</Title>
 				<Form onFinish={onLogin} method="POST" id="login-form">
-					<Form.Item name="id" rules={[{ required: true, message: 'ID를 입력해주세요.' }]}>
+					<Form.Item
+						name="email"
+						rules={[
+							{ required: true, message: '이메일을 입력해주세요.' },
+							{ type: 'email', message: '올바른 이메일 형식이 아닙니다.' },
+						]}
+					>
 						<Input
 							bordered={false}
 							prefix={<UserOutlined />}
-							placeholder="ID"
-							maxLength={maxLength}
+							placeholder="Email"
+							maxLength={emailMaxLength}
 						/>
 					</Form.Item>
 

@@ -83,7 +83,9 @@ const status = (info: any) => {
 };
 
 const createdAt = (info: any) => {
-	return info.row.original.createdAt.slice(2, 10);
+	// backend 응답에 생성일이 없는 화면(detail)은 빈 값이 온다
+	const value = info.row.original.createdAt;
+	return value ? value.slice(2, 10) : '-';
 };
 
 export const getCell = {

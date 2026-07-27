@@ -22,6 +22,7 @@ import {
 } from '@/shared/ui/info-card/info-card.styles';
 import { useStore } from '@/app/store';
 import { axiosInstance } from '@/shared/api/axios';
+import { mapAdvertisingInfo, mapCampaignInfo } from '@/shared/api/api';
 import { DefaultImg } from '@/app/global-styles';
 import { DetailColumns } from '@/features/detail/detail-table';
 import { CampaignColumns } from '@/features/advertising/campaigns/campaigns-table';
@@ -99,13 +100,14 @@ const InfoCard = observer(() => {
 
 	const getAdInfo = async () => {
 		const res = await axiosInstance.get(`/advertising/${paramId}`);
-		store.setInfo(res.data.data);
-		return res.data.data;
+		const mapped = mapAdvertisingInfo(res.data.data);
+		store.setInfo(mapped);
+		return mapped;
 	};
 
 	const getSecondInfo = async () => {
 		const res = await axiosInstance.get(`/campaigns/${paramCampaignIdx}`);
-		return res.data.data;
+		return mapCampaignInfo(res.data.data);
 	};
 
 	const { isFetching, data: adInfo, error: adInfoError } = useQuery({
@@ -374,15 +376,15 @@ const InfoCard = observer(() => {
 								<>
 									<li>
 										<Label>캠페인</Label>
-										<span> | {secondInfo.name}</span>
+										<span> | {secondInfo?.name}</span>
 									</li>
 									<li>
 										<Label>TYPE</Label>
-										<span> | {secondInfo.type}</span>
+										<span> | {secondInfo?.type}</span>
 									</li>
 									<li>
 										<Label>상태</Label>
-										<span> | {secondInfo.status === 1 ? '진행 중' : '-'}</span>
+										<span> | {secondInfo?.status === 1 ? '진행 중' : '-'}</span>
 									</li>
 									<li>
 										<Label style={{ marginRight: '0.5rem' }}>트래커 트래킹 URL</Label>
@@ -393,7 +395,7 @@ const InfoCard = observer(() => {
 											onCancel={handleCancel}
 											visible={trackerUrlVisible}
 										>
-											<p>{secondInfo.trackerTrackingUrl}</p>
+											<p>{secondInfo?.trackerTrackingUrl}</p>
 										</Modal>
 										<Button
 											icon={<SearchOutlined />}
@@ -402,7 +404,7 @@ const InfoCard = observer(() => {
 											style={{ marginRight: '0.5rem' }}
 											onClick={() => setTrackerUrlVisible(true)}
 										/>
-										<CopyToClipboard text={secondInfo.trackerTrackingUrl} onCopy={showCopySuccess}>
+										<CopyToClipboard text={secondInfo?.trackerTrackingUrl ?? ''} onCopy={showCopySuccess}>
 											<Button
 												icon={<CopyOutlined />}
 												shape="circle"
@@ -420,7 +422,7 @@ const InfoCard = observer(() => {
 											onCancel={handleCancel}
 											visible={mecrossUrlVisible}
 										>
-											<p>{secondInfo.mecrossTrackingUrl}</p>
+											<p>{secondInfo?.mecrossTrackingUrl}</p>
 										</Modal>
 										<Button
 											icon={<SearchOutlined />}
@@ -429,7 +431,7 @@ const InfoCard = observer(() => {
 											style={{ marginRight: '0.5rem' }}
 											onClick={() => setMecrossUrlVisible(true)}
 										/>
-										<CopyToClipboard text={secondInfo.mecrossTrackingUrl} onCopy={showCopySuccess}>
+										<CopyToClipboard text={secondInfo?.mecrossTrackingUrl ?? ''} onCopy={showCopySuccess}>
 											<Button
 												icon={<CopyOutlined />}
 												shape="circle"

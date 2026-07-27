@@ -46,7 +46,7 @@
 
 ## 주의 (함정)
 
-- **개발 모드에서 MSW가 항상 켜진다.** `index.tsx`가 `import.meta.env.DEV`일 때 `worker.start()`를 호출해, `pnpm dev`로 띄우면 API 요청을 **실제 backend가 아니라 `src/mocks/handlers.ts`의 목이 가로챈다.** 로컬 backend에 직접 붙이려면 이 조건을 끄거나 우회해야 한다.
-- **`.env`가 없어 `VITE_API_URL`이 undefined다.** dev에선 MSW가 가로채므로 문제가 안 드러나지만, 실제 backend 연동 시 `.env`에 `VITE_API_URL`을 넣어야 axios baseURL과 요청 경로가 맞는다.
+- **개발 모드에서 MSW는 backend에 없는 엔드포인트만 목킹한다.** `index.tsx`가 `worker.start({ onUnhandledRequest: 'bypass' })`로 워커를 켜고, 핸들러에 없는 요청은 실제 backend(3001)로 통과한다. 목 대상 목록은 `src/mocks/CLAUDE.md` 참고.
+- **`.env`에 `VITE_API_URL=http://localhost:3001`이 필요하다** (`.env.example` 참고, gitignore됨). 없으면 axios baseURL이 undefined가 되어 실제 backend 호출과 MSW 매칭이 모두 어긋난다.
 - `vite.config.ts` 상단 주석("React 17, 포트 3000")은 낡았다. 실제는 React 19이며 포트 3000만 맞다.
 - react-query v5는 `useQuery`별 `onError`가 없다. 공통 에러 처리는 `app.tsx`의 `QueryCache.onError` 전역 핸들러로 한다.

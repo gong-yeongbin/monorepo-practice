@@ -18,7 +18,7 @@ import {
 	PaddingContainer,
 	TableContainer,
 } from '@/app/global-styles';
-import { api } from '@/shared/api/api';
+import { api, mapEventsToConfigPayload } from '@/shared/api/api';
 
 const Events = () => {
 	const [editMode, setEditMode] = useState(false);
@@ -62,7 +62,7 @@ const Events = () => {
 
 	const handleSubmit = async () => {
 		try {
-			await axiosInstance.patch(`/campaigns/${paramCampaignIdx}/event`, newEvents);
+			await axiosInstance.patch(`/config/${paramCampaignIdx}`, mapEventsToConfigPayload(newEvents));
 			queryClient.invalidateQueries({ queryKey: ['campaignEvents'] });
 			setEditMode(false);
 			message.success('변경 사항을 저장했습니다.');

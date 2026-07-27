@@ -7,6 +7,9 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 
+	// 로컬 frontend(3000)에서의 브라우저 호출 허용
+	app.enableCors({ origin: 'http://localhost:3000' });
+
 	const configService = app.get<ConfigService>(ConfigService);
 	const port = configService.get<number>('PORT');
 

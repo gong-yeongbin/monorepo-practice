@@ -60,4 +60,8 @@ describe('getCell.createdAt', () => {
 			'22-06-10',
 		);
 	});
+
+	it('생성일이 없으면(빈 값) - 를 반환한다', () => {
+		expect(getCell.createdAt(makeInfo('createdAt', { createdAt: '' }))).toBe('-');
+	});
 });

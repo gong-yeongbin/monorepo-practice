@@ -1,222 +1,72 @@
+// backend에 아직 없는 엔드포인트만 목킹한다. 나머지 요청은 워커를 통과해 실제 backend(3001)로 간다.
 import { http, HttpResponse } from 'msw';
 
 const baseURL = import.meta.env.VITE_API_URL;
 
 export const handlers = [
-	http.post(`${baseURL}/login`, () => {
-		return HttpResponse.json({
-			data: {
-				accessToken: 'fakeAccessToken',
-			},
-		});
-	}),
-
-	http.get(`${baseURL}/advertising/dashboard`, () => {
-		return HttpResponse.json({
-			data: [
-				{
-					idx: '46',
-					name: '티몬_CPA (AOS)',
-					platform: 'AOS',
-					click: '1792039',
-					install: '60',
-					registration: '0',
-					retention: '0',
-					purchase: '1',
-					revenue: '29600',
-					etc1: '0',
-					etc2: '0',
-					etc3: '0',
-					etc4: '0',
-					etc5: '0',
-				},
-				{
-					idx: '57',
-					name: '그린카 (AOS)',
-					platform: 'AOS',
-					click: '6058020',
-					install: '518',
-					registration: '38',
-					retention: '0',
-					purchase: '9',
-					revenue: '393270',
-					etc1: '0',
-					etc2: '0',
-					etc3: '0',
-					etc4: '0',
-					etc5: '0',
-				},
-			],
-		});
-	}),
-
+	// 내 정보 — backend에 profile endpoint가 없다 (Home 헤더·developer 메뉴 노출에 사용)
 	http.get(`${baseURL}/profile`, () => {
 		return HttpResponse.json({
 			data: {
 				idx: '1',
-				id: 'dev',
-				password: '$2a$08$Jlv2kWB2gtL6uhhgk8njZuherTjdpy6qRJ.VunjKc5jw5pts/xzdG',
+				id: 'admin@test.com',
 				type: 'dev',
-				createdAt: '2021-06-13T22:01:37.681Z',
-				updatedAt: '2022-02-22T01:52:45.665Z',
-				typeIdx: 0,
 			},
 		});
 	}),
 
-	// Selectbar(Home)
-	http.get(`${baseURL}/advertising/list`, () => {
-		return HttpResponse.json({
-			data: [
-				{
-					idx: '43',
-					name: '티몬 (AOS)',
-					platform: 'AOS',
-					imageUrl: 'https://dj6dzqzknb2sj.cloudfront.net/advertising/43/image',
-					tracker: 'singular',
-				},
-				{
-					idx: '44',
-					name: '티몬 (iOS)',
-					platform: 'iOS',
-					imageUrl: 'https://dj6dzqzknb2sj.cloudfront.net/advertising/44/image',
-					tracker: 'singular',
-				},
-				{
-					idx: '48',
-					name: '탈잉 (AOS)',
-					platform: 'AOS',
-					imageUrl: 'https://dj6dzqzknb2sj.cloudfront.net/advertising/48/image',
-					tracker: 'appsflyer',
-				},
-				{
-					idx: '49',
-					name: '탈잉 (iOS)',
-					platform: 'iOS',
-					imageUrl: 'https://dj6dzqzknb2sj.cloudfront.net/advertising/49/image',
-					tracker: 'appsflyer',
-				},
-			],
-		});
+	// 광고 상태 토글 — backend의 advertising status는 활성 캠페인 여부에서 파생되는 값이라 토글 endpoint가 없다
+	http.patch(`${baseURL}/advertising/:id`, () => {
+		return HttpResponse.json({ data: null });
 	}),
 
-	// Advertising List
-	http.get(`${baseURL}/advertising`, () => {
-		return HttpResponse.json({
-			data: [
-				{
-					idx: '78',
-					name: '반려의고수_구매 (AOS)',
-					platform: 'AOS',
-					imageUrl: 'https://dj6dzqzknb2sj.cloudfront.net/advertising/78/image',
-					status: 1,
-					createdAt: '2022-06-10T04:53:42.068Z',
-					updatedAt: '2022-06-10T04:53:42.181Z',
-					campaign: 3,
-				},
-				{
-					idx: '74',
-					name: '카트라이더 러쉬플러스 (AOS)',
-					platform: 'AOS',
-					imageUrl: 'https://dj6dzqzknb2sj.cloudfront.net/advertising/74/image',
-					status: 1,
-					createdAt: '2022-06-08T06:38:17.476Z',
-					updatedAt: '2022-06-08T06:38:17.614Z',
-					campaign: 5,
-				},
-			],
-			_meta: {
-				search: '',
-				status: '1',
-				offset: '0',
-				limit: '100',
-			},
-		});
+	// 캠페인 block 토글 — backend에 block 필드가 없다
+	http.patch(`${baseURL}/campaigns/:id/block`, () => {
+		return HttpResponse.json({ data: null });
 	}),
 
-	// InfoCard
-	http.get(`${baseURL}/advertising/:id`, () => {
-		return HttpResponse.json({
-			data: {
-				advertiser: '플레이디',
-				tracker: 'airbridge',
-				advertising: '반려의고수_구매 (AOS)',
-				platform: 'AOS',
-				advertisingImageUrl: 'https://dj6dzqzknb2sj.cloudfront.net/advertising/78/image',
-				media: ['paddlewaver', 'mobpeas', 'vikingmedia'],
-			},
-		});
+	// 일자별 상세(viewCode·pubId 단위) — backend에 없다
+	http.get(`${baseURL}/advertising/dailydetail`, () => {
+		return HttpResponse.json({ data: [] });
 	}),
 
-	// InfoCard (Second)
-	http.get(`${baseURL}/campaigns/:id`, () => {
-		return HttpResponse.json({
-			data: {
-				idx: '333',
-				token: 'c3c52ae868d44c27b385e685ead6cf3c',
-				appkey: '@vango',
-				name: '반려의고수_구매_0613',
-				type: 'CPA',
-				trackerTrackingStatus: 0,
-				mecrossTrackingStatus: 0,
-				status: 1,
-				trackerTrackingUrl:
-					'https://abr.ge/@vango/mecrosspro?click_id={click_id}&sub_id={publisher_id}&sub_id_1={sub_id_1}&gaid_raw={gaid}&ifa_raw={idfa}&custom_param1={custom_param1}&custom_param2={custom_param2}&custom_param3={custom_param3}&custom_param4={custom_param4}&custom_param5={custom_param5}&campaign=kensington_2206&ad_group={ad_group}&ad_creative={ad_creative}&tracking_template_id=7a6b5cf45e08ea96a7af12710d763a72&routing_short_id=x7zkut&ad_type=click',
-				mecrossTrackingUrl:
-					'http://api.mecrosspro.com/tracking?token=c3c52ae868d44c27b385e685ead6cf3c&click_id={click_id}&pub_id={pub_id}&sub_id={sub_id}&idfa={idfa}&adid={adid}',
-				block: 0,
-				updatedAt: '2022-06-13T06:00:04.877Z',
-				createdAt: '2022-06-13T06:00:04.877Z',
-			},
-		});
+	// 예약 변경 화면 — reservation 모듈이 backend에 없다
+	http.get(`${baseURL}/reservation/on/:id`, () => {
+		return HttpResponse.json({ data: [] });
+	}),
+	http.get(`${baseURL}/reservation/off/:id`, () => {
+		return HttpResponse.json({ data: [] });
+	}),
+	http.put(`${baseURL}/reservation`, () => {
+		return HttpResponse.json({ data: null });
+	}),
+	http.delete(`${baseURL}/reservation/:idx`, () => {
+		return HttpResponse.json({ data: null });
 	}),
 
-	// Campaign List
-	http.get(`${baseURL}/advertising/campaign/:id`, () => {
-		return HttpResponse.json({
-			data: [
-				{
-					campaignIdx: '333',
-					token: 'c3c52ae868d44c27b385e685ead6cf3c',
-					campaignName: '반려의고수_구매_0613',
-					campaignType: 'CPA',
-					campaignStatus: 1,
-					campaignBlock: 0,
-					mediaName: 'vikingmedia',
-				},
-				{
-					campaignIdx: '329',
-					token: '685515d281c94255b816927e591e0f20',
-					campaignName: '반려의고수_구매_0610',
-					campaignType: 'CPA',
-					campaignStatus: 1,
-					campaignBlock: 0,
-					mediaName: 'mobpeas',
-				},
-				{
-					campaignIdx: '325',
-					token: 'af6a5b9e225340d987678b719ed2f83a',
-					campaignName: '반려의고수_구매_0610',
-					campaignType: 'CPA',
-					campaignStatus: 1,
-					campaignBlock: 0,
-					mediaName: 'paddlewaver',
-				},
-			],
-		});
+	// 로그 조회 모달 3종 — backend의 /:name/install·event는 포스트백 수신용이라 조회 endpoint가 없다
+	http.get(`${baseURL}/install/:tracker`, () => {
+		return HttpResponse.json({ data: [] });
+	}),
+	http.get(`${baseURL}/event/:tracker`, () => {
+		return HttpResponse.json({ data: [] });
+	}),
+	http.get(`${baseURL}/unregistered/:tracker`, () => {
+		return HttpResponse.json({ data: [] });
 	}),
 
-	// Campaign Events
-	http.get(`${baseURL}/campaigns/:id/event`, () => {
-		return HttpResponse.json({
-			data: [
-				{
-					tracker: 'install',
-					admin: 'install',
-					media: 'install',
-					status: 1,
-				},
-			],
-		});
+	// 엑셀 다운로드 — backend에 없다
+	http.get(`${baseURL}/:eventType/:tracker/excel`, () => {
+		return HttpResponse.json({ data: [] });
+	}),
+
+	// 광고 이미지 업로드 — 파일 업로드 endpoint가 backend에 없다
+	http.post(`${baseURL}/fileupload/:id`, () => {
+		return HttpResponse.json({ data: null });
+	}),
+
+	// developer 화면의 사용자 생성 — backend의 POST /auth/signup은 이메일 인증 플로우라 다른 기능이다
+	http.post(`${baseURL}/users`, () => {
+		return HttpResponse.json({ data: null });
 	}),
 ];
