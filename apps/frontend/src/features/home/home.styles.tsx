@@ -24,7 +24,8 @@ export const StyledMenu = styled(Menu)`
 		color: #fff;
 	}
 
-	&& .ant-menu-item:hover {
+	/* antd dark 테마의 hover 규칙(specificity 5)보다 높아야 비선택 항목에도 적용된다 */
+	&&&& .ant-menu-item:hover {
 		color: var(--blue);
 	}
 `;
