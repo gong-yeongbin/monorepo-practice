@@ -63,6 +63,9 @@
 			"Bash(git reflog show *)"
 		],
 		"deny": [
+			"Bash(git -C*)",
+			"Bash(git --git-dir*)",
+			"Bash(git --work-tree*)",
 			"Bash(git commit *)",
 			"Bash(git push *)",
 			"Bash(git pull *)",
