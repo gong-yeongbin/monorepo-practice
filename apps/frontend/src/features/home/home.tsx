@@ -9,7 +9,6 @@ import {
 	SettingOutlined,
 } from '@ant-design/icons';
 import { observer } from 'mobx-react';
-import { useQuery } from '@tanstack/react-query';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAd, faChartLine } from '@fortawesome/free-solid-svg-icons';
 import debounce from 'debounce';
@@ -25,8 +24,17 @@ import {
 	StyledContent,
 } from '@/features/home/home.styles';
 import { useStore } from '@/app/store';
-import { api } from '@/shared/api/api';
 import logo from '@/images/logo.png';
+
+// JWT access token payload에서 로그인 사용자 정보를 꺼낸다 — payload는 base64url이라 표준 atob 전에 문자 치환이 필요
+const parseAccessToken = (token: string | null): { email: string; role: string } | null => {
+	if (!token) return null;
+	try {
+		return JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+	} catch {
+		return null;
+	}
+};
 
 const Home = observer(() => {
 	const store = useStore();
@@ -76,21 +84,17 @@ const Home = observer(() => {
 		navigate('/login');
 	};
 
-	const { isFetching: isFetchingProfile, data: profile } = useQuery({
-		queryKey: ['profile'],
-		queryFn: api.getUserProfile,
-		enabled: !!accessToken,
-	});
+	const user = parseAccessToken(accessToken);
 
 	useEffect(() => {
-		if (profile) {
-			if (profile.type === 'advertiser' || profile.type === 'media') {
+		if (user) {
+			if (user.role === 'ADVERTISER' || user.role === 'MEDIA') {
 				handleLogout();
 			} else {
-				sessionStorage.setItem('userType', profile.type);
+				sessionStorage.setItem('userType', user.role === 'DEVELOPER' ? 'dev' : user.role.toLowerCase());
 			}
 		}
-	}, [profile]);
+	}, []);
 
 	const forceReload = () => {
 		navigate('/');
@@ -128,7 +132,7 @@ const Home = observer(() => {
 			label: '개발자 메뉴',
 			key: 'developer',
 			icon: <SettingOutlined />,
-			disabled: profile?.type !== 'dev' && true,
+			disabled: user?.role !== 'DEVELOPER',
 		},
 	];
 
@@ -167,7 +171,7 @@ const Home = observer(() => {
 
 				<ProfileContainer>
 					<Popover content={profileContent}>
-						<UserProfile>{!isFetchingProfile && profile?.id}</UserProfile>
+						<UserProfile>{user?.email}</UserProfile>
 					</Popover>
 				</ProfileContainer>
 			</StyledHeader>

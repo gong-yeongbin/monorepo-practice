@@ -1,4 +1,4 @@
-import { Avatar, Layout } from 'antd';
+import { Layout } from 'antd';
 import styled from 'styled-components';
 
 const { Header, Content, Footer } = Layout;
@@ -23,7 +23,8 @@ export const Logo = styled.div`
 	margin-right: 1rem;
 	cursor: pointer;
 `;
-export const UserProfile = styled(Avatar)`
+export const UserProfile = styled.span`
+	color: #fff;
 	user-select: none;
 `;
 export const Title = styled.div`

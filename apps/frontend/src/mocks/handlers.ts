@@ -4,17 +4,6 @@ import { http, HttpResponse } from 'msw';
 const baseURL = import.meta.env.VITE_API_URL;
 
 export const handlers = [
-	// 내 정보 — backend에 profile endpoint가 없다 (Home 헤더·developer 메뉴 노출에 사용)
-	http.get(`${baseURL}/profile`, () => {
-		return HttpResponse.json({
-			data: {
-				idx: '1',
-				id: 'admin@test.com',
-				type: 'dev',
-			},
-		});
-	}),
-
 	// 광고 상태 토글 — backend의 advertising status는 활성 캠페인 여부에서 파생되는 값이라 토글 endpoint가 없다
 	http.patch(`${baseURL}/advertising/:id`, () => {
 		return HttpResponse.json({ data: null });

@@ -260,11 +260,6 @@ const getAdvertisers = async () => {
 	return res.data.data.map(mapAdvertiserRow);
 };
 
-const getUserProfile = async () => {
-	const res = await axiosInstance.get(`/profile`);
-	return res.data.data;
-};
-
 const getDaily = async (date: (string | null)[]) => {
 	const token = sessionStorage.getItem('detailToken');
 	// token은 값이 있을 때만 붙인다 — backend가 빈 token을 400으로 거부한다
@@ -331,7 +326,6 @@ export const api = {
 	getMedia,
 	getTrackers,
 	getAdvertisers,
-	getUserProfile,
 	getDaily,
 	getDailyDetail,
 	getChangeCreated,
