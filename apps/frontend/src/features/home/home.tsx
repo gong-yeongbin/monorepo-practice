@@ -1,10 +1,9 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router';
-import { Avatar, Layout, Breadcrumb, Popover, Button, Dropdown } from 'antd';
+import { Avatar, Layout, Breadcrumb, Popover, Button } from 'antd';
 import type { MenuProps } from 'antd';
 import {
 	ApartmentOutlined,
-	AppstoreOutlined,
 	HomeOutlined,
 	SettingOutlined,
 } from '@ant-design/icons';
@@ -22,6 +21,7 @@ import {
 	StyledFooter,
 	LogoAndMenu,
 	StyledContent,
+	StyledMenu,
 } from '@/features/home/home.styles';
 import { useStore } from '@/app/store';
 import logo from '@/images/logo.png';
@@ -153,20 +153,14 @@ const Home = observer(() => {
 						</Title>
 					</Logo>
 
-					<Dropdown
-						menu={{
-							id: 'menu-list',
-							onClick: handleMenuClick,
-							items: menuItems,
-							selectedKeys: [selectedMenu],
-							theme: 'dark',
-						}}
-					>
-						<Button id="menu-button">
-							<AppstoreOutlined />
-							MENU
-						</Button>
-					</Dropdown>
+					<StyledMenu
+						id="menu-list"
+						mode="horizontal"
+						theme="dark"
+						onClick={handleMenuClick}
+						items={menuItems}
+						selectedKeys={[selectedMenu]}
+					/>
 				</LogoAndMenu>
 
 				<ProfileContainer>

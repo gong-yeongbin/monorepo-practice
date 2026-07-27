@@ -1,4 +1,4 @@
-import { Layout } from 'antd';
+import { Layout, Menu } from 'antd';
 import styled from 'styled-components';
 
 const { Header, Content, Footer } = Layout;
@@ -13,6 +13,16 @@ export const LogoAndMenu = styled.div`
 	display: flex;
 	justify-content: center;
 	align-items: center;
+	flex: 1;
+`;
+export const StyledMenu = styled(Menu)`
+	flex: 1;
+	min-width: 0;
+	background: transparent;
+
+	&& .ant-menu-item:not(.ant-menu-item-disabled) {
+		color: #fff;
+	}
 `;
 export const Logo = styled.div`
 	display: flex;
