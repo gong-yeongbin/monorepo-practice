@@ -103,11 +103,6 @@ ${normalize}
       color: #fff;
       background: #1890ff;
     }
-    #platform-header {
-      .ant-dropdown-menu-title-content {
-        color: var(--black);
-      }
-    }
     #login-form .ant-btn-primary {
       width: 100%;
       padding-top:0.4rem;
@@ -269,6 +264,8 @@ export const TableStyles = styled.div<{ height?: string }>`
 	height: 100%;
 	max-height: ${props => props.height || '100%'}; // sticky header
 	table {
+		width: 100%;
+		border-collapse: collapse;
 		.ellipsis {
 			text-overflow: ellipsis;
 			white-space: nowrap;
@@ -293,11 +290,11 @@ export const TableStyles = styled.div<{ height?: string }>`
 				background: #fdfdfd;
 			}
 		}
+		/* react-table v7 시절 flex 셀 잔재를 제거 — v8 시맨틱 테이블은 table-cell 배치를 써야 한다 */
 		.th,
 		.td {
-			display: flex;
-			justify-content: center;
-			align-items: center;
+			text-align: center;
+			vertical-align: middle;
 			position: relative;
 			margin: 0;
 			padding: 0.8rem;
@@ -319,9 +316,6 @@ export const TableStyles = styled.div<{ height?: string }>`
 			}
 		}
 		.th {
-			display: flex;
-			justify-content: center;
-			align-items: center;
 			background: #fafafa;
 			font-weight: bold;
 			text-transform: uppercase;

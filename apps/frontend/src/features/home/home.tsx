@@ -226,9 +226,7 @@ const Home = observer(() => {
 				</ProfileContainer>
 			</StyledHeader>
 
-			<Breadcrumb>
-				<Breadcrumb.Item>{pageTitle}</Breadcrumb.Item>
-			</Breadcrumb>
+			<Breadcrumb items={[{ title: pageTitle }]} />
 
 			<StyledContent>
 				<Outlet />

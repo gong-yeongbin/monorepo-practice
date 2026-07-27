@@ -11,7 +11,7 @@ export class PrismaDashboardRepository implements DashboardRepository {
 
 	async dashboard(date: Date): Promise<DashboardRow[]> {
 		// 특정 일자, advertising별 카운터 합산. daily_report → campaign(token) → advertising 조인.
-		return this.prismaService.$queryRaw<DashboardRow[]>`
+		const rows = await this.prismaService.$queryRaw<DashboardRow[]>`
 			SELECT a.id AS advertising_id, a.name AS advertising_name,
 				CAST(SUM(d.click) AS SIGNED) AS click, CAST(SUM(d.install) AS SIGNED) AS install,
 				CAST(SUM(d.registration) AS SIGNED) AS registration, CAST(SUM(d.retention) AS SIGNED) AS retention,
@@ -23,6 +23,8 @@ export class PrismaDashboardRepository implements DashboardRepository {
 			JOIN advertising a ON a.id = c.advertising_id
 			WHERE d.created_date = ${date}
 			GROUP BY a.id, a.name`;
+
+		return rows.map(toNumberRow);
 	}
 
 	// 날짜별 카운터 합산. token이 주어지면 해당 캠페인으로 한정, 없으면 전체 합산.
@@ -41,7 +43,7 @@ export class PrismaDashboardRepository implements DashboardRepository {
 		// advertising별, 매체·캠페인 단위 합산. media_id가 주어지면 해당 매체로 한정.
 		const mediaFilter = media_id !== undefined ? Prisma.sql`AND m.id = ${media_id}` : Prisma.empty;
 
-		return this.prismaService.$queryRaw<DetailRow[]>`
+		const rows = await this.prismaService.$queryRaw<DetailRow[]>`
 			SELECT m.id AS media_id, m.name AS media_name, c.token AS token, c.id AS campaign_id,
 				c.name AS campaign_name, c.type AS type, c.is_active AS is_active,
 				CAST(SUM(d.click) AS SIGNED) AS click, CAST(SUM(d.install) AS SIGNED) AS install,
@@ -57,7 +59,21 @@ export class PrismaDashboardRepository implements DashboardRepository {
 				AND c.advertising_id = ${advertising_id} ${mediaFilter}
 			GROUP BY m.id, m.name, c.token, c.id, c.name, c.type, c.is_active
 			ORDER BY c.id DESC`;
+
+		return rows.map(toNumberRow);
 	}
+}
+
+// raw 쿼리의 CAST(SUM ... AS SIGNED)는 BIGINT라 Prisma가 BigInt로 반환한다.
+// BigInt는 JSON 직렬화가 불가능하므로 응답 전에 number로 변환한다.
+function toNumberRow<T extends object>(row: T): T {
+	const converted = { ...row } as Record<string, unknown>;
+	for (const key of Object.keys(converted)) {
+		if (typeof converted[key] === 'bigint') {
+			converted[key] = Number(converted[key]);
+		}
+	}
+	return converted as T;
 }
 
 // daily_report groupBy에서 합산할 카운터 선택자

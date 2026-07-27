@@ -10,26 +10,24 @@ describe('PrismaDashboardRepository', () => {
 
 	beforeEach(() => jest.clearAllMocks());
 
-	it('dashboard는 $queryRaw 결과를 그대로 반환한다', async () => {
-		const rows = [{ advertising_id: 1, advertising_name: 'a', click: 10 }];
-		$queryRaw.mockResolvedValue(rows);
+	it('dashboard는 $queryRaw의 BigInt 카운터를 number로 변환해 반환한다', async () => {
+		// CAST(SUM ... AS SIGNED)는 BIGINT라 Prisma가 BigInt로 반환한다 — JSON 직렬화를 위해 number 변환 필수
+		$queryRaw.mockResolvedValue([{ advertising_id: 1, advertising_name: 'a', click: BigInt(10) }]);
 
-		expect(await repository.dashboard(new Date('2026-07-10'))).toBe(rows);
+		expect(await repository.dashboard(new Date('2026-07-10'))).toEqual([{ advertising_id: 1, advertising_name: 'a', click: 10 }]);
 		expect($queryRaw).toHaveBeenCalled();
 	});
 
-	it('detail은 media_id가 있으면 $queryRaw 결과를 반환한다', async () => {
-		const rows = [{ campaign_id: 3, click: 5 }];
-		$queryRaw.mockResolvedValue(rows);
+	it('detail은 media_id가 있으면 BigInt 카운터를 number로 변환해 반환한다', async () => {
+		$queryRaw.mockResolvedValue([{ campaign_id: 3, click: BigInt(5) }]);
 
-		expect(await repository.detail(1, { start_date: new Date('2026-07-01'), end_date: new Date('2026-07-10') }, 2)).toBe(rows);
+		expect(await repository.detail(1, { start_date: new Date('2026-07-01'), end_date: new Date('2026-07-10') }, 2)).toEqual([{ campaign_id: 3, click: 5 }]);
 	});
 
 	it('detail은 media_id가 없어도 동작한다(매체 필터 없음)', async () => {
-		const rows = [{ campaign_id: 4 }];
-		$queryRaw.mockResolvedValue(rows);
+		$queryRaw.mockResolvedValue([{ campaign_id: 4 }]);
 
-		expect(await repository.detail(1, { start_date: new Date('2026-07-01'), end_date: new Date('2026-07-10') })).toBe(rows);
+		expect(await repository.detail(1, { start_date: new Date('2026-07-01'), end_date: new Date('2026-07-10') })).toEqual([{ campaign_id: 4 }]);
 	});
 
 	it('daily는 groupBy 합계를 매핑하고 모든 카운터의 null 합계를 0으로 채운다', async () => {

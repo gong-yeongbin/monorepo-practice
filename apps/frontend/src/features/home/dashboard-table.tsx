@@ -1,21 +1,15 @@
-import React, { useMemo, useState, ChangeEvent, KeyboardEvent } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
 	useReactTable,
 	getCoreRowModel,
-	getFilteredRowModel,
 	getSortedRowModel,
 	flexRender,
 	createColumnHelper,
-	Column,
 } from '@tanstack/react-table';
-import { Dropdown } from 'antd';
-import type { MenuProps } from 'antd';
-import { DownOutlined, SearchOutlined } from '@ant-design/icons';
 import { getCell } from '@/shared/lib/get-cell';
 import { getTotal } from '@/shared/lib/get-total';
 import { TableStyles } from '@/app/global-styles';
-import { NameSearchBar, PlatformHeader } from '@/features/home/dashboard.styles';
 
 interface DashboardColumns {
 	idx: string;
@@ -34,34 +28,12 @@ interface DashboardColumns {
 	etc5: string;
 }
 
-const platformKeys = {
-	all: 'All',
-	aos: 'AOS',
-	ios: 'iOS',
-};
-const { all, aos, ios } = platformKeys;
-const platforms: MenuProps['items'] = [
-	{
-		label: all,
-		key: all,
-	},
-	{
-		label: aos,
-		key: aos,
-	},
-	{
-		label: ios,
-		key: ios,
-	},
-];
-
 const columnHelper = createColumnHelper<DashboardColumns>();
 
 const DashboardTable = (props: { data: Array<DashboardColumns> }) => {
 	const { data } = props;
 
 	const [dataWithName] = useState(data.filter(item => item.name !== null));
-	const [selectedPlatform, setSelectedPlatform] = useState(all);
 
 	const navigate = useNavigate();
 
@@ -137,14 +109,13 @@ const DashboardTable = (props: { data: Array<DashboardColumns> }) => {
 			columnHelper.accessor('etc4', { header: 'etc4', size: 55, footer: info => getTotal(info) }),
 			columnHelper.accessor('etc5', { header: 'etc5', size: 55, footer: info => getTotal(info) }),
 		],
-		[selectedPlatform],
+		[],
 	);
 
 	const table = useReactTable({
 		data: dataWithName,
 		columns,
 		getCoreRowModel: getCoreRowModel(),
-		getFilteredRowModel: getFilteredRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		columnResizeMode: 'onChange',
 		enableColumnResizing: true,
@@ -156,56 +127,6 @@ const DashboardTable = (props: { data: Array<DashboardColumns> }) => {
 			],
 		},
 	});
-
-	const renderNameFilter = (column: Column<DashboardColumns, unknown>, size: number) => {
-		const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-			column.setFilterValue(e.target.value || undefined);
-		};
-		const handleEscPress = (e: KeyboardEvent) => {
-			if (e.code === 'Escape') {
-				column.setFilterValue(undefined);
-			}
-		};
-		return (
-			size > 100 && (
-				<NameSearchBar
-					value={(column.getFilterValue() as string) || ''}
-					onChange={handleChange}
-					onKeyDown={handleEscPress}
-					prefix={<SearchOutlined />}
-					size="small"
-					allowClear
-				/>
-			)
-		);
-	};
-
-	const renderPlatformFilter = (column: Column<DashboardColumns, unknown>) => {
-		const handleClick = (menuEvent: { key: string }) => {
-			const { key } = menuEvent;
-			if (key === all) {
-				column.setFilterValue(undefined);
-			} else {
-				column.setFilterValue(key);
-			}
-			setSelectedPlatform(key);
-		};
-		return (
-			<Dropdown
-				menu={{
-					onClick: handleClick,
-					items: platforms,
-					selectedKeys: [selectedPlatform],
-					id: 'platform-header',
-				}}
-			>
-				<PlatformHeader>
-					<th>{selectedPlatform === all ? '플랫폼' : selectedPlatform}</th>
-					<DownOutlined />
-				</PlatformHeader>
-			</Dropdown>
-		);
-	};
 
 	return (
 		<TableStyles height="calc(var(--vh, 1vh) * 100 - 20rem)">
@@ -221,11 +142,6 @@ const DashboardTable = (props: { data: Array<DashboardColumns> }) => {
 										onTouchStart={header.getResizeHandler()}
 										className={`resizer ${header.column.getIsResizing() ? 'isResizing' : ''}`}
 									/>
-									{header.column.id === 'name'
-										? renderNameFilter(header.column, header.column.getSize())
-										: header.column.id === 'platform'
-											? renderPlatformFilter(header.column)
-											: null}
 								</th>
 							))}
 						</tr>
@@ -250,7 +166,7 @@ const DashboardTable = (props: { data: Array<DashboardColumns> }) => {
 					{table.getFooterGroups().map(footerGroup => (
 						<tr key={footerGroup.id}>
 							{footerGroup.headers.map(header => (
-								<td key={header.id} colSpan={6}>
+								<td key={header.id}>
 									{flexRender(header.column.columnDef.footer, header.getContext())}
 								</td>
 							))}
