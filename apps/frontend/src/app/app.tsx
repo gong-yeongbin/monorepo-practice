@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import { ConfigProvider } from 'antd';
 import { QueryClient, QueryClientProvider, QueryCache } from '@tanstack/react-query';
+import axios from 'axios';
 import koKR from 'antd/lib/locale/ko_KR';
 import Home from '@/features/home/home';
 import Login from '@/features/login/login';
@@ -24,11 +25,14 @@ const store = new Store();
 
 // react-query v5는 useQuery별 onError를 제거해, 공통 인증 에러(세션 만료 → 로그인 이동)를
 // QueryCache 전역 핸들러로 처리한다. 컴포넌트 밖이라 navigate 대신 location으로 이동한다.
+// 401/403만 로그아웃 대상 — 그 외(네트워크·서버 오류)는 세션을 유지한다.
 const queryClient = new QueryClient({
 	queryCache: new QueryCache({
-		onError: () => {
-			sessionStorage.clear();
-			window.location.href = '/login';
+		onError: error => {
+			if (axios.isAxiosError(error) && (error.response?.status === 401 || error.response?.status === 403)) {
+				sessionStorage.clear();
+				window.location.href = '/login';
+			}
 		},
 	}),
 	defaultOptions: {

@@ -46,6 +46,7 @@ const Login = observer(() => {
 	}) => {
 		const accessToken = response.data.data.access_token;
 		sessionStorage.setItem('accessToken', accessToken);
+		sessionStorage.setItem('refreshToken', response.data.data.refresh_token);
 		if (accessToken !== '') {
 			navigate('/', { replace: true });
 		}
