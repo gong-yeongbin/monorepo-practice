@@ -6,6 +6,7 @@ import axios from 'axios';
 import koKR from 'antd/lib/locale/ko_KR';
 import Home from '@/features/home/home';
 import Login from '@/features/login/login';
+import Signup from '@/features/signup/signup';
 import GlobalStyles from '@/app/global-styles';
 import { Store, StoreProvider } from '@/app/store';
 import Dashboard from '@/features/home/dashboard';
@@ -52,6 +53,7 @@ function App() {
 					<BrowserRouter>
 						<Routes>
 							<Route path="/login" element={<Login />} />
+							<Route path="/signup" element={<Signup />} />
 							<Route path="*" element={<Navigate to="/" />} />
 							<Route path="/" element={<Home />}>
 								<Route path="/" element={<Dashboard />} />

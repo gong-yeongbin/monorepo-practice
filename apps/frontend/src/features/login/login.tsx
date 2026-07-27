@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { Form, Input, Button, Avatar, message } from 'antd';
 import { observer } from 'mobx-react';
 import { LoadingOutlined, LockOutlined, UserOutlined } from '@ant-design/icons';
 import axios from 'axios';
-import { Container, FormContainer, Title } from '@/features/login/login.styles';
+import { Container, FormContainer, LinkRow, Title } from '@/features/login/login.styles';
 import logo from '@/images/logo.png';
 
 const maxLength = 20;
@@ -92,6 +92,9 @@ const Login = observer(() => {
 						</Button>
 					</Form.Item>
 				</Form>
+				<LinkRow>
+					<Link to="/signup">회원가입</Link>
+				</LinkRow>
 			</FormContainer>
 		</Container>
 	);

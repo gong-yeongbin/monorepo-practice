@@ -103,23 +103,43 @@ ${normalize}
       color: #fff;
       background: #1890ff;
     }
-    #login-form .ant-btn-primary {
+    #login-form .ant-btn-primary,
+    #signup-form .ant-btn-primary,
+    #verify-form .ant-btn-primary {
       width: 100%;
       padding-top:0.4rem;
       border:1px solid var(--light-grey);
     }
-    #login-form .ant-col .ant-form-item-control-input {
+    #login-form .ant-col .ant-form-item-control-input,
+    #signup-form .ant-col .ant-form-item-control-input,
+    #verify-form .ant-col .ant-form-item-control-input {
       // id & password
       border:1px solid var(--light-grey);
       border-radius:10px;
     }
-    #login-form .ant-input {
+    #login-form .ant-form-item,
+    #signup-form .ant-form-item,
+    #verify-form .ant-form-item {
+      margin-bottom:1rem;
+    }
+    #login-form .ant-form-item:last-child,
+    #signup-form .ant-form-item:last-child,
+    #verify-form .ant-form-item:last-child {
+      margin-bottom:0;
+    }
+    #login-form .ant-input,
+    #signup-form .ant-input,
+    #verify-form .ant-input {
       font-size:1rem;
     }
-    #login-form .ant-form-item-explain {
+    #login-form .ant-form-item-explain,
+    #signup-form .ant-form-item-explain,
+    #verify-form .ant-form-item-explain {
       height:2rem;
     }
-    #login-form .ant-form-item-explain.ant-form-item-explain-error > div {
+    #login-form .ant-form-item-explain.ant-form-item-explain-error > div,
+    #signup-form .ant-form-item-explain.ant-form-item-explain-error > div,
+    #verify-form .ant-form-item-explain.ant-form-item-explain-error > div {
       font-size:0.6rem;
     }
     #advertising-add-form #new-button label{

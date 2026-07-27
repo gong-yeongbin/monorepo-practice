@@ -27,3 +27,8 @@ export const Title = styled.p`
 	font-size: 1.1rem;
 	user-select: none;
 `;
+export const LinkRow = styled.div`
+	padding: 0.75rem 0 0.5rem;
+	font-size: 0.9rem;
+	text-align: center;
+`;
