@@ -23,6 +23,11 @@ export class AdvertisingListItemResponse extends AdvertisingResponse implements 
 	status: boolean;
 }
 
+export class AdvertisingImageResponse {
+	// 업로드된 이미지의 공개 URL
+	image: string;
+}
+
 export class AdvertisingInfoResponse implements AdvertisingInfo {
 	advertiser: string;
 

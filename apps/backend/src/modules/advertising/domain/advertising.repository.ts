@@ -25,6 +25,7 @@ export interface AdvertisingRepository {
 	findByName(name: string): Promise<Advertising | null>;
 	create(props: CreateAdvertisingProps): Promise<Advertising>;
 	update(id: number, props: UpdateAdvertisingProps): Promise<Advertising>;
+	updateImage(id: number, image: string): Promise<void>;
 	delete(id: number): Promise<void>;
 	list(params: ListAdvertisingParams): Promise<AdvertisingListItem[]>;
 	get(id: number): Promise<AdvertisingInfo | null>;

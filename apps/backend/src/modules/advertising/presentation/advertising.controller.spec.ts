@@ -5,6 +5,7 @@ import { ListAdvertisingUseCase } from '@advertising/application/list-advertisin
 import { GetAdvertisingUseCase } from '@advertising/application/get-advertising.use-case';
 import { UpdateAdvertisingUseCase } from '@advertising/application/update-advertising.use-case';
 import { DeleteAdvertisingUseCase } from '@advertising/application/delete-advertising.use-case';
+import { UploadAdvertisingImageUseCase } from '@advertising/application/upload-advertising-image.use-case';
 
 describe('AdvertisingController', () => {
 	const create = { execute: jest.fn() } as unknown as CreateAdvertisingUseCase;
@@ -12,7 +13,8 @@ describe('AdvertisingController', () => {
 	const get = { execute: jest.fn() } as unknown as GetAdvertisingUseCase;
 	const update = { execute: jest.fn() } as unknown as UpdateAdvertisingUseCase;
 	const remove = { execute: jest.fn() } as unknown as DeleteAdvertisingUseCase;
-	const controller = new AdvertisingController(create, list, get, update, remove);
+	const uploadImage = { execute: jest.fn() } as unknown as UploadAdvertisingImageUseCase;
+	const controller = new AdvertisingController(create, list, get, update, remove, uploadImage);
 
 	beforeEach(() => jest.clearAllMocks());
 
@@ -41,6 +43,13 @@ describe('AdvertisingController', () => {
 		(update.execute as jest.Mock).mockResolvedValue({ id: 1 });
 		expect(await controller.update({ id: 1 }, body)).toEqual({ id: 1 });
 		expect(update.execute).toHaveBeenCalledWith(1, body);
+	});
+
+	it('uploadImage는 업로드 use-case에 id와 file을 위임한다', async () => {
+		const file = { buffer: Buffer.from('img'), mimetype: 'image/png' } as Express.Multer.File;
+		(uploadImage.execute as jest.Mock).mockResolvedValue({ image: 'url' });
+		expect(await controller.uploadImage({ id: 1 }, file)).toEqual({ image: 'url' });
+		expect(uploadImage.execute).toHaveBeenCalledWith(1, file);
 	});
 
 	it('delete는 삭제 use-case에 id를 위임한다', async () => {

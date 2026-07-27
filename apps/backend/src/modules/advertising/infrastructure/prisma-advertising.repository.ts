@@ -32,6 +32,10 @@ export class PrismaAdvertisingRepository implements AdvertisingRepository {
 		return this.prismaService.advertising.update({ where: { id }, data: props });
 	}
 
+	async updateImage(id: number, image: string): Promise<void> {
+		await this.prismaService.advertising.update({ where: { id }, data: { image } });
+	}
+
 	async delete(id: number): Promise<void> {
 		await this.prismaService.advertising.delete({ where: { id } });
 	}

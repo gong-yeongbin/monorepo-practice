@@ -4,7 +4,7 @@ MSW(Mock Service Worker) 목 API. 개발 모드에서 켜지지만(`app/index.ts
 
 ## 파일
 
-- `handlers.ts` — 목 응답 정의. backend에 아직 없는 경로만 목킹한다 — `PATCH /advertising/:id`(상태 토글), `PATCH /campaigns/:id/block`, `GET /advertising/dailydetail`, `/reservation/*` 4종, `GET /install|event|unregistered/:tracker`(로그 모달), `GET /:eventType/:tracker/excel`, `POST /fileupload/:id`, `POST /users`.
+- `handlers.ts` — 목 응답 정의. backend에 아직 없는 경로만 목킹한다 — `PATCH /advertising/:id`(상태 토글), `PATCH /campaigns/:id/block`, `GET /advertising/dailydetail`, `/reservation/*` 4종, `GET /install|event|unregistered/:tracker`(로그 모달), `GET /:eventType/:tracker/excel`, `POST /users`.
 - `browser.ts` — `setupWorker(...handlers)`로 워커 생성. `app/index.tsx`가 이 `worker`를 start 한다.
 - 워커 스크립트(`mockServiceWorker.js`)는 `public/`에 있다(`package.json`의 `msw.workerDirectory: "public"`).
 

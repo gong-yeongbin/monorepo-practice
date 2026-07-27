@@ -173,7 +173,7 @@ const InfoCard = observer(() => {
 		mutationFn: () => {
 			const { image } = form.getFieldsValue();
 			formData.append('image', image.file);
-			return axiosInstance.post(`/fileupload/${paramId}`, formData);
+			return axiosInstance.post(`/advertising/${paramId}/image`, formData);
 		},
 		onSuccess: () => {
 			setShowUpdatedImage(true);

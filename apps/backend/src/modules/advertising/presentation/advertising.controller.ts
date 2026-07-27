@@ -1,18 +1,20 @@
 // advertising CRUD와 통계 조회를 처리하는 컨트롤러
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseInterceptors } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, FileTypeValidator, Get, MaxFileSizeValidator, Param, ParseFilePipe, Post, Put, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateAdvertisingUseCase } from '@advertising/application/create-advertising.use-case';
 import { ListAdvertisingUseCase } from '@advertising/application/list-advertising.use-case';
 import { GetAdvertisingUseCase } from '@advertising/application/get-advertising.use-case';
 import { UpdateAdvertisingUseCase } from '@advertising/application/update-advertising.use-case';
 import { DeleteAdvertisingUseCase } from '@advertising/application/delete-advertising.use-case';
+import { UploadAdvertisingImageUseCase } from '@advertising/application/upload-advertising-image.use-case';
 import { CreateAdvertisingDto } from '@advertising/application/dto/create-advertising.dto';
 import { UpdateAdvertisingDto } from '@advertising/application/dto/update-advertising.dto';
 import { ListAdvertisingDto } from '@advertising/application/dto/list-advertising.dto';
 import { AdvertisingIdDto } from '@advertising/application/dto/advertising-id.dto';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
-import { AdvertisingInfoResponse, AdvertisingListItemResponse, AdvertisingResponse } from '@advertising/presentation/dto/advertising.response.dto';
+import { AdvertisingImageResponse, AdvertisingInfoResponse, AdvertisingListItemResponse, AdvertisingResponse } from '@advertising/presentation/dto/advertising.response.dto';
 
 @ApiTags('advertising')
 @Controller('advertising')
@@ -23,7 +25,8 @@ export class AdvertisingController {
 		private readonly listAdvertisingUseCase: ListAdvertisingUseCase,
 		private readonly getAdvertisingUseCase: GetAdvertisingUseCase,
 		private readonly updateAdvertisingUseCase: UpdateAdvertisingUseCase,
-		private readonly deleteAdvertisingUseCase: DeleteAdvertisingUseCase
+		private readonly deleteAdvertisingUseCase: DeleteAdvertisingUseCase,
+		private readonly uploadAdvertisingImageUseCase: UploadAdvertisingImageUseCase
 	) {}
 
 	// admin 원본은 @Put이었으나 REST 표준대로 POST로 이관한다.
@@ -61,6 +64,22 @@ export class AdvertisingController {
 	@ApiResponse({ status: 409, description: '이미 존재하는 advertising 이름' })
 	async update(@Param() param: AdvertisingIdDto, @Body() body: UpdateAdvertisingDto) {
 		return this.updateAdvertisingUseCase.execute(param.id, body);
+	}
+
+	@Post(':id/image')
+	@UseInterceptors(FileInterceptor('image'))
+	@ApiOperation({ summary: 'advertising 이미지 업로드 (S3 저장 후 URL 갱신, 매직 넘버 검증으로 SVG는 거부됨)' })
+	@ApiConsumes('multipart/form-data')
+	@ApiBody({ schema: { type: 'object', properties: { image: { type: 'string', format: 'binary' } }, required: ['image'] } })
+	@ApiWrappedResponse({ status: 201, description: '업로드 성공', type: AdvertisingImageResponse })
+	@ApiResponse({ status: 400, description: '파일 누락·5MB 초과·이미지 아님' })
+	@ApiResponse({ status: 404, description: 'advertising 없음' })
+	async uploadImage(
+		@Param() param: AdvertisingIdDto,
+		@UploadedFile(new ParseFilePipe({ validators: [new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }), new FileTypeValidator({ fileType: /^image\// })] }))
+		file: Express.Multer.File
+	) {
+		return this.uploadAdvertisingImageUseCase.execute(param.id, file);
 	}
 
 	@Delete(':id')

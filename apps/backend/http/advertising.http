@@ -26,5 +26,16 @@ Content-Type: application/json
 	"image": "https://example.com/image2.png"
 }
 
+### advertising 이미지 업로드 — multipart, 필드명 image (5MB 이하 이미지, S3 저장 후 URL 갱신)
+POST {{host}}/advertising/1/image
+Content-Type: multipart/form-data; boundary=Boundary
+
+--Boundary
+Content-Disposition: form-data; name="image"; filename="sample.png"
+Content-Type: image/png
+
+< ./sample.png
+--Boundary--
+
 ### advertising 삭제
 DELETE {{host}}/advertising/1

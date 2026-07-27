@@ -50,6 +50,11 @@ describe('PrismaAdvertisingRepository', () => {
 		expect(advertising.delete).toHaveBeenCalledWith({ where: { id: 1 } });
 	});
 
+	it('updateImage는 id로 image 컬럼만 수정한다', async () => {
+		await repository.updateImage(1, 'https://bucket.s3.region.amazonaws.com/advertising/1');
+		expect(advertising.update).toHaveBeenCalledWith({ where: { id: 1 }, data: { image: 'https://bucket.s3.region.amazonaws.com/advertising/1' } });
+	});
+
 	it('list는 tracker명을 싣고 활성 campaign 개수를 세어 1개 이상이면 status=true로 매핑한다', async () => {
 		advertising.findMany.mockResolvedValue([
 			{ id: 1, name: 'a', image: 'img', advertiser_id: 1, tracker_id: 2, tracker: { name: 'appsflyer' }, _count: { campaign: 2 } },

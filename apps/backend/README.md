@@ -24,7 +24,8 @@ src/
 │   ├── prisma/                # PrismaService — MySQL 연결 수명주기
 │   ├── cache/                 # CachePort + Redis 어댑터 (TTL은 밀리초)
 │   ├── stream/                # Redis Stream 프로듀서·컨슈머
-│   └── mail/                  # MailPort + AWS SES 어댑터
+│   ├── mail/                  # MailPort + AWS SES 어댑터
+│   └── storage/               # StoragePort + AWS S3 어댑터 (이미지 업로드)
 ├── interceptors/              # 응답을 { statusCode, data, _meta }로 감싸는 인터셉터
 ├── modules/                   # 기능 모듈 — 클린 아키텍처 4계층
 │   │                          #   (domain / application / infrastructure / presentation)
@@ -85,6 +86,10 @@ REDIS_STREAM_CONSUMER="consumer-1"
 AWS_REGION="ap-northeast-2"
 SES_FROM_EMAIL="no-reply@example.com"
 
+# AWS S3 — advertising 이미지 업로드 저장소
+# 버킷은 업로드 객체(advertising/*)의 public read(s3:GetObject)를 허용해야 함 — URL이 DB에 영구 저장됨
+S3_BUCKET="my-bucket"
+
 # JWT — signin·refresh 토큰 서명 키 (없으면 로그인 시점에 에러)
 JWT_ACCESS_SECRET="change-me-access"
 JWT_REFRESH_SECRET="change-me-refresh"
@@ -118,7 +123,7 @@ PORT=3001
 |---|---|
 | user | GET `/users`, GET `/users/:id`, PATCH `/users/:id`, DELETE `/users/:id` |
 | advertiser | GET, POST `/advertisers`, GET, PATCH, DELETE `/advertisers/:id` |
-| advertising | GET, POST `/advertising`, GET, PUT, DELETE `/advertising/:id` |
+| advertising | GET, POST `/advertising`, GET, PUT, DELETE `/advertising/:id`, POST `/advertising/:id/image` |
 | media | GET, POST `/media`, GET, PATCH, DELETE `/media/:id` |
 | tracker | GET, POST `/trackers`, GET, PATCH, DELETE `/trackers/:id` |
 | campaign | GET, POST `/campaigns`, GET, PATCH, DELETE `/campaigns/:id` |

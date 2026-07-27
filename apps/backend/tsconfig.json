@@ -2,7 +2,7 @@
   "extends": "@repo/typescript-config/nestjs.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "types": ["node", "jest"],
+    "types": ["node", "jest", "multer"],
     "paths": {
       "@common/*": ["./src/common/*"],
       "@infra/*": ["./src/infra/*"],

@@ -49,11 +49,6 @@ export const handlers = [
 		return HttpResponse.json({ data: [] });
 	}),
 
-	// 광고 이미지 업로드 — 파일 업로드 endpoint가 backend에 없다
-	http.post(`${baseURL}/fileupload/:id`, () => {
-		return HttpResponse.json({ data: null });
-	}),
-
 	// developer 화면의 사용자 생성 — backend의 POST /auth/signup은 이메일 인증 플로우라 다른 기능이다
 	http.post(`${baseURL}/users`, () => {
 		return HttpResponse.json({ data: null });
