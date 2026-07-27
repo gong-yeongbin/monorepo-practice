@@ -22,8 +22,8 @@ async function main() {
 	const password = await bcrypt.hash('test1234!', BCRYPT_SALT_ROUNDS);
 	await prisma.user.upsert({
 		where: { email: 'admin@test.com' },
-		update: { password, approved: true },
-		create: { email: 'admin@test.com', password, approved: true },
+		update: { password, approved: true, role: 'DEVELOPER' },
+		create: { email: 'admin@test.com', password, approved: true, role: 'DEVELOPER' },
 	});
 
 	// 2~4. FK 없는 기본 엔티티
