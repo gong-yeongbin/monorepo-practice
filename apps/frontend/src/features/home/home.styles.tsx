@@ -23,6 +23,10 @@ export const StyledMenu = styled(Menu)`
 	&& .ant-menu-item {
 		color: #fff;
 	}
+
+	&& .ant-menu-item:hover {
+		color: var(--blue);
+	}
 `;
 export const Logo = styled.div`
 	display: flex;
