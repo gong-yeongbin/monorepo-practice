@@ -102,14 +102,6 @@ export const mapDailyRow = (row: BackendCounters & { created_date: string; unreg
 	...toCounterStrings(row),
 });
 
-export const mapSelectListItem = (row: { id: number; name: string; image: string | null; tracker: string }) => ({
-	idx: String(row.id),
-	name: row.name,
-	platform: platformFromName(row.name),
-	imgUrl: row.image ?? '',
-	tracker: row.tracker,
-});
-
 export const mapAdvertisingListItem = (row: {
 	id: number;
 	name: string;
@@ -273,11 +265,6 @@ const getUserProfile = async () => {
 	return res.data.data;
 };
 
-const getSelectList = async () => {
-	const res = await axiosInstance.get(`/advertising?limit=100`);
-	return res.data.data.map(mapSelectListItem);
-};
-
 const getDaily = async (date: (string | null)[]) => {
 	const token = sessionStorage.getItem('detailToken');
 	// token은 값이 있을 때만 붙인다 — backend가 빈 token을 400으로 거부한다
@@ -345,7 +332,6 @@ export const api = {
 	getTrackers,
 	getAdvertisers,
 	getUserProfile,
-	getSelectList,
 	getDaily,
 	getDailyDetail,
 	getChangeCreated,

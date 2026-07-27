@@ -7,7 +7,6 @@ import {
 	mapDashboardRow,
 	mapDetailRow,
 	mapDailyRow,
-	mapSelectListItem,
 	mapAdvertisingListItem,
 	mapCampaignListItem,
 	mapConfigRow,
@@ -148,22 +147,6 @@ describe('mapDailyRow', () => {
 	it('created_date를 createdAt으로, unregistered를 문자열로 매핑한다', () => {
 		const row = mapDailyRow({ ...counters, created_date: '2026-07-21T00:00:00.000Z', unregistered: 5 });
 		expect(row).toMatchObject({ createdAt: '2026-07-21T00:00:00.000Z', unregistered: '5', install: '60' });
-	});
-});
-
-describe('mapSelectListItem', () => {
-	it('id·image를 idx·imgUrl로 매핑한다', () => {
-		expect(mapSelectListItem({ id: 43, name: '티몬 (iOS)', image: 'http://img', tracker: 'appsflyer' })).toEqual({
-			idx: '43',
-			name: '티몬 (iOS)',
-			platform: 'iOS',
-			imgUrl: 'http://img',
-			tracker: 'appsflyer',
-		});
-	});
-
-	it('image가 null이면 빈 문자열로 채운다', () => {
-		expect(mapSelectListItem({ id: 1, name: 'a', image: null, tracker: 't' }).imgUrl).toBe('');
 	});
 });
 

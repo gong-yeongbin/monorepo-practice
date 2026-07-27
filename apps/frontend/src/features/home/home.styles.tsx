@@ -1,4 +1,4 @@
-import { Avatar, Layout, Select, Skeleton } from 'antd';
+import { Avatar, Layout } from 'antd';
 import styled from 'styled-components';
 
 const { Header, Content, Footer } = Layout;
@@ -22,37 +22,6 @@ export const Logo = styled.div`
 	height: 100%;
 	margin-right: 1rem;
 	cursor: pointer;
-`;
-export const StyledSelect = styled(Select)`
-	position: absolute;
-	left: 50%;
-	width: 35vw;
-	transform: translateX(-50%);
-	@media (max-width: 800px) {
-		left: 70%;
-	}
-	@media (max-width: 550px) {
-		width: 30vw;
-	}
-	@media (max-width: 485px) {
-		display: none;
-	}
-`;
-export const SkeletonSelect = styled(Skeleton.Input)`
-	position: absolute;
-	left: 50%;
-	bottom: 0.7rem;
-	width: 35vw;
-	transform: translateX(-50%);
-	@media (max-width: 800px) {
-		left: 65%;
-	}
-	@media (max-width: 550px) {
-		width: 30vw;
-	}
-	@media (max-width: 485px) {
-		display: none;
-	}
 `;
 export const UserProfile = styled(Avatar)`
 	user-select: none;

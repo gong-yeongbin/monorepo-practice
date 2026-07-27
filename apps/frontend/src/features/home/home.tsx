@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router';
-import { Avatar, Layout, Breadcrumb, Select, Popover, Button, Dropdown } from 'antd';
+import { Avatar, Layout, Breadcrumb, Popover, Button, Dropdown } from 'antd';
 import type { MenuProps } from 'antd';
 import {
 	ApartmentOutlined,
@@ -14,8 +14,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAd, faChartLine } from '@fortawesome/free-solid-svg-icons';
 import debounce from 'debounce';
 import {
-	SkeletonSelect,
-	StyledSelect,
 	Logo,
 	ProfileContainer,
 	StyledHeader,
@@ -30,19 +28,7 @@ import { useStore } from '@/app/store';
 import { api } from '@/shared/api/api';
 import logo from '@/images/logo.png';
 
-const { Option, OptGroup } = Select;
-
-interface ISelectList {
-	idx: number;
-	name: string;
-	platform: string;
-	imgUrl: string;
-	tracker: string;
-}
-
 const Home = observer(() => {
-	const [selectBar, setSelectBar] = useState([]);
-
 	const store = useStore();
 	const { pageTitle, selectedMenu } = store;
 
@@ -61,16 +47,12 @@ const Home = observer(() => {
 	useEffect(() => {
 		if (pathname.includes(`/advertising`)) {
 			store.setSelectedMenu('advertising');
-			setSelectBar([]);
 		} else if (pathname === `/media`) {
 			store.setSelectedMenu('media');
-			setSelectBar([]);
 		} else if (pathname === `/tracker`) {
 			store.setSelectedMenu('tracker');
-			setSelectBar([]);
 		} else if (pathname === `/developer`) {
 			store.setSelectedMenu('developer');
-			setSelectBar([]);
 		} else {
 			store.setSelectedMenu('');
 		}
@@ -110,23 +92,9 @@ const Home = observer(() => {
 		}
 	}, [profile]);
 
-	const { isFetching: isFetchingSelectList, data: selectList } = useQuery({
-		queryKey: ['selectList'],
-		queryFn: api.getSelectList,
-		enabled: !!accessToken,
-	});
-
-	const aosAd = selectList?.filter((ad: ISelectList) => ad.platform === 'AOS');
-	const iosAd = selectList?.filter((ad: ISelectList) => ad.platform === 'iOS');
-
 	const forceReload = () => {
 		navigate('/');
 		window.location.reload();
-	};
-
-	const handleSelectChange = (value: any, option: any) => {
-		setSelectBar(value);
-		navigate(`/${option.key}`);
 	};
 
 	const handleMenuClick = (menuEvent: { key: string }) => {
@@ -170,14 +138,6 @@ const Home = observer(() => {
 		</Button>
 	);
 
-	const makeSelectOptions = (ad: ISelectList) => {
-		return (
-			<Option key={ad.idx} value={`${ad.name} [${ad.tracker}]`}>
-				{ad.name} [{ad.tracker}]
-			</Option>
-		);
-	};
-
 	return (
 		<Layout className="layout">
 			<StyledHeader>
@@ -204,20 +164,6 @@ const Home = observer(() => {
 						</Button>
 					</Dropdown>
 				</LogoAndMenu>
-
-				{isFetchingSelectList ? (
-					<SkeletonSelect active />
-				) : (
-					<StyledSelect
-						placeholder="광고앱 보기"
-						value={selectBar}
-						onChange={handleSelectChange}
-						labelInValue
-					>
-						<OptGroup label="Google Play">{aosAd?.map(makeSelectOptions)}</OptGroup>
-						<OptGroup label="App Store">{iosAd?.map(makeSelectOptions)}</OptGroup>
-					</StyledSelect>
-				)}
 
 				<ProfileContainer>
 					<Popover content={profileContent}>
