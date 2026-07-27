@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router';
-import { Avatar, Layout, Breadcrumb, Popover, Button } from 'antd';
+import { Avatar, Layout, Breadcrumb } from 'antd';
 import type { MenuProps } from 'antd';
 import {
 	ApartmentOutlined,
@@ -83,6 +83,13 @@ const Home = observer(() => {
 		navigate('/login');
 	};
 
+	// 확인 시 로그아웃, 취소 시 세션 유지
+	const handleLogoutClick = () => {
+		if (window.confirm('로그아웃 하시겠습니까?')) {
+			handleLogout();
+		}
+	};
+
 	const user = parseAccessToken(accessToken);
 
 	useEffect(() => {
@@ -133,12 +140,6 @@ const Home = observer(() => {
 			: []),
 	];
 
-	const profileContent = (
-		<Button type="primary" onClick={handleLogout}>
-			Logout
-		</Button>
-	);
-
 	return (
 		<Layout className="layout">
 			<StyledHeader>
@@ -161,9 +162,9 @@ const Home = observer(() => {
 				</LogoAndMenu>
 
 				<ProfileContainer>
-					<Popover content={profileContent}>
-						<UserProfile>{user?.email}</UserProfile>
-					</Popover>
+					<UserProfile type="button" onClick={handleLogoutClick}>
+						{user?.email}
+					</UserProfile>
 				</ProfileContainer>
 			</StyledHeader>
 

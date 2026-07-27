@@ -33,9 +33,18 @@ export const Logo = styled.div`
 	margin-right: 1rem;
 	cursor: pointer;
 `;
-export const UserProfile = styled.span`
+export const UserProfile = styled.button`
+	padding: 0.3rem 0.8rem;
 	color: #fff;
+	background: transparent;
+	border: 1px solid rgba(255, 255, 255, 0.4);
+	border-radius: 4px;
+	cursor: pointer;
 	user-select: none;
+
+	&:hover {
+		border-color: #fff;
+	}
 `;
 export const Title = styled.div`
 	padding: 0.1em 0.5em;
