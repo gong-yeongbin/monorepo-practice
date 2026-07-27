@@ -20,7 +20,7 @@ export const StyledMenu = styled(Menu)`
 	min-width: 0;
 	background: transparent;
 
-	&& .ant-menu-item:not(.ant-menu-item-disabled) {
+	&& .ant-menu-item {
 		color: #fff;
 	}
 `;

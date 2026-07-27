@@ -4,7 +4,6 @@ import { Avatar, Layout, Breadcrumb, Popover, Button } from 'antd';
 import type { MenuProps } from 'antd';
 import {
 	ApartmentOutlined,
-	HomeOutlined,
 	SettingOutlined,
 } from '@ant-design/icons';
 import { observer } from 'mobx-react';
@@ -109,11 +108,6 @@ const Home = observer(() => {
 
 	const menuItems: MenuProps['items'] = [
 		{
-			label: 'Dashboard',
-			key: '',
-			icon: <HomeOutlined />,
-		},
-		{
 			label: '광고앱 관리',
 			key: 'advertising',
 			icon: <FontAwesomeIcon icon={faAd} />,
@@ -128,12 +122,15 @@ const Home = observer(() => {
 			key: 'tracker',
 			icon: <FontAwesomeIcon icon={faChartLine} />,
 		},
-		{
-			label: '개발자 메뉴',
-			key: 'developer',
-			icon: <SettingOutlined />,
-			disabled: user?.role !== 'DEVELOPER',
-		},
+		...(user?.role === 'DEVELOPER'
+			? [
+					{
+						label: '개발자 메뉴',
+						key: 'developer',
+						icon: <SettingOutlined />,
+					},
+				]
+			: []),
 	];
 
 	const profileContent = (
