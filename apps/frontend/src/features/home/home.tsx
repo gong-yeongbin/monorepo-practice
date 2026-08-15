@@ -120,14 +120,14 @@ const Home = observer(() => {
 			icon: <FontAwesomeIcon icon={faAd} />,
 		},
 		{
-			label: '매체 관리',
-			key: 'media',
-			icon: <ApartmentOutlined />,
-		},
-		{
 			label: '트래커 관리',
 			key: 'tracker',
 			icon: <FontAwesomeIcon icon={faChartLine} />,
+		},
+		{
+			label: '매체 관리',
+			key: 'media',
+			icon: <ApartmentOutlined />,
 		},
 		...(user?.role === 'DEVELOPER'
 			? [
