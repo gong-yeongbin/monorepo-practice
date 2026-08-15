@@ -302,12 +302,6 @@ const getAdvertising = async (obj: {
 	return res.data.data.map(mapAdvertisingListItem);
 };
 
-const getDeveloperList = async (listType: string) => {
-	// listType은 Radio 값('advertiser' | 'media') — advertiser만 복수형 API 경로로 매핑
-	const res = await axiosInstance.get(listType === 'advertiser' ? `/advertisers` : `/${listType}`);
-	return listType === 'advertiser' ? res.data.data.map(mapAdvertiserRow) : res.data.data.map(mapMediaRow);
-};
-
 const getCampaigns = async (paramId?: string) => {
 	const res = await axiosInstance.get(`/campaigns?advertisingId=${paramId}`);
 	return res.data.data.map(mapCampaignListItem);
@@ -329,7 +323,6 @@ export const api = {
 	getChangeCreated,
 	getChangeReserved,
 	getAdvertising,
-	getDeveloperList,
 	getCampaigns,
 	getCampaignEvents,
 };
