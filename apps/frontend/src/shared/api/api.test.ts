@@ -8,6 +8,9 @@ import {
 	mapDetailRow,
 	mapDailyRow,
 	mapDailyDetailRow,
+	mapInstallLogRow,
+	mapEventLogRow,
+	mapUnregisteredLogRow,
 	mapAdvertisingListItem,
 	mapCampaignListItem,
 	mapConfigRow,
@@ -160,6 +163,93 @@ describe('mapDailyDetailRow', () => {
 	it('pub_id·sub_id가 null이면 빈 문자열로 채운다', () => {
 		const row = mapDailyDetailRow({ ...counters, view_code: 'vc1', pub_id: null, sub_id: null });
 		expect(row).toMatchObject({ pubId: '', subId: '' });
+	});
+});
+
+// backend 포스트백 로그 행 공통 픽스처
+const postbackLogRow = {
+	tracker_name: 'appsflyer',
+	event_name: 'install',
+	click_id: 'click-1',
+	pub_id: 'pub',
+	sub_id: 'sub',
+	view_code: 'vc1',
+	token: 'tok123',
+	adid: 'adid-1',
+	idfa: null,
+	ip: '1.2.3.4',
+	country_code: 'KR',
+	clicked_at: '2026-07-21T10:00:00.000Z',
+	installed_at: '2026-07-21T10:05:00.000Z',
+	evented_at: null,
+	media_sent_at: null,
+	revenue_currency: null,
+	revenue: null,
+};
+
+describe('mapInstallLogRow', () => {
+	it('snake_case 로그를 인스톨 모달 컬럼으로 매핑하고 backend에 없는 carrier·language·sendUrl은 빈 값으로 채운다', () => {
+		expect(mapInstallLogRow(postbackLogRow)).toEqual({
+			carrier: '',
+			country: 'KR',
+			language: '',
+			ip: '1.2.3.4',
+			adid: 'adid-1',
+			clickId: 'click-1',
+			viewCode: 'vc1',
+			pubId: 'pub',
+			subId: 'sub',
+			clickTime: '2026-07-21T10:00:00.000Z',
+			installTime: '2026-07-21T10:05:00.000Z',
+			sendTime: '',
+			sendUrl: '',
+		});
+	});
+
+	it('adid가 null이면 idfa로 대체하고 nullable 필드는 빈 문자열로 채운다', () => {
+		const row = mapInstallLogRow({
+			...postbackLogRow,
+			adid: null,
+			idfa: 'idfa-1',
+			pub_id: null,
+			sub_id: null,
+			country_code: null,
+			clicked_at: null,
+			installed_at: null,
+		});
+		expect(row).toMatchObject({ adid: 'idfa-1', pubId: '', subId: '', country: '', clickTime: '', installTime: '' });
+	});
+});
+
+describe('mapEventLogRow', () => {
+	it('이벤트명·이벤트 시각·매출 필드를 추가로 매핑한다', () => {
+		const row = mapEventLogRow({
+			...postbackLogRow,
+			event_name: 'af_purchase',
+			evented_at: '2026-07-21T11:00:00.000Z',
+			revenue: '1000.5',
+			revenue_currency: 'KRW',
+		});
+		expect(row).toMatchObject({
+			eventName: 'af_purchase',
+			eventTime: '2026-07-21T11:00:00.000Z',
+			revenue: 1000.5,
+			currency: 'KRW',
+		});
+	});
+
+	it('revenue가 null이거나 숫자가 아니면 0으로 채운다', () => {
+		expect(mapEventLogRow(postbackLogRow).revenue).toBe(0);
+		expect(mapEventLogRow({ ...postbackLogRow, revenue: 'abc' }).revenue).toBe(0);
+	});
+});
+
+describe('mapUnregisteredLogRow', () => {
+	it('이벤트명별 카운트를 문자열로 매핑한다', () => {
+		expect(mapUnregisteredLogRow({ event_name: 'af_custom', count: 1234 })).toEqual({
+			eventName: 'af_custom',
+			count: '1234',
+		});
 	});
 });
 

@@ -130,6 +130,7 @@ PORT=3001
 | config | GET, PATCH `/config/:campaignId` |
 | partner | GET `/partners/:id` |
 | dashboard | GET `/dashboard`, `/dashboard/daily`(token 생략 시 전체 합산), `/dashboard/dailydetail`(token 기준 view_code·pub_id·sub_id 단위), `/dashboard/detail/:id` |
+| postback(로그) | GET `/postbacks/install`, `/postbacks/event`, `/postbacks/unregistered` (어드민 로그 모달용 조회) |
 
 ### 기타
 

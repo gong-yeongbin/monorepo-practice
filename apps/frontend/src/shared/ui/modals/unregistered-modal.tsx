@@ -3,7 +3,7 @@ import { useNavigate, useMatch } from 'react-router';
 import { Modal, Skeleton } from 'antd';
 import { observer } from 'mobx-react';
 import { useStore } from '@/app/store';
-import { axiosInstance } from '@/shared/api/axios';
+import { api } from '@/shared/api/api';
 import UnregisteredTable, { UnregisteredModalColumns } from '@/shared/ui/modals/unregistered-table';
 
 const UnregisteredModal = observer(
@@ -38,12 +38,10 @@ const UnregisteredModal = observer(
 			try {
 				setLoading(true);
 				const token = sessionStorage.getItem('detailToken');
-				let url = `/unregistered/${tracker}?startDate=${startDate}&endDate=${endDate}&token=${token}`;
-				if (isCurrentPageDaily) {
-					url = `/unregistered/${tracker}?startDate=${dailyDate}&endDate=${dailyDate}&token=${token}`;
-				}
-				const res = await axiosInstance.get(url);
-				setData(res.data.data);
+				const params = isCurrentPageDaily
+					? { startDate: dailyDate, endDate: dailyDate, token }
+					: { startDate, endDate, token };
+				setData(await api.getPostbackUnregistered(params));
 				setLoading(false);
 			} catch (error) {
 				sessionStorage.clear();
@@ -73,7 +71,7 @@ const UnregisteredModal = observer(
 						{tracker}
 					</span>
 				}
-				visible={unregisteredVisible}
+				open={unregisteredVisible}
 				onCancel={handleModalClose}
 				footer={null}
 				width="50vw"

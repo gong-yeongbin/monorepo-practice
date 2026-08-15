@@ -111,6 +111,57 @@ export const mapDailyDetailRow = (
 	...toCounterStrings(row),
 });
 
+// backend 포스트백 로그(snake_case) 응답 행
+interface BackendPostbackLog {
+	tracker_name: string;
+	event_name: string;
+	click_id: string;
+	pub_id: string | null;
+	sub_id: string | null;
+	view_code: string;
+	token: string;
+	adid: string | null;
+	idfa: string | null;
+	ip: string;
+	country_code: string | null;
+	clicked_at: string | null;
+	installed_at: string | null;
+	evented_at: string | null;
+	media_sent_at: string | null;
+	revenue_currency: string | null;
+	revenue: string | null;
+}
+
+// carrier·language·sendUrl은 backend postback 테이블에 없는 데이터 갭이라 빈 값으로 채운다
+export const mapInstallLogRow = (row: BackendPostbackLog) => ({
+	carrier: '',
+	country: row.country_code ?? '',
+	language: '',
+	ip: row.ip,
+	adid: row.adid ?? row.idfa ?? '',
+	clickId: row.click_id,
+	viewCode: row.view_code,
+	pubId: row.pub_id ?? '',
+	subId: row.sub_id ?? '',
+	clickTime: row.clicked_at ?? '',
+	installTime: row.installed_at ?? '',
+	sendTime: row.media_sent_at ?? '',
+	sendUrl: '',
+});
+
+export const mapEventLogRow = (row: BackendPostbackLog) => ({
+	...mapInstallLogRow(row),
+	eventName: row.event_name,
+	eventTime: row.evented_at ?? '',
+	revenue: Number(row.revenue) || 0,
+	currency: row.revenue_currency ?? '',
+});
+
+export const mapUnregisteredLogRow = (row: { event_name: string; count: number }) => ({
+	eventName: row.event_name,
+	count: String(row.count),
+});
+
 export const mapAdvertisingListItem = (row: {
 	id: number;
 	name: string;
@@ -293,6 +344,49 @@ const getDailyDetail = async (info: {
 	return dataWithCvr;
 };
 
+const getPostbackInstalls = async (info: {
+	startDate: string | null;
+	endDate: string | null;
+	token?: string | null;
+	viewCode?: string | null;
+}) => {
+	const { startDate, endDate, token, viewCode } = info;
+	const res = await axiosInstance.get(
+		`/postbacks/install?start_date=${startDate}&end_date=${endDate}${token ? `&token=${token}` : ''}${
+			viewCode ? `&view_code=${viewCode}` : ''
+		}`,
+	);
+	return res.data.data.map(mapInstallLogRow);
+};
+
+const getPostbackEvents = async (info: {
+	startDate: string | null;
+	endDate: string | null;
+	token: string | null;
+	eventName: string;
+	viewCode?: string | null;
+}) => {
+	const { startDate, endDate, token, eventName, viewCode } = info;
+	const res = await axiosInstance.get(
+		`/postbacks/event?start_date=${startDate}&end_date=${endDate}&token=${token}&event_name=${eventName}${
+			viewCode ? `&view_code=${viewCode}` : ''
+		}`,
+	);
+	return res.data.data.map(mapEventLogRow);
+};
+
+const getPostbackUnregistered = async (info: {
+	startDate: string | null;
+	endDate: string | null;
+	token: string | null;
+}) => {
+	const { startDate, endDate, token } = info;
+	const res = await axiosInstance.get(
+		`/postbacks/unregistered?start_date=${startDate}&end_date=${endDate}&token=${token}`,
+	);
+	return res.data.data.map(mapUnregisteredLogRow);
+};
+
 const getChangeCreated = async (paramId?: string) => {
 	const res = await axiosInstance.get(`/reservation/on/${paramId}`);
 	return res.data.data;
@@ -329,6 +423,9 @@ export const api = {
 	getAdvertisers,
 	getDaily,
 	getDailyDetail,
+	getPostbackInstalls,
+	getPostbackEvents,
+	getPostbackUnregistered,
 	getChangeCreated,
 	getChangeReserved,
 	getAdvertising,

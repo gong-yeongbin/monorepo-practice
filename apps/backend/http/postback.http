@@ -13,3 +13,15 @@ GET {{host}}/airbridge/install?clickid=click-0003&af_siteid=site-1&af_c_id=CAMPA
 
 ### adbrix-remaster install 포스트백 예시
 GET {{host}}/adbrix-remaster/install?clickid=click-0004&af_siteid=site-1&af_c_id=CAMPAIGN_TOKEN
+
+### install 포스트백 로그 — token 기준
+GET {{host}}/postbacks/install?token=CAMPAIGN_TOKEN&start_date=2026-07-01&end_date=2026-07-22
+
+### install 포스트백 로그 — view_code 기준(일자별 상세 화면)
+GET {{host}}/postbacks/install?view_code=VIEW_CODE&start_date=2026-07-01&end_date=2026-07-22
+
+### event 포스트백 로그 — admin 이벤트명을 campaign_config로 변환해 조회
+GET {{host}}/postbacks/event?token=CAMPAIGN_TOKEN&event_name=purchase&start_date=2026-07-01&end_date=2026-07-22
+
+### 미등록 이벤트 카운트 — campaign_config에 없는 이벤트명 그룹 합계
+GET {{host}}/postbacks/unregistered?token=CAMPAIGN_TOKEN&start_date=2026-07-01&end_date=2026-07-22

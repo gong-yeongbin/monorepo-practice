@@ -21,6 +21,13 @@ export interface Postback {
 	raw_query_params: string;
 }
 
+// 어드민 로그 조회용 레코드. raw_query_params는 무겁고 화면에서 안 쓰므로 제외하고, 스키마에만 있는 media_sent_at을 포함한다.
+// country_code는 스키마상 nullable이라 저장 타입과 달리 null 허용으로 재정의한다.
+export interface PostbackLog extends Omit<Postback, 'raw_query_params' | 'country_code'> {
+	country_code: string | null;
+	media_sent_at: Date | string | null;
+}
+
 // 트래커 포스트백(camelCase)을 저장용 postback(snake_case)으로 매핑한다
 export const createPostback = (props: TrackerPostback & { trackerName: string; eventName: string; pubId: string | null; subId: string | null; rawQueryParams: string }): Postback => ({
 	tracker_name: props.trackerName,

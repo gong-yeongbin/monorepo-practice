@@ -31,7 +31,7 @@
 
 - **`daily_report`의 관계가 `campaign_id`가 아니라 `token`으로 연결됨** — tracking consumer는 클릭 집계 시 campaign을 조회하지 않고 viewCode에서 디코드한 token만으로 upsert한다. FK를 campaign_id로 바꾸면 트래킹 핫패스에 DB 조회가 강제되어 성능이 나빠진다. `campaign.token`은 uuid 기본값이라 잘 바뀌지 않는다.
 - **`postback.revenue`는 `String`, `daily_report.revenue`는 `Int`** — postback은 트래커 원본 매출(소수·통화 혼재 가능)을 손실 없이 보존한다. daily_report는 집계 카운터라 Int. 타입을 통일하려 하지 말 것(어느 쪽이든 손실). 매출 집계 정책(통화 변환·소수 처리)이 필요하면 그건 별도 설계 사안.
-- **`postback`은 삽입 전용** — 이 앱은 postback을 `createMany`만 하고 조회하지 않는다. 그래서 조회 인덱스를 두지 않는다(과거 `@@index([token])`는 미사용이라 `20260710090000`에서 제거). postback을 token 등으로 조회하는 기능을 새로 넣는다면 그때 인덱스를 추가한다.
+- **`postback`은 삽입 위주** — 트래킹 파이프라인은 `createMany`만 한다. 어드민 로그 조회 API(`/postbacks/install·event·unregistered`)가 추가되면서 조회 인덱스 3개(`[token, installed_at]`, `[token, evented_at]`, `[view_code]`)를 뒀다(`20260815100000`). 데이터가 크게 쌓이면 보존 기간 정책·날짜 파티셔닝은 별도 설계 사안.
 
 ## 마이그레이션 규칙
 

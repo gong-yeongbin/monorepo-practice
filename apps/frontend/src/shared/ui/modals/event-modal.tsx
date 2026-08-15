@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useMatch } from 'react-router';
 import { Modal, Skeleton } from 'antd';
 import { observer } from 'mobx-react';
-import { axiosInstance } from '@/shared/api/axios';
+import { api } from '@/shared/api/api';
 import { useStore } from '@/app/store';
 import EventTable, { EventModalColumns } from '@/shared/ui/modals/event-table';
 
@@ -23,7 +23,7 @@ const EventModal = observer(
 
 		const store = useStore();
 		const { info, eventName } = store;
-		const { advertising, advertiser, tracker } = info;
+		const { advertising, advertiser } = info;
 
 		const isPageDaily = useMatch('/:id/daily');
 		const isPageDailyDetail = useMatch('/:id/daily/detail');
@@ -49,14 +49,19 @@ const EventModal = observer(
 			try {
 				setLoading(true);
 				const token = sessionStorage.getItem('detailToken');
-				let url = `/event/${tracker}?startDate=${startDate}&endDate=${endDate}&token=${token}&offset=${0}&limit=0&eventName=${eventName}`;
+				let params: Parameters<typeof api.getPostbackEvents>[0] = { startDate, endDate, token, eventName };
 				if (isPageDaily) {
-					url = `/event/${tracker}?startDate=${dailyDate}&endDate=${dailyDate}&token=${token}&offset=${0}&limit=0&eventName=${eventName}`;
+					params = { startDate: dailyDate, endDate: dailyDate, token, eventName };
 				} else if (isPageDailyDetail) {
-					url = `/event/${tracker}?startDate=${dailyDetailStartDate}&endDate=${dailyDetailEndDate}&token=${token}&offset=${0}&limit=0&eventName=${eventName}&viewCode=${viewCode}`;
+					params = {
+						startDate: dailyDetailStartDate,
+						endDate: dailyDetailEndDate,
+						token,
+						eventName,
+						viewCode,
+					};
 				}
-				const res = await axiosInstance.get(url);
-				setData(res.data.data);
+				setData(await api.getPostbackEvents(params));
 				setLoading(false);
 			} catch (error) {
 				sessionStorage.clear();
@@ -109,7 +114,7 @@ const EventModal = observer(
 						{advertising}
 					</span>
 				}
-				visible={eventVisible}
+				open={eventVisible}
 				onCancel={handleModalClose}
 				footer={null}
 				width="100vw"

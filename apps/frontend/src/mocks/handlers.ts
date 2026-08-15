@@ -28,17 +28,6 @@ export const handlers = [
 		return HttpResponse.json({ data: null });
 	}),
 
-	// 로그 조회 모달 3종 — backend의 /:name/install·event는 포스트백 수신용이라 조회 endpoint가 없다
-	http.get(`${baseURL}/install/:tracker`, () => {
-		return HttpResponse.json({ data: [] });
-	}),
-	http.get(`${baseURL}/event/:tracker`, () => {
-		return HttpResponse.json({ data: [] });
-	}),
-	http.get(`${baseURL}/unregistered/:tracker`, () => {
-		return HttpResponse.json({ data: [] });
-	}),
-
 	// 엑셀 다운로드 — backend에 없다
 	http.get(`${baseURL}/:eventType/:tracker/excel`, () => {
 		return HttpResponse.json({ data: [] });

@@ -116,6 +116,11 @@ model postback {
   // revenue는 트래커 원본 문자열을 손실 없이 보존한다(소수·통화 혼재 가능). 집계용 daily_report.revenue(Int)와 타입이 다른 것은 의도적이다.
   revenue          String?   @db.VarChar(50)
   raw_query_params String    @db.Text
+
+  // 어드민 로그 조회(인스톨·이벤트·미등록 모달)용 인덱스. 삽입 전용이던 설계에 조회 API가 추가되면서 도입했다.
+  @@index([token, installed_at])
+  @@index([token, evented_at])
+  @@index([view_code])
 }
 
 model daily_report {

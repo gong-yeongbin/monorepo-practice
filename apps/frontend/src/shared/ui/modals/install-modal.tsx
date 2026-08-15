@@ -3,7 +3,7 @@ import { Modal, Skeleton } from 'antd';
 import { observer } from 'mobx-react';
 import { useNavigate, useMatch } from 'react-router';
 import { useStore } from '@/app/store';
-import { axiosInstance } from '@/shared/api/axios';
+import { api } from '@/shared/api/api';
 import InstallTable, { InstallModalColumns } from '@/shared/ui/modals/install-table';
 
 const InstallModal = observer(
@@ -22,7 +22,7 @@ const InstallModal = observer(
 
 		const store = useStore();
 		const { info } = store;
-		const { advertising, advertiser, tracker } = info;
+		const { advertising, advertiser } = info;
 
 		const isPageDaily = useMatch('/:id/daily');
 		const isPageDailyDetail = useMatch('/:id/daily/detail');
@@ -44,14 +44,13 @@ const InstallModal = observer(
 			try {
 				setLoading(true);
 				const token = sessionStorage.getItem('detailToken');
-				let url = `/install/${tracker}?startDate=${startDate}&endDate=${endDate}&token=${token}&offset=${0}&limit=0`;
+				let params: Parameters<typeof api.getPostbackInstalls>[0] = { startDate, endDate, token };
 				if (isPageDaily) {
-					url = `/install/${tracker}?startDate=${dailyDate}&endDate=${dailyDate}&token=${token}&offset=${0}&limit=0`;
+					params = { startDate: dailyDate, endDate: dailyDate, token };
 				} else if (isPageDailyDetail) {
-					url = `/install/${tracker}?startDate=${dailyDetailStartDate}&endDate=${dailyDetailEndDate}&offset=${0}&limit=0&viewCode=${viewCode}`;
+					params = { startDate: dailyDetailStartDate, endDate: dailyDetailEndDate, viewCode };
 				}
-				const res = await axiosInstance.get(url);
-				setData(res.data.data);
+				setData(await api.getPostbackInstalls(params));
 				setLoading(false);
 			} catch (error) {
 				sessionStorage.clear();
@@ -89,7 +88,7 @@ const InstallModal = observer(
 						{advertising}
 					</span>
 				}
-				visible={installVisible}
+				open={installVisible}
 				onCancel={handleModalClose}
 				footer={null}
 				width="100vw"
