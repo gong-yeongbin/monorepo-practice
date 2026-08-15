@@ -295,13 +295,11 @@ const getChangeReserved = async (paramId?: string) => {
 };
 
 const getAdvertising = async (obj: {
-	status: number;
 	searchWords?: string;
 }) => {
-	const { status, searchWords } = obj;
+	const { searchWords } = obj;
 	const res = await axiosInstance.get(`/advertising?search=${searchWords}&offset=0&limit=100`);
-	// backend에 status 필터가 없어 클라이언트에서 거른다
-	return res.data.data.map(mapAdvertisingListItem).filter((row: { status: number }) => row.status === status);
+	return res.data.data.map(mapAdvertisingListItem);
 };
 
 const getDeveloperList = async (listType: string) => {

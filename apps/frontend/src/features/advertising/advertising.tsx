@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { observer } from 'mobx-react';
-import { Select, Input, Skeleton, Table as EmptyTable } from 'antd';
+import { Input, Skeleton, Table as EmptyTable } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { useStore } from '@/app/store';
@@ -17,11 +17,9 @@ import {
 } from '@/app/global-styles';
 import { api } from '@/shared/api/api';
 
-const { Option } = Select;
 const { Search } = Input;
 
 const Advertising = observer(() => {
-	const [status, setStatus] = useState(1);
 	const [searchWords, setSearchWords] = useState('');
 	const [drawerVisible, setDrawerVisible] = useState(false);
 
@@ -34,7 +32,6 @@ const Advertising = observer(() => {
 	}, []);
 
 	const dependency = {
-		status,
 		searchWords,
 	};
 
@@ -42,14 +39,6 @@ const Advertising = observer(() => {
 		queryKey: ['advertising', dependency],
 		queryFn: () => api.getAdvertising(dependency),
 	});
-
-	const handleStatusChange = (value: string) => {
-		if (value === 'on') {
-			setStatus(1);
-		} else {
-			setStatus(0);
-		}
-	};
 
 	const handleSearch = (value: string) => setSearchWords(value);
 
@@ -67,17 +56,9 @@ const Advertising = observer(() => {
 		<PaddingContainer>
 			<Nav>
 				<NavLeft>
-					<Select
-						defaultValue="on"
-						style={{ width: 65, marginRight: '0.5rem', marginBottom: '1rem' }}
-						onChange={handleStatusChange}
-					>
-						<Option value="on">ON</Option>
-						<Option value="off">OFF</Option>
-					</Select>
 					<Search
 						loading={isFetching}
-						style={{ width: 200 }}
+						style={{ width: 200, marginBottom: '1rem' }}
 						onSearch={handleSearch}
 						onChange={handleSearchChange}
 						allowClear
