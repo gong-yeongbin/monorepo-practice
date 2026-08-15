@@ -39,18 +39,6 @@ const CampaignsTable = (props: { data: Array<CampaignColumns> }) => {
 		}
 	};
 
-	const confirmChange = async (idx: string) => {
-		// backend는 빈 body PATCH를 no-op으로 처리하므로 토글할 값을 명시해 보낸다
-		const target = data.find(element => element.campaignIdx === idx);
-		const newStatus = !target?.campaignStatus;
-		updateData(idx, 'campaignStatus');
-		try {
-			await axiosInstance.patch(`/campaigns/${idx}`, { is_active: newStatus });
-		} catch (error) {
-			handleError();
-		}
-	};
-
 	const updateData = (idx: string, key: string) => {
 		const index = data.findIndex(element => element.campaignIdx === idx);
 		const updatedRow = Object.assign(data[index], {
@@ -99,23 +87,6 @@ const CampaignsTable = (props: { data: Array<CampaignColumns> }) => {
 						>
 							{campaignName}
 						</span>
-					);
-				},
-			}),
-			columnHelper.display({
-				id: 'change-switch',
-				header: '예약 변경',
-				cell: info => {
-					const { campaignIdx, campaignStatus } = info.row.original;
-					return (
-						<Popconfirm
-							title="진행하시겠습니까?"
-							onConfirm={() => confirmChange(campaignIdx)}
-							okText="Yes"
-							cancelText="No"
-						>
-							<Switch checked={!!campaignStatus} size="small" />
-						</Popconfirm>
 					);
 				},
 			}),
