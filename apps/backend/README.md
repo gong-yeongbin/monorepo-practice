@@ -129,7 +129,7 @@ PORT=3001
 | campaign | GET, POST `/campaigns`, GET, PATCH, DELETE `/campaigns/:id` |
 | config | GET, PATCH `/config/:campaignId` |
 | partner | GET `/partners/:id` |
-| dashboard | GET `/dashboard`, `/dashboard/daily`(token 생략 시 전체 합산), `/dashboard/detail/:id` |
+| dashboard | GET `/dashboard`, `/dashboard/daily`(token 생략 시 전체 합산), `/dashboard/dailydetail`(token 기준 view_code·pub_id·sub_id 단위), `/dashboard/detail/:id` |
 
 ### 기타
 

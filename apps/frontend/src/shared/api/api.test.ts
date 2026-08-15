@@ -7,6 +7,7 @@ import {
 	mapDashboardRow,
 	mapDetailRow,
 	mapDailyRow,
+	mapDailyDetailRow,
 	mapAdvertisingListItem,
 	mapCampaignListItem,
 	mapConfigRow,
@@ -147,6 +148,18 @@ describe('mapDailyRow', () => {
 	it('created_date를 createdAt으로, unregistered를 문자열로 매핑한다', () => {
 		const row = mapDailyRow({ ...counters, created_date: '2026-07-21T00:00:00.000Z', unregistered: 5 });
 		expect(row).toMatchObject({ createdAt: '2026-07-21T00:00:00.000Z', unregistered: '5', install: '60' });
+	});
+});
+
+describe('mapDailyDetailRow', () => {
+	it('view_code·pub_id·sub_id를 camelCase로, 카운터를 문자열로 매핑한다', () => {
+		const row = mapDailyDetailRow({ ...counters, view_code: 'vc1', pub_id: 'pub', sub_id: 'sub' });
+		expect(row).toMatchObject({ viewCode: 'vc1', pubId: 'pub', subId: 'sub', click: '1200', install: '60' });
+	});
+
+	it('pub_id·sub_id가 null이면 빈 문자열로 채운다', () => {
+		const row = mapDailyDetailRow({ ...counters, view_code: 'vc1', pub_id: null, sub_id: null });
+		expect(row).toMatchObject({ pubId: '', subId: '' });
 	});
 });
 

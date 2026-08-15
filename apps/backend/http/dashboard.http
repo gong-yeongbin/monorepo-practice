@@ -7,6 +7,9 @@ GET {{host}}/dashboard/daily?start_date=2026-07-01&end_date=2026-07-22
 ### 일별 통계 — 특정 campaign token 기준
 GET {{host}}/dashboard/daily?start_date=2026-07-01&end_date=2026-07-22&token=CAMPAIGN_TOKEN
 
+### 일자별 상세 — campaign token 기준, view_code·pub_id·sub_id 단위 (카운터 정렬)
+GET {{host}}/dashboard/dailydetail?start_date=2026-07-01&end_date=2026-07-22&token=CAMPAIGN_TOKEN&type=install&order=desc
+
 ### 상세 통계 — advertising 단위, media_id 필터 선택
 GET {{host}}/dashboard/detail/1?start_date=2026-07-01&end_date=2026-07-22
 

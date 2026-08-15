@@ -102,6 +102,15 @@ export const mapDailyRow = (row: BackendCounters & { created_date: string; unreg
 	...toCounterStrings(row),
 });
 
+export const mapDailyDetailRow = (
+	row: BackendCounters & { view_code: string; pub_id: string | null; sub_id: string | null },
+) => ({
+	viewCode: row.view_code,
+	pubId: row.pub_id ?? '',
+	subId: row.sub_id ?? '',
+	...toCounterStrings(row),
+});
+
 export const mapAdvertisingListItem = (row: {
 	id: number;
 	name: string;
@@ -278,9 +287,9 @@ const getDailyDetail = async (info: {
 	const { date, orderType, order } = info;
 	const token = sessionStorage.getItem('detailToken');
 	const res = await axiosInstance.get(
-		`/advertising/dailydetail?startDate=${date[0]}&endDate=${date[1]}&type=${orderType}&order=${order}&token=${token}`,
+		`/dashboard/dailydetail?start_date=${date[0]}&end_date=${date[1]}&type=${orderType}&order=${order}&token=${token}`,
 	);
-	const dataWithCvr = getDataWithCvr(res.data.data);
+	const dataWithCvr = getDataWithCvr(res.data.data.map(mapDailyDetailRow));
 	return dataWithCvr;
 };
 

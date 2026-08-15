@@ -2,13 +2,15 @@
 import { DashboardController } from './dashboard.controller';
 import { DashboardUseCase } from '@dashboard/application/dashboard.use-case';
 import { DailyUseCase } from '@dashboard/application/daily.use-case';
+import { DailyDetailUseCase } from '@dashboard/application/daily-detail.use-case';
 import { DetailUseCase } from '@dashboard/application/detail.use-case';
 
 describe('DashboardController', () => {
 	const dashboard = { execute: jest.fn() } as unknown as DashboardUseCase;
 	const daily = { execute: jest.fn() } as unknown as DailyUseCase;
+	const dailyDetail = { execute: jest.fn() } as unknown as DailyDetailUseCase;
 	const detail = { execute: jest.fn() } as unknown as DetailUseCase;
-	const controller = new DashboardController(dashboard, daily, detail);
+	const controller = new DashboardController(dashboard, daily, dailyDetail, detail);
 
 	beforeEach(() => jest.clearAllMocks());
 
@@ -19,6 +21,12 @@ describe('DashboardController', () => {
 		const dailyQuery = { token: 't', start_date: '2026-07-01', end_date: '2026-07-10' };
 		await controller.daily(dailyQuery);
 		expect(daily.execute).toHaveBeenCalledWith(dailyQuery);
+	});
+
+	it('dailydetail은 query를 위임한다', async () => {
+		const query = { token: 't', start_date: '2026-07-01', end_date: '2026-07-10', type: 'install' as const, order: 'desc' as const };
+		await controller.dailyDetail(query);
+		expect(dailyDetail.execute).toHaveBeenCalledWith(query);
 	});
 
 	it('detail은 id와 query를 위임한다', async () => {

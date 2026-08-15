@@ -3,12 +3,13 @@ import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { DashboardUseCase } from '@dashboard/application/dashboard.use-case';
 import { DailyUseCase } from '@dashboard/application/daily.use-case';
+import { DailyDetailUseCase } from '@dashboard/application/daily-detail.use-case';
 import { DetailUseCase } from '@dashboard/application/detail.use-case';
-import { DashboardDto, DailyDto, DetailDto } from '@dashboard/application/dto/statistics.dto';
+import { DashboardDto, DailyDetailDto, DailyDto, DetailDto } from '@dashboard/application/dto/statistics.dto';
 import { AdvertisingIdDto } from '@dashboard/application/dto/advertising-id.dto';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
-import { DailyRowResponse, DashboardRowResponse, DetailRowResponse } from '@dashboard/presentation/dto/dashboard.response.dto';
+import { DailyDetailRowResponse, DailyRowResponse, DashboardRowResponse, DetailRowResponse } from '@dashboard/presentation/dto/dashboard.response.dto';
 
 @ApiTags('dashboard')
 @Controller('dashboard')
@@ -17,6 +18,7 @@ export class DashboardController {
 	constructor(
 		private readonly dashboardUseCase: DashboardUseCase,
 		private readonly dailyUseCase: DailyUseCase,
+		private readonly dailyDetailUseCase: DailyDetailUseCase,
 		private readonly detailUseCase: DetailUseCase
 	) {}
 
@@ -34,6 +36,14 @@ export class DashboardController {
 	@ApiResponse({ status: 400, description: '요청 값 검증 실패' })
 	async daily(@Query() query: DailyDto) {
 		return this.dailyUseCase.execute(query);
+	}
+
+	@Get('dailydetail')
+	@ApiOperation({ summary: '일자별 상세 — campaign token 기준, view_code·pub_id·sub_id 단위 (카운터 정렬)' })
+	@ApiWrappedResponse({ status: 200, description: '조회 성공', type: DailyDetailRowResponse, isArray: true })
+	@ApiResponse({ status: 400, description: '요청 값 검증 실패' })
+	async dailyDetail(@Query() query: DailyDetailDto) {
+		return this.dailyDetailUseCase.execute(query);
 	}
 
 	@Get('detail/:id')

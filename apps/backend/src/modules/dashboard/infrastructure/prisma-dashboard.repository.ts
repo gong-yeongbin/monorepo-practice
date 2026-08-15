@@ -2,8 +2,8 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '@infra/prisma/prisma.service';
-import { DailyRow, DashboardRow, DetailRow } from '@dashboard/domain/statistics.entity';
-import { DashboardRepository, DateRange } from '@dashboard/domain/dashboard.repository';
+import { DailyDetailRow, DailyRow, DashboardRow, DetailRow, ReportCounters } from '@dashboard/domain/statistics.entity';
+import { CounterSort, DashboardRepository, DateRange } from '@dashboard/domain/dashboard.repository';
 
 @Injectable()
 export class PrismaDashboardRepository implements DashboardRepository {
@@ -37,6 +37,18 @@ export class PrismaDashboardRepository implements DashboardRepository {
 		});
 
 		return rows.map(mapDailyRow);
+	}
+
+	// token 기준, view_code·pub_id·sub_id 단위 카운터 합산. 지정한 카운터 컬럼으로 정렬.
+	async dailyDetail(range: DateRange, token: string, sort: CounterSort): Promise<DailyDetailRow[]> {
+		const rows = await this.prismaService.daily_report.groupBy({
+			by: ['view_code', 'pub_id', 'sub_id'],
+			where: { token, created_date: { gte: range.start_date, lte: range.end_date } },
+			_sum: DAILY_SUM_SELECT,
+			orderBy: { _sum: { [sort.field]: sort.order } },
+		});
+
+		return rows.map(mapDailyDetailRow);
 	}
 
 	async detail(advertising_id: number, range: DateRange, media_id?: number): Promise<DetailRow[]> {
@@ -82,21 +94,38 @@ const DAILY_SUM_SELECT = {
 	etc1: true, etc2: true, etc3: true, etc4: true, etc5: true, unregistered: true,
 } as const;
 
-// groupBy _sum 결과를 DailyRow로 매핑(null 합계는 0으로)
+// groupBy _sum의 공통 카운터를 매핑(null 합계는 0으로)
+function mapCounters(sum: Record<string, number | null>): ReportCounters {
+	return {
+		click: sum.click ?? 0,
+		install: sum.install ?? 0,
+		registration: sum.registration ?? 0,
+		retention: sum.retention ?? 0,
+		purchase: sum.purchase ?? 0,
+		revenue: sum.revenue ?? 0,
+		etc1: sum.etc1 ?? 0,
+		etc2: sum.etc2 ?? 0,
+		etc3: sum.etc3 ?? 0,
+		etc4: sum.etc4 ?? 0,
+		etc5: sum.etc5 ?? 0,
+	};
+}
+
+// groupBy _sum 결과를 DailyRow로 매핑
 function mapDailyRow(row: { created_date: Date; _sum: Record<string, number | null> }): DailyRow {
 	return {
 		created_date: row.created_date,
-		click: row._sum.click ?? 0,
-		install: row._sum.install ?? 0,
-		registration: row._sum.registration ?? 0,
-		retention: row._sum.retention ?? 0,
-		purchase: row._sum.purchase ?? 0,
-		revenue: row._sum.revenue ?? 0,
-		etc1: row._sum.etc1 ?? 0,
-		etc2: row._sum.etc2 ?? 0,
-		etc3: row._sum.etc3 ?? 0,
-		etc4: row._sum.etc4 ?? 0,
-		etc5: row._sum.etc5 ?? 0,
+		...mapCounters(row._sum),
 		unregistered: row._sum.unregistered ?? 0,
+	};
+}
+
+// groupBy _sum 결과를 DailyDetailRow로 매핑
+function mapDailyDetailRow(row: { view_code: string; pub_id: string | null; sub_id: string | null; _sum: Record<string, number | null> }): DailyDetailRow {
+	return {
+		view_code: row.view_code,
+		pub_id: row.pub_id,
+		sub_id: row.sub_id,
+		...mapCounters(row._sum),
 	};
 }

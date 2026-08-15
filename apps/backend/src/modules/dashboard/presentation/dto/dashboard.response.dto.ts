@@ -1,5 +1,5 @@
 // 대시보드 통계 응답 스키마(Swagger 문서용). 도메인 statistics 타입과 필드를 동일하게 유지한다
-import { DailyRow, DashboardRow, DetailRow, ReportCounters } from '@dashboard/domain/statistics.entity';
+import { DailyDetailRow, DailyRow, DashboardRow, DetailRow, ReportCounters } from '@dashboard/domain/statistics.entity';
 
 class ReportCountersResponse implements ReportCounters {
 	click: number;
@@ -35,6 +35,14 @@ export class DailyRowResponse extends ReportCountersResponse implements DailyRow
 	created_date: Date;
 
 	unregistered: number;
+}
+
+export class DailyDetailRowResponse extends ReportCountersResponse implements DailyDetailRow {
+	view_code: string;
+
+	pub_id: string | null;
+
+	sub_id: string | null;
 }
 
 export class DetailRowResponse extends ReportCountersResponse implements DetailRow {

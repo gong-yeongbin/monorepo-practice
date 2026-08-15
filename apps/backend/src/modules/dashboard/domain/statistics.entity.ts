@@ -27,6 +27,13 @@ export interface DailyRow extends ReportCounters {
 	unregistered: number;
 }
 
+// 일자별 상세(admin getAdvertisingDailyDetail): token 기준, view_code·pub_id·sub_id 단위 합산
+export interface DailyDetailRow extends ReportCounters {
+	view_code: string;
+	pub_id: string | null;
+	sub_id: string | null;
+}
+
 // 상세 통계(admin getAdvertisingDetail): advertising별, 매체·캠페인 단위 합산
 export interface DetailRow extends ReportCounters {
 	media_id: number;

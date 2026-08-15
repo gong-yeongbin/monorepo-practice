@@ -14,11 +14,6 @@ export const handlers = [
 		return HttpResponse.json({ data: null });
 	}),
 
-	// 일자별 상세(viewCode·pubId 단위) — backend에 없다
-	http.get(`${baseURL}/advertising/dailydetail`, () => {
-		return HttpResponse.json({ data: [] });
-	}),
-
 	// 예약 변경 화면 — reservation 모듈이 backend에 없다
 	http.get(`${baseURL}/reservation/on/:id`, () => {
 		return HttpResponse.json({ data: [] });
