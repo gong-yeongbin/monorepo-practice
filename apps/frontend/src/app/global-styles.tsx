@@ -79,6 +79,11 @@ ${normalize}
     .ant-btn-dangerous > span {
       color: red;
     }
+    .ant-btn * {
+      // 전역 * { font-size: 12px }가 버튼 내부 span/svg에 직접 걸리면 antd가 버튼
+      // 크기별로 의도한 아이콘 크기 상속이 끊겨 획이 서브픽셀로 흐려진다. 상속을 복원한다.
+      font-size: inherit;
+    }
     #menu-button {
       color:#fff;
       background:transparent;
@@ -318,7 +323,9 @@ export const TableStyles = styled.div<{ height?: string }>`
 			position: relative;
 			margin: 0;
 			padding: 0.8rem;
-			:last-child {
+			// & 없이 :last-child만 쓰면 후손 선택자(.td :last-child)로 컴파일되어
+			// 셀 안의 마지막 자식(예: 복사 버튼)의 오른쪽 보더까지 지워버린다
+			&:last-child {
 				border-right: 0;
 			}
 			.resizer {
