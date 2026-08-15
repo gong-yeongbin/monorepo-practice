@@ -393,7 +393,7 @@ const InfoCard = observer(() => {
 											title="트래커 트래킹 URL"
 											footer={false}
 											onCancel={handleCancel}
-											visible={trackerUrlVisible}
+											open={trackerUrlVisible}
 										>
 											<p>{secondInfo?.trackerTrackingUrl}</p>
 										</Modal>
@@ -420,7 +420,7 @@ const InfoCard = observer(() => {
 											title="MECROSS 트래킹 URL"
 											footer={false}
 											onCancel={handleCancel}
-											visible={mecrossUrlVisible}
+											open={mecrossUrlVisible}
 										>
 											<p>{secondInfo?.mecrossTrackingUrl}</p>
 										</Modal>

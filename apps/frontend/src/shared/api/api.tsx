@@ -282,7 +282,8 @@ export const mapCampaignInfo = (row: {
 	type: row.type,
 	status: row.is_active ? 1 : 0,
 	trackerTrackingUrl: row.tracker_tracking_url,
-	mecrossTrackingUrl: '', // backend 응답에 없다 (데이터 갭)
+	// 저장된 값이 아니라 캠페인 token으로 조립하는 매체 배포용 트래킹 URL ({click_id} 등은 매체가 치환하는 플레이스홀더)
+	mecrossTrackingUrl: `http://api.mecrosspro.com/tracking?token=${row.token}&click_id={click_id}&pub_id={pub_id}&sub_id={sub_id}&idfa={idfa}&adid={adid}`,
 	appkey: '',
 	trackerTrackingStatus: 0,
 	mecrossTrackingStatus: 0,

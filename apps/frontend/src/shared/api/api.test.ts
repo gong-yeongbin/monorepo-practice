@@ -435,7 +435,7 @@ describe('mapCampaignInfo', () => {
 			type: 'CPA',
 			status: 1,
 			trackerTrackingUrl: 'http://track',
-			mecrossTrackingUrl: '',
+			mecrossTrackingUrl: 'http://api.mecrosspro.com/tracking?token=tok123&click_id={click_id}&pub_id={pub_id}&sub_id={sub_id}&idfa={idfa}&adid={adid}',
 		});
 	});
 
