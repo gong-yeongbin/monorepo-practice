@@ -95,19 +95,25 @@ async function main() {
 	const baseDate = kstBaseDate();
 	for (let i = 0; i < DAILY_REPORT_DAYS; i++) {
 		const createdDate = new Date(baseDate.getTime() - i * 24 * 60 * 60 * 1000);
+		// unregistered는 실제 파이프라인처럼 미등록 postback(af_login 1건/일) 건수와 일치시킨다.
+		// 이미 seed된 행도 카운터가 seed 정의값과 동기화되도록 update에서도 갱신한다(9번의 postback 삭제 후 재생성과 짝을 맞춤)
+		const counters = {
+			click: 100 + i * 10,
+			install: 30 + i * 3,
+			registration: 10 + i,
+			purchase: 5 + i,
+			revenue: (5 + i) * 1000,
+			unregistered: 1,
+		};
 		await prisma.daily_report.upsert({
 			where: { view_code_created_date: { view_code: viewCode, created_date: createdDate } },
-			update: {},
+			update: counters,
 			create: {
 				view_code: viewCode,
 				token: campaign.token,
 				pub_id: 'seed_pub',
 				sub_id: 'seed_sub',
-				click: 100 + i * 10,
-				install: 30 + i * 3,
-				registration: 10 + i,
-				purchase: 5 + i,
-				revenue: (5 + i) * 1000,
+				...counters,
 				created_date: createdDate,
 			},
 		});
