@@ -28,11 +28,6 @@ export const handlers = [
 		return HttpResponse.json({ data: null });
 	}),
 
-	// 엑셀 다운로드 — backend에 없다
-	http.get(`${baseURL}/:eventType/:tracker/excel`, () => {
-		return HttpResponse.json({ data: [] });
-	}),
-
 	// developer 화면의 사용자 생성 — backend의 POST /auth/signup은 이메일 인증 플로우라 다른 기능이다
 	http.post(`${baseURL}/users`, () => {
 		return HttpResponse.json({ data: null });

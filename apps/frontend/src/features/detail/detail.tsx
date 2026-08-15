@@ -8,7 +8,6 @@ import { useStore } from '@/app/store';
 import Table from '@/features/detail/detail-table';
 import InfoCard from '@/shared/ui/info-card/info-card';
 import { Nav, NavBtn, NavLeft, NavRight, TableContainer } from '@/app/global-styles';
-import ExcelBtn from '@/features/detail/excel';
 import { api } from '@/shared/api/api';
 
 const { RangePicker } = DatePicker;
@@ -91,12 +90,9 @@ const Detail = () => {
 							<Skeleton.Button shape="round" style={{ width: '8.5rem', marginLeft: '0.5rem' }} />
 						</>
 					) : (
-						<>
-							<NavBtn icon={<RetweetOutlined />} onClick={handleChangeBtn}>
-								예약 변경
-							</NavBtn>
-							<ExcelBtn />
-						</>
+						<NavBtn icon={<RetweetOutlined />} onClick={handleChangeBtn}>
+							예약 변경
+						</NavBtn>
 					)}
 				</NavRight>
 			</Nav>

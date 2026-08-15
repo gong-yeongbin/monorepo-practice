@@ -243,7 +243,6 @@ ${normalize}
     #reserved-table .ant-table-tbody > tr > td {
       border-bottom: none;
     }
-    .excel-modal .ant-modal-body,
     .table-modal .ant-modal-body {
       padding: 1rem;
     }
