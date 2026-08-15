@@ -351,9 +351,10 @@ const getPostbackInstalls = async (info: {
 	viewCode?: string | null;
 }) => {
 	const { startDate, endDate, token, viewCode } = info;
+	// view_code는 percent-encoded 문자열이라 그대로 넣으면 서버 디코드로 값이 달라진다 — 한 번 더 인코딩해서 전송
 	const res = await axiosInstance.get(
 		`/postbacks/install?start_date=${startDate}&end_date=${endDate}${token ? `&token=${token}` : ''}${
-			viewCode ? `&view_code=${viewCode}` : ''
+			viewCode ? `&view_code=${encodeURIComponent(viewCode)}` : ''
 		}`,
 	);
 	return res.data.data.map(mapInstallLogRow);
@@ -367,9 +368,10 @@ const getPostbackEvents = async (info: {
 	viewCode?: string | null;
 }) => {
 	const { startDate, endDate, token, eventName, viewCode } = info;
+	// view_code는 percent-encoded 문자열이라 그대로 넣으면 서버 디코드로 값이 달라진다 — 한 번 더 인코딩해서 전송
 	const res = await axiosInstance.get(
 		`/postbacks/event?start_date=${startDate}&end_date=${endDate}&token=${token}&event_name=${eventName}${
-			viewCode ? `&view_code=${viewCode}` : ''
+			viewCode ? `&view_code=${encodeURIComponent(viewCode)}` : ''
 		}`,
 	);
 	return res.data.data.map(mapEventLogRow);

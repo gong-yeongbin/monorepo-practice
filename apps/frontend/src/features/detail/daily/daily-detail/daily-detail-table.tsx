@@ -60,8 +60,18 @@ const DailyDetailTable = (props: {
 				cell: info => info.row.index + 1,
 			}),
 			columnHelper.accessor('viewCode', { header: 'view code', minSize: 250, enableSorting: false }),
-			columnHelper.accessor('pubId', { header: 'pub id', minSize: 70, enableSorting: false }),
-			columnHelper.accessor('subId', { header: 'sub id', minSize: 70, enableSorting: false }),
+			columnHelper.accessor('pubId', {
+				header: 'pub id',
+				minSize: 70,
+				enableSorting: false,
+				cell: info => info.getValue() || '-',
+			}),
+			columnHelper.accessor('subId', {
+				header: 'sub id',
+				minSize: 70,
+				enableSorting: false,
+				cell: info => info.getValue() || '-',
+			}),
 			columnHelper.accessor('click', {
 				header: 'click',
 				minSize: 80,
