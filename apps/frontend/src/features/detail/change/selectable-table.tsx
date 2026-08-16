@@ -23,9 +23,11 @@ const SelectableTable = (props: {
 	setShowUrlModal: React.Dispatch<React.SetStateAction<boolean>>;
 	setURL: React.Dispatch<React.SetStateAction<string>>;
 	setSelectedRows: any;
+	selectedCampaignIdx: string | null;
+	onCampaignSelect: (campaignIdx: string) => void;
 	data: SelectableColumns[];
 }) => {
-	const { setShowUrlModal, setURL, setSelectedRows, data } = props;
+	const { setShowUrlModal, setURL, setSelectedRows, selectedCampaignIdx, onCampaignSelect, data } = props;
 
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
@@ -63,7 +65,8 @@ const SelectableTable = (props: {
 							type="link"
 							size="small"
 							style={{ width: '4rem' }}
-							onClick={() => {
+							onClick={e => {
+								e.stopPropagation();
 								setURL(value);
 								setShowUrlModal(true);
 							}}
@@ -126,7 +129,13 @@ const SelectableTable = (props: {
 				) : (
 					<tbody className="tbody">
 						{table.getRowModel().rows.map(row => (
-							<tr key={row.id} className="tr">
+							// row 클릭은 조회용 캠페인 선택(오른쪽 예약 내역 필터), 체크박스는 예약 생성 대상 선택
+							<tr
+								key={row.id}
+								className="tr"
+								onClick={() => onCampaignSelect(row.original.campaignIdx)}
+								style={{ cursor: 'pointer', ...(row.original.campaignIdx === selectedCampaignIdx && { background: '#e6f7ff' }) }}
+							>
 								{row.getVisibleCells().map(cell => (
 									<td key={cell.id} className="td">
 										<div className="ellipsis">

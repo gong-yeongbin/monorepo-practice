@@ -211,6 +211,7 @@ export const mapReservationRow = (row: {
 	media_name: string;
 }) => ({
 	reservationIdx: String(row.id),
+	campaignIdx: String(row.campaign_id),
 	reservedAt: row.reserved_at,
 	campaignName: row.campaign_name,
 	mediaName: row.media_name,

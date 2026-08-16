@@ -17,7 +17,8 @@ const IndeterminateCheckbox = ({ indeterminate, ref, ...rest }: ICheckBoxProps) 
 	}, [resolvedRef, indeterminate]);
 
 	return (
-		<div style={{ display: 'flex', justifyContent: 'center' }}>
+		// row 클릭(조회용 캠페인 선택)과 체크박스 클릭(예약 생성 대상 선택)이 섞이지 않게 전파를 끊는다
+		<div style={{ display: 'flex', justifyContent: 'center' }} onClick={e => e.stopPropagation()}>
 			<input type="checkbox" ref={resolvedRef} {...rest} />
 		</div>
 	);

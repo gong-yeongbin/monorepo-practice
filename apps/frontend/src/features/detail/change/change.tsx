@@ -28,6 +28,8 @@ const Change = () => {
 	const [URL, setURL] = useState('');
 	const [selectedDate, setSelectedDate] = useState(today);
 	const [selectedRows, setSelectedRows] = useState<Array<string>>([]);
+	// row 클릭으로 고른 조회용 캠페인. 선택 전에는 오른쪽 예약 목록을 비워 둔다
+	const [selectedCampaignIdx, setSelectedCampaignIdx] = useState<string | null>(null);
 	const [disabledSubmit, setDisabledSubmit] = useState(true);
 
 	const [form] = Form.useForm();
@@ -231,6 +233,8 @@ const Change = () => {
 										setShowUrlModal={setShowUrlModal}
 										setURL={setURL}
 										setSelectedRows={setSelectedRows}
+										selectedCampaignIdx={selectedCampaignIdx}
+										onCampaignSelect={setSelectedCampaignIdx}
 										data={campaigns ?? []}
 									/>
 								</Form.Item>
@@ -242,7 +246,7 @@ const Change = () => {
 						setShowUrlModal={setShowUrlModal}
 						setURL={setURL}
 						getReserved={refetchReserved}
-						data={reserved ?? []}
+						data={selectedCampaignIdx ? (reserved ?? []).filter((row: { campaignIdx: string }) => row.campaignIdx === selectedCampaignIdx) : []}
 					/>
 				</MainWrapper>
 				<ButtonWrapper>

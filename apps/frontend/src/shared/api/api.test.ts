@@ -318,6 +318,7 @@ describe('mapReservationRow', () => {
 			}),
 		).toEqual({
 			reservationIdx: '7',
+			campaignIdx: '3',
 			reservedAt: '2026-08-20T01:00:00.000Z',
 			campaignName: '테스트 캠페인',
 			mediaName: '테스트 매체',
