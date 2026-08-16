@@ -11,10 +11,8 @@ import { TableStyles } from '@/app/global-styles';
 import IndeterminateCheckbox from '@/features/detail/change/indeterminate-checkbox';
 
 export interface SelectableColumns {
-	createdAt: string;
 	campaignIdx: string;
 	campaignName: string;
-	mediaIdx: string;
 	mediaName: string;
 	trackerTrackingUrl: string;
 }
@@ -26,14 +24,7 @@ const SelectableTable = (props: {
 	setURL: React.Dispatch<React.SetStateAction<string>>;
 	setSelectedRows: any;
 	loading: boolean;
-	data: {
-		createdAt: string;
-		campaignIdx: string;
-		campaignName: string;
-		mediaIdx: string;
-		mediaName: string;
-		trackerTrackingUrl: string;
-	}[];
+	data: SelectableColumns[];
 }) => {
 	const { setShowUrlModal, setURL, setSelectedRows, loading, data } = props;
 
@@ -62,11 +53,6 @@ const SelectableTable = (props: {
 			}),
 			columnHelper.accessor('mediaName', { header: '매체', size: 70 }),
 			columnHelper.accessor('campaignName', { header: '캠페인명' }),
-			columnHelper.accessor(row => row.createdAt.slice(2, 16).replace('T', ' '), {
-				id: 'createdAt',
-				header: '등록일',
-				size: 70,
-			}),
 			columnHelper.accessor('trackerTrackingUrl', {
 				header: '트랙킹 URL',
 				size: 55,
@@ -114,8 +100,9 @@ const SelectableTable = (props: {
 				<thead>
 					{table.getHeaderGroups().map(headerGroup => (
 						<tr key={headerGroup.id} className="tr">
+							{/* 컬럼 size가 th 폭에 적용되지 않는 auto 레이아웃이라 체크박스 컬럼만 폭을 고정한다 */}
 							{headerGroup.headers.map(header => (
-								<th key={header.id} className="th">
+								<th key={header.id} className="th" style={header.id === 'selection' ? { width: '3.5rem' } : undefined}>
 									{flexRender(header.column.columnDef.header, header.getContext())}
 									<div
 										onMouseDown={header.getResizeHandler()}

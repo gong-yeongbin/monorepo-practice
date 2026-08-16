@@ -36,4 +36,6 @@ export class CampaignListItemResponse implements CampaignListRow {
 	is_active: boolean;
 
 	media_name: string;
+
+	tracker_tracking_url: string;
 }

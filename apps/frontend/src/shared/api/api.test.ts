@@ -280,6 +280,7 @@ describe('mapCampaignListItem', () => {
 		type: 'CPA',
 		is_active: true,
 		media_name: 'vikingmedia',
+		tracker_tracking_url: 'https://tracker.example.com/click',
 	};
 
 	it('campaign_* 필드를 레거시 캠페인 컬럼으로 매핑한다', () => {
@@ -292,6 +293,7 @@ describe('mapCampaignListItem', () => {
 			campaignBlock: 0,
 			mediaName: 'vikingmedia',
 			trackerName: '',
+			trackerTrackingUrl: 'https://tracker.example.com/click',
 		});
 	});
 

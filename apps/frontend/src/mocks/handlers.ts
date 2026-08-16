@@ -14,10 +14,7 @@ export const handlers = [
 		return HttpResponse.json({ data: null });
 	}),
 
-	// 예약 변경 화면 — reservation 모듈이 backend에 없다
-	http.get(`${baseURL}/reservation/on/:id`, () => {
-		return HttpResponse.json({ data: [] });
-	}),
+	// 예약 변경 화면 — reservation 모듈이 backend에 없다 (변경 캠페인 영역은 실제 GET /campaigns로 연동됨)
 	http.get(`${baseURL}/reservation/off/:id`, () => {
 		return HttpResponse.json({ data: [] });
 	}),

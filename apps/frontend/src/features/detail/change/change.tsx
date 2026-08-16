@@ -12,24 +12,24 @@ import {
 } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import { useNavigate, useParams } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
 import { useStore } from '@/app/store';
 import InfoCard from '@/shared/ui/info-card/info-card';
 import { Container, ButtonWrapper, MainWrapper, DateWrapper } from '@/features/detail/change/change.styles';
-import SelectableTable, { SelectableColumns } from '@/features/detail/change/selectable-table';
+import SelectableTable from '@/features/detail/change/selectable-table';
 import ReservedTable, { ReservedColumns } from '@/features/detail/change/reserved-table';
 import { axiosInstance } from '@/shared/api/axios';
+import { api } from '@/shared/api/api';
 
 const today = dayjs().format('YYYY-MM-DD');
 
 const Change = () => {
 	const [showUrlModal, setShowUrlModal] = useState(false);
 	const [URL, setURL] = useState('');
-	const [loadingCreated, setLoadingCreated] = useState(false);
 	const [loadingReserved, setLoadingReserved] = useState(false);
 	const [selectedDate, setSelectedDate] = useState(today);
 	const [selectedRows, setSelectedRows] = useState<Array<string>>([]);
 	const [disabledSubmit, setDisabledSubmit] = useState(true);
-	const [created, setCreated] = useState<Array<SelectableColumns>>([]);
 	const [reserved, setReserved] = useState<Array<ReservedColumns>>([]);
 
 	const [form] = Form.useForm();
@@ -40,9 +40,14 @@ const Change = () => {
 
 	const store = useStore();
 
+	// 변경 캠페인 영역 — 해당 advertising의 campaign 전체 목록
+	const { isFetching: loadingCampaigns, data: campaigns } = useQuery({
+		queryKey: ['campaignList'],
+		queryFn: () => api.getCampaigns(paramId),
+	});
+
 	useEffect(() => {
 		store.setPageTitle('상위 트래커 URL 예약 변경');
-		getCreated();
 		getReserved();
 	}, []);
 
@@ -54,17 +59,6 @@ const Change = () => {
 		form.setFieldsValue({ campaigns: selectedRows });
 		handleFormChange();
 	}, [selectedRows]);
-
-	const getCreated = async () => {
-		try {
-			setLoadingCreated(true);
-			const res = await axiosInstance.get(`/reservation/on/${paramId}`);
-			setCreated(res.data.data);
-		} catch (error: unknown) {
-			handleErrors(error);
-		}
-		setLoadingCreated(false);
-	};
 
 	const getReserved = async () => {
 		try {
@@ -158,7 +152,7 @@ const Change = () => {
 
 			<Modal
 				title="Tracking URL"
-				visible={showUrlModal}
+				open={showUrlModal}
 				onCancel={() => setShowUrlModal(false)}
 				footer={null}
 				width="40vw"
@@ -253,8 +247,8 @@ const Change = () => {
 										setShowUrlModal={setShowUrlModal}
 										setURL={setURL}
 										setSelectedRows={setSelectedRows}
-										loading={loadingCreated}
-										data={created}
+										loading={loadingCampaigns}
+										data={campaigns ?? []}
 									/>
 								</Form.Item>
 							</Descriptions.Item>

@@ -17,7 +17,7 @@ const IndeterminateCheckbox = ({ indeterminate, ref, ...rest }: ICheckBoxProps) 
 	}, [resolvedRef, indeterminate]);
 
 	return (
-		<div style={{ display: 'flex' }}>
+		<div style={{ display: 'flex', justifyContent: 'center' }}>
 			<input type="checkbox" ref={resolvedRef} {...rest} />
 		</div>
 	);

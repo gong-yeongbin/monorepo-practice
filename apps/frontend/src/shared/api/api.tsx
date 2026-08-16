@@ -186,6 +186,7 @@ export const mapCampaignListItem = (row: {
 	type: string;
 	is_active: boolean;
 	media_name: string;
+	tracker_tracking_url: string;
 }) => ({
 	campaignIdx: String(row.campaign_id),
 	token: row.token,
@@ -195,6 +196,7 @@ export const mapCampaignListItem = (row: {
 	campaignBlock: 0, // backend에 block 필드가 없다 (미구현 보고 대상)
 	mediaName: row.media_name,
 	trackerName: '',
+	trackerTrackingUrl: row.tracker_tracking_url,
 });
 
 export const mapConfigRow = (row: {
@@ -390,11 +392,6 @@ const getPostbackUnregistered = async (info: {
 	return res.data.data.map(mapUnregisteredLogRow);
 };
 
-const getChangeCreated = async (paramId?: string) => {
-	const res = await axiosInstance.get(`/reservation/on/${paramId}`);
-	return res.data.data;
-};
-
 const getChangeReserved = async (paramId?: string) => {
 	const res = await axiosInstance.get(`/reservation/off/${paramId}`);
 	return res.data.data;
@@ -429,7 +426,6 @@ export const api = {
 	getPostbackInstalls,
 	getPostbackEvents,
 	getPostbackUnregistered,
-	getChangeCreated,
 	getChangeReserved,
 	getAdvertising,
 	getCampaigns,

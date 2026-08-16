@@ -34,6 +34,7 @@ export interface CampaignListRow {
 	type: string;
 	is_active: boolean;
 	media_name: string;
+	tracker_tracking_url: string;
 }
 
 export interface CampaignRepository {

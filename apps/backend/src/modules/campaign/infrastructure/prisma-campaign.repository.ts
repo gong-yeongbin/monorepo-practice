@@ -26,6 +26,7 @@ export class PrismaCampaignRepository implements CampaignRepository {
 			type: row.type,
 			is_active: row.is_active,
 			media_name: row.media.name,
+			tracker_tracking_url: row.tracker_tracking_url,
 		}));
 	}
 

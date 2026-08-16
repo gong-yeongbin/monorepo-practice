@@ -20,11 +20,11 @@ describe('PrismaCampaignRepository', () => {
 	});
 
 	it('findByAdvertisingId는 media명을 평탄화해 매핑한다', async () => {
-		campaign.findMany.mockResolvedValue([{ id: 3, token: 'tok', name: 'c', type: 'CPI', is_active: true, media: { name: 'm1' } }]);
+		campaign.findMany.mockResolvedValue([{ id: 3, token: 'tok', name: 'c', type: 'CPI', is_active: true, tracker_tracking_url: 'https://t', media: { name: 'm1' } }]);
 
 		const result = await repository.findByAdvertisingId(1);
 
-		expect(result).toEqual([{ campaign_id: 3, token: 'tok', campaign_name: 'c', type: 'CPI', is_active: true, media_name: 'm1' }]);
+		expect(result).toEqual([{ campaign_id: 3, token: 'tok', campaign_name: 'c', type: 'CPI', is_active: true, media_name: 'm1', tracker_tracking_url: 'https://t' }]);
 		expect(campaign.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { advertising_id: 1 }, orderBy: { id: 'desc' } }));
 	});
 
