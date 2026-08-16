@@ -183,8 +183,30 @@ async function main() {
 	}
 	await prisma.postback.createMany({ data: postbacks });
 
+	// 10. reservation — 예약 변경 화면용. 자연키가 없어 시드 접두사로 지우고 다시 만든다(9번 postback과 같은 패턴)
+	await prisma.reservation.deleteMany({ where: { name: { startsWith: '시드 예약' } } });
+	const now = kstBaseDate();
+	await prisma.reservation.createMany({
+		data: [
+			{
+				campaign_id: campaign.id,
+				name: '시드 예약(대기)',
+				tracking_url: 'https://app.appsflyer.com/com.example.app?pid=reserved',
+				reserved_at: new Date(now.getTime() + 24 * 60 * 60 * 1000),
+				is_applied: false,
+			},
+			{
+				campaign_id: campaign.id,
+				name: '시드 예약(완료)',
+				tracking_url: 'https://app.appsflyer.com/com.example.app?pid=applied',
+				reserved_at: new Date(now.getTime() - 24 * 60 * 60 * 1000),
+				is_applied: true,
+			},
+		],
+	});
+
 	console.log(
-		`seed 완료: user(admin@test.com / test1234!), advertiser·tracker·media·advertising·campaign(token=${campaign.token}), daily_report ${DAILY_REPORT_DAYS}일치, postback ${postbacks.length}건`
+		`seed 완료: user(admin@test.com / test1234!), advertiser·tracker·media·advertising·campaign(token=${campaign.token}), daily_report ${DAILY_REPORT_DAYS}일치, postback ${postbacks.length}건, reservation 2건`
 	);
 }
 

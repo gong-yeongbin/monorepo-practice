@@ -89,6 +89,7 @@
       "^@advertiser/(.*)$": "<rootDir>/modules/advertiser/$1",
       "^@advertising/(.*)$": "<rootDir>/modules/advertising/$1",
       "^@media/(.*)$": "<rootDir>/modules/media/$1",
+  "^@reservation/(.*)$": "<rootDir>/modules/reservation/$1",
       "^@tracker/(.*)$": "<rootDir>/modules/tracker/$1",
       "^@campaign/(.*)$": "<rootDir>/modules/campaign/$1",
       "^@config/(.*)$": "<rootDir>/modules/config/$1",

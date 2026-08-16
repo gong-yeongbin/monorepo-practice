@@ -13,6 +13,7 @@ import {
 	mapUnregisteredLogRow,
 	mapAdvertisingListItem,
 	mapCampaignListItem,
+	mapReservationRow,
 	mapConfigRow,
 	mapEventsToConfigPayload,
 	mapMediaRow,
@@ -299,6 +300,30 @@ describe('mapCampaignListItem', () => {
 
 	it('is_active가 false면 campaignStatus 0으로 매핑한다', () => {
 		expect(mapCampaignListItem({ ...backendRow, is_active: false }).campaignStatus).toBe(0);
+	});
+});
+
+describe('mapReservationRow', () => {
+	it('backend 예약 행을 예약 목록 컬럼으로 매핑한다', () => {
+		expect(
+			mapReservationRow({
+				id: 7,
+				campaign_id: 3,
+				name: '변경명',
+				tracking_url: 'https://new.example.com',
+				reserved_at: '2026-08-20T01:00:00.000Z',
+				is_applied: false,
+				campaign_name: '테스트 캠페인',
+				media_name: '테스트 매체',
+			}),
+		).toEqual({
+			reservationIdx: '7',
+			reservedAt: '2026-08-20T01:00:00.000Z',
+			campaignName: '테스트 캠페인',
+			mediaName: '테스트 매체',
+			newTrackerTrackingUrl: 'https://new.example.com',
+			status: false,
+		});
 	});
 });
 

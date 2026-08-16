@@ -199,6 +199,25 @@ export const mapCampaignListItem = (row: {
 	trackerTrackingUrl: row.tracker_tracking_url,
 });
 
+// GET /reservations 행을 예약 목록 테이블(ReservedColumns)로 매핑한다
+export const mapReservationRow = (row: {
+	id: number;
+	campaign_id: number;
+	name: string;
+	tracking_url: string;
+	reserved_at: string;
+	is_applied: boolean;
+	campaign_name: string;
+	media_name: string;
+}) => ({
+	reservationIdx: String(row.id),
+	reservedAt: row.reserved_at,
+	campaignName: row.campaign_name,
+	mediaName: row.media_name,
+	newTrackerTrackingUrl: row.tracking_url,
+	status: row.is_applied,
+});
+
 export const mapConfigRow = (row: {
 	tracker_event_name: string;
 	admin_event_name: string;
@@ -392,9 +411,9 @@ const getPostbackUnregistered = async (info: {
 	return res.data.data.map(mapUnregisteredLogRow);
 };
 
-const getChangeReserved = async (paramId?: string) => {
-	const res = await axiosInstance.get(`/reservation/off/${paramId}`);
-	return res.data.data;
+const getReservations = async (paramId?: string) => {
+	const res = await axiosInstance.get(`/reservations?advertisingId=${paramId}`);
+	return res.data.data.map(mapReservationRow);
 };
 
 const getAdvertising = async (obj: {
@@ -426,7 +445,7 @@ export const api = {
 	getPostbackInstalls,
 	getPostbackEvents,
 	getPostbackUnregistered,
-	getChangeReserved,
+	getReservations,
 	getAdvertising,
 	getCampaigns,
 	getCampaignEvents,

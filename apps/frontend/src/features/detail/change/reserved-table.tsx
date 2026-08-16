@@ -5,7 +5,6 @@ import {
 	flexRender,
 	createColumnHelper,
 } from '@tanstack/react-table';
-import { useNavigate } from 'react-router';
 import { Button, message, Popconfirm, Skeleton, Table as EmptyTable } from 'antd';
 import dayjs from 'dayjs';
 import { ListWrapper } from '@/features/detail/change/change.styles';
@@ -28,7 +27,6 @@ const ReservedTable = (props: {
 	setURL: React.Dispatch<React.SetStateAction<string>>;
 	getReserved: any;
 	loading: boolean;
-	setLoading: React.Dispatch<React.SetStateAction<boolean>>;
 	data: {
 		reservationIdx: string;
 		reservedAt: string;
@@ -38,20 +36,15 @@ const ReservedTable = (props: {
 		status: boolean;
 	}[];
 }) => {
-	const { setShowUrlModal, setURL, loading, setLoading, getReserved, data } = props;
-
-	const navigate = useNavigate();
+	const { setShowUrlModal, setURL, loading, getReserved, data } = props;
 
 	const handleDelete = async (idx: string) => {
 		try {
-			setLoading(true);
-			const res = await axiosInstance.delete(`/reservation/${idx}`);
+			await axiosInstance.delete(`/reservations/${idx}`);
 			await getReserved();
-			setLoading(false);
 			message.success('삭제되었습니다.');
 		} catch (error) {
-			sessionStorage.clear();
-			navigate('/login');
+			message.error('삭제에 실패했습니다.');
 		}
 	};
 

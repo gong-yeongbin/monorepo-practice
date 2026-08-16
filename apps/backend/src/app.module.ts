@@ -14,6 +14,7 @@ import { CampaignModule } from '@campaign/campaign.module';
 import { ConfigModule as CampaignConfigModule } from '@config/config.module';
 import { PartnerModule } from '@partner/partner.module';
 import { DashboardModule } from '@dashboard/dashboard.module';
+import { ReservationModule } from '@reservation/reservation.module';
 
 @Module({
 	imports: [
@@ -31,6 +32,7 @@ import { DashboardModule } from '@dashboard/dashboard.module';
 		CampaignConfigModule,
 		PartnerModule,
 		DashboardModule,
+		ReservationModule,
 	],
 	controllers: [AppController],
 })

@@ -1,0 +1,16 @@
+### 예약 생성 — 선택한 campaign마다 예약 행 생성 (reserved_at은 KST, 시 단위)
+POST {{host}}/reservations
+Content-Type: application/json
+
+{
+	"name": "테스트 캠페인 v2",
+	"tracking_url": "https://app.appsflyer.com/com.example.app?pid=new",
+	"reserved_at": "2026-08-20 10:00:00",
+	"campaign_ids": [1]
+}
+
+### 예약 목록 조회 — advertising 단위 필터
+GET {{host}}/reservations?advertisingId=1
+
+### 예약 삭제
+DELETE {{host}}/reservations/1

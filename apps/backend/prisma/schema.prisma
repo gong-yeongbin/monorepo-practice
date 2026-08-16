@@ -72,6 +72,7 @@ model campaign {
 
   campaign_config campaign_config[]
   daily_report    daily_report[]
+  reservation     reservation[]
 }
 
 model media {
@@ -93,6 +94,17 @@ model campaign_config {
   media_event_name   String   @default("install") @db.VarChar(30)
 
   @@unique([campaign_id, admin_event_name])
+}
+
+// 상위 트래커 URL 예약 변경. 선택한 캠페인마다 개별 행으로 저장하고, 실행(스케줄러)은 is_applied로 상태를 남긴다
+model reservation {
+  id           Int      @id @default(autoincrement())
+  campaign     campaign @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
+  campaign_id  Int      @db.Int
+  name         String   @db.VarChar(30)
+  tracking_url String   @db.Text
+  reserved_at  DateTime @db.DateTime()
+  is_applied   Boolean  @default(false)
 }
 
 model postback {

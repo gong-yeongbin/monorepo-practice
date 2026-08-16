@@ -14,17 +14,6 @@ export const handlers = [
 		return HttpResponse.json({ data: null });
 	}),
 
-	// 예약 변경 화면 — reservation 모듈이 backend에 없다 (변경 캠페인 영역은 실제 GET /campaigns로 연동됨)
-	http.get(`${baseURL}/reservation/off/:id`, () => {
-		return HttpResponse.json({ data: [] });
-	}),
-	http.put(`${baseURL}/reservation`, () => {
-		return HttpResponse.json({ data: null });
-	}),
-	http.delete(`${baseURL}/reservation/:idx`, () => {
-		return HttpResponse.json({ data: null });
-	}),
-
 	// developer 화면의 사용자 생성 — backend의 POST /auth/signup은 이메일 인증 플로우라 다른 기능이다
 	http.post(`${baseURL}/users`, () => {
 		return HttpResponse.json({ data: null });

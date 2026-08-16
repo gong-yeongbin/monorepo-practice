@@ -12,12 +12,12 @@ import {
 } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import { useNavigate, useParams } from 'react-router';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useStore } from '@/app/store';
 import InfoCard from '@/shared/ui/info-card/info-card';
 import { Container, ButtonWrapper, MainWrapper, DateWrapper } from '@/features/detail/change/change.styles';
 import SelectableTable from '@/features/detail/change/selectable-table';
-import ReservedTable, { ReservedColumns } from '@/features/detail/change/reserved-table';
+import ReservedTable from '@/features/detail/change/reserved-table';
 import { axiosInstance } from '@/shared/api/axios';
 import { api } from '@/shared/api/api';
 
@@ -26,11 +26,9 @@ const today = dayjs().format('YYYY-MM-DD');
 const Change = () => {
 	const [showUrlModal, setShowUrlModal] = useState(false);
 	const [URL, setURL] = useState('');
-	const [loadingReserved, setLoadingReserved] = useState(false);
 	const [selectedDate, setSelectedDate] = useState(today);
 	const [selectedRows, setSelectedRows] = useState<Array<string>>([]);
 	const [disabledSubmit, setDisabledSubmit] = useState(true);
-	const [reserved, setReserved] = useState<Array<ReservedColumns>>([]);
 
 	const [form] = Form.useForm();
 
@@ -40,15 +38,26 @@ const Change = () => {
 
 	const store = useStore();
 
+	const queryClient = useQueryClient();
+
 	// 변경 캠페인 영역 — 해당 advertising의 campaign 전체 목록
 	const { isFetching: loadingCampaigns, data: campaigns } = useQuery({
 		queryKey: ['campaignList'],
 		queryFn: () => api.getCampaigns(paramId),
 	});
 
+	// 예약 목록 — 해당 advertising의 캠페인에 걸린 예약 전체
+	const {
+		isFetching: loadingReserved,
+		data: reserved,
+		refetch: refetchReserved,
+	} = useQuery({
+		queryKey: ['reservations', paramId],
+		queryFn: () => api.getReservations(paramId),
+	});
+
 	useEffect(() => {
 		store.setPageTitle('상위 트래커 URL 예약 변경');
-		getReserved();
 	}, []);
 
 	useEffect(() => {
@@ -59,26 +68,6 @@ const Change = () => {
 		form.setFieldsValue({ campaigns: selectedRows });
 		handleFormChange();
 	}, [selectedRows]);
-
-	const getReserved = async () => {
-		try {
-			setLoadingReserved(true);
-			const res = await axiosInstance.get(`/reservation/off/${paramId}`);
-			setReserved(res.data.data);
-		} catch (error: unknown) {
-			handleErrors(error);
-		}
-		setLoadingReserved(false);
-	};
-
-	const handleErrors = (error: unknown) => {
-		if (error instanceof Error && error.message.includes('400')) {
-			navigate('/');
-		} else {
-			sessionStorage.clear();
-			navigate('/login');
-		}
-	};
 
 	const handleFormChange = () => {
 		setDisabledSubmit(true);
@@ -93,28 +82,27 @@ const Change = () => {
 		const values = form.getFieldsValue();
 		const { campaignName, trackingUrl, time } = values;
 		const formValues = {
-			campaignName,
-			trackingUrl,
-			reservedAt: `${selectedDate} ${time.format('HH')}:00:00`,
-			campaignIdx: selectedRows,
+			name: campaignName,
+			tracking_url: trackingUrl,
+			reserved_at: `${selectedDate} ${time.format('HH')}:00:00`,
+			campaign_ids: selectedRows.map(Number),
 		};
-		handleUpdate(formValues);
+		handleCreate(formValues);
 	};
 
-	const handleUpdate = async (formValues: {
-		campaignName: string;
-		trackingUrl: string;
-		reservedAt: string;
-		campaignIdx: string[];
+	const handleCreate = async (formValues: {
+		name: string;
+		tracking_url: string;
+		reserved_at: string;
+		campaign_ids: number[];
 	}) => {
 		try {
-			await axiosInstance.put(`/reservation`, formValues);
+			await axiosInstance.post(`/reservations`, formValues);
 			handleReset();
-			await getReserved();
+			await queryClient.invalidateQueries({ queryKey: ['reservations'] });
 			message.success('예약을 설정했습니다.');
 		} catch (error) {
-			sessionStorage.clear();
-			navigate('/login');
+			message.error('예약 설정에 실패했습니다.');
 		}
 	};
 
@@ -258,10 +246,9 @@ const Change = () => {
 					<ReservedTable
 						setShowUrlModal={setShowUrlModal}
 						setURL={setURL}
-						getReserved={getReserved}
+						getReserved={refetchReserved}
 						loading={loadingReserved}
-						setLoading={setLoadingReserved}
-						data={reserved}
+						data={reserved ?? []}
 					/>
 				</MainWrapper>
 				<ButtonWrapper>

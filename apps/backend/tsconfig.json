@@ -14,6 +14,7 @@
       "@advertiser/*": ["./src/modules/advertiser/*"],
       "@advertising/*": ["./src/modules/advertising/*"],
       "@media/*": ["./src/modules/media/*"],
+      "@reservation/*": ["./src/modules/reservation/*"],
       "@tracker/*": ["./src/modules/tracker/*"],
       "@campaign/*": ["./src/modules/campaign/*"],
       "@config/*": ["./src/modules/config/*"],
