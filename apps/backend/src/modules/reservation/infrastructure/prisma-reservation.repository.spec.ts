@@ -29,7 +29,7 @@ describe('PrismaReservationRepository', () => {
 			{ id: 1, campaign_id: 3, name: 'n', tracking_url: 'u', reserved_at: new Date('2026-08-20T01:00:00Z'), is_applied: false, campaign_name: 'c1', media_name: 'm1' },
 		]);
 		expect(reservation.findMany).toHaveBeenCalledWith(
-			expect.objectContaining({ where: { campaign: { advertising_id: 1 } }, orderBy: { reserved_at: 'asc' } })
+			expect.objectContaining({ where: { campaign: { advertising_id: 1 } }, orderBy: { reserved_at: 'desc' } })
 		);
 	});
 

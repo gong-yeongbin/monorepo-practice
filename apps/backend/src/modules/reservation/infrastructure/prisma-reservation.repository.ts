@@ -16,7 +16,7 @@ export class PrismaReservationRepository implements ReservationRepository {
 	async findByAdvertisingId(advertising_id: number): Promise<ReservationListRow[]> {
 		const rows = await this.prismaService.reservation.findMany({
 			where: { campaign: { advertising_id } },
-			orderBy: { reserved_at: 'asc' },
+			orderBy: { reserved_at: 'desc' },
 			include: { campaign: { select: { name: true, media: { select: { name: true } } } } },
 		});
 
