@@ -107,96 +107,101 @@ async function main() {
 		}
 	}
 
-	// 8. daily_report — 최근 7일치 통계. view_code는 실제 트래킹과 동일하게 `token:pubId:subId`를 인코딩한 값
-	const viewCode = viewCodeCodec.encode(`${campaign.token}:seed_pub:seed_sub`);
+	// 8~9. campaign마다 daily_report 7일치 + postback 로그. 캠페인별 규모(factor)를 다르게 해 화면 구분이 쉽다.
+	// view_code는 실제 트래킹과 동일하게 `token:pubId:subId`를 인코딩한 값이고,
+	// postback 건수는 daily_report의 install·registration·purchase·revenue와 일치시킨다.
+	// postback은 unique 키가 없어 upsert 대신 seed 데이터(click_id 접두사)만 지우고 다시 넣는다
 	const baseDate = kstBaseDate();
-	for (let i = 0; i < DAILY_REPORT_DAYS; i++) {
-		const createdDate = new Date(baseDate.getTime() - i * 24 * 60 * 60 * 1000);
-		// unregistered는 실제 파이프라인처럼 미등록 postback(af_login 1건/일) 건수와 일치시킨다.
-		// 이미 seed된 행도 카운터가 seed 정의값과 동기화되도록 update에서도 갱신한다(9번의 postback 삭제 후 재생성과 짝을 맞춤)
-		const counters = {
-			click: 100 + i * 10,
-			install: 30 + i * 3,
-			registration: 10 + i,
-			purchase: 5 + i,
-			revenue: (5 + i) * 1000,
-			unregistered: 1,
-		};
-		await prisma.daily_report.upsert({
-			where: { view_code_created_date: { view_code: viewCode, created_date: createdDate } },
-			update: counters,
-			create: {
-				view_code: viewCode,
-				token: campaign.token,
-				pub_id: 'seed_pub',
-				sub_id: 'seed_sub',
-				...counters,
-				created_date: createdDate,
-			},
-		});
-	}
-
-	// 9. postback — 포스트백 로그 모달(인스톨·이벤트·미등록)용 로그. 건수를 daily_report의 install·registration·purchase·revenue와 일치시킨다.
-	// unique 키가 없어 upsert 대신 seed 데이터(click_id 접두사)만 지우고 다시 넣는다
 	await prisma.postback.deleteMany({ where: { click_id: { startsWith: 'seed_click_' } } });
 	const MINUTE = 60 * 1000;
 	const postbacks: Prisma.postbackCreateManyInput[] = [];
-	for (let i = 0; i < DAILY_REPORT_DAYS; i++) {
-		// baseDate(UTC 자정)는 KST 09:00라 +15시간 미만 오프셋은 같은 KST 일자에 머문다(로그 조회의 kstDayRange 범위와 일치)
-		const dayStart = new Date(baseDate.getTime() - i * 24 * 60 * MINUTE);
-		const at = (minutes: number) => new Date(dayStart.getTime() + minutes * MINUTE);
-		const common = {
-			tracker_name: tracker.name,
-			pub_id: 'seed_pub',
-			sub_id: 'seed_sub',
-			view_code: viewCode,
-			token: campaign.token,
-			adid: 'seed-adid-0000',
-			idfa: null,
-			ip: '127.0.0.1',
-			country_code: 'KR',
-			raw_query_params: JSON.stringify({ seed: true }),
-		};
-		// 인스톨 — daily_report.install(30+3i)과 동일 건수 (event_name='install' + installed_at 기준 조회)
-		for (let j = 0; j < 30 + i * 3; j++) {
+	for (const [c, target] of campaigns.entries()) {
+		const viewCode = viewCodeCodec.encode(`${target.token}:seed_pub:seed_sub`);
+		const factor = [1, 0.6, 0.4, 0.2][c] ?? 1;
+		for (let i = 0; i < DAILY_REPORT_DAYS; i++) {
+			const createdDate = new Date(baseDate.getTime() - i * 24 * 60 * 60 * 1000);
+			const install = Math.round((30 + i * 3) * factor);
+			const registration = Math.round((10 + i) * factor);
+			const purchase = Math.round((5 + i) * factor);
+			// unregistered는 실제 파이프라인처럼 미등록 postback(af_login 1건/일) 건수와 일치시킨다.
+			// 이미 seed된 행도 카운터가 seed 정의값과 동기화되도록 update에서도 갱신한다(postback 삭제 후 재생성과 짝을 맞춤)
+			const counters = {
+				click: Math.round((100 + i * 10) * factor),
+				install,
+				registration,
+				purchase,
+				revenue: purchase * 1000,
+				unregistered: 1,
+			};
+			await prisma.daily_report.upsert({
+				where: { view_code_created_date: { view_code: viewCode, created_date: createdDate } },
+				update: counters,
+				create: {
+					view_code: viewCode,
+					token: target.token,
+					pub_id: 'seed_pub',
+					sub_id: 'seed_sub',
+					...counters,
+					created_date: createdDate,
+				},
+			});
+
+			// baseDate(UTC 자정)는 KST 09:00라 +15시간 미만 오프셋은 같은 KST 일자에 머문다(로그 조회의 kstDayRange 범위와 일치)
+			const dayStart = createdDate;
+			const at = (minutes: number) => new Date(dayStart.getTime() + minutes * MINUTE);
+			const common = {
+				tracker_name: tracker.name,
+				pub_id: 'seed_pub',
+				sub_id: 'seed_sub',
+				view_code: viewCode,
+				token: target.token,
+				adid: 'seed-adid-0000',
+				idfa: null,
+				ip: '127.0.0.1',
+				country_code: 'KR',
+				raw_query_params: JSON.stringify({ seed: true }),
+			};
+			// 인스톨 — daily_report.install과 동일 건수 (event_name='install' + installed_at 기준 조회)
+			for (let j = 0; j < install; j++) {
+				postbacks.push({
+					...common,
+					event_name: 'install',
+					click_id: `seed_click_${c}_${i}_install_${j}`,
+					clicked_at: at(j * 10),
+					installed_at: at(j * 10 + 30),
+				});
+			}
+			// 가입 — daily_report.registration과 동일 건수. campaign_config가 af_complete_registration→registration으로 매핑 (evented_at 기준 조회)
+			for (let j = 0; j < registration; j++) {
+				postbacks.push({
+					...common,
+					event_name: 'af_complete_registration',
+					click_id: `seed_click_${c}_${i}_registration_${j}`,
+					clicked_at: at(j * 10),
+					evented_at: at(j * 10 + 60),
+				});
+			}
+			// 구매 — daily_report.purchase와 동일 건수, 건당 1000원이라 합계가 daily_report.revenue와 일치
+			for (let j = 0; j < purchase; j++) {
+				postbacks.push({
+					...common,
+					event_name: 'af_purchase',
+					click_id: `seed_click_${c}_${i}_purchase_${j}`,
+					clicked_at: at(j * 10),
+					evented_at: at(j * 10 + 90),
+					revenue_currency: 'KRW',
+					revenue: '1000',
+				});
+			}
+			// 미등록 이벤트 1건 — campaign_config에 없는 이벤트명이라 미등록 모달에 집계된다 (daily_report에는 집계되지 않는 값)
 			postbacks.push({
 				...common,
-				event_name: 'install',
-				click_id: `seed_click_${i}_install_${j}`,
-				clicked_at: at(j * 10),
-				installed_at: at(j * 10 + 30),
+				event_name: 'af_login',
+				click_id: `seed_click_${c}_${i}_login`,
+				clicked_at: dayStart,
+				evented_at: at(120),
 			});
 		}
-		// 가입 — daily_report.registration(10+i)과 동일 건수. campaign_config가 af_complete_registration→registration으로 매핑 (evented_at 기준 조회)
-		for (let j = 0; j < 10 + i; j++) {
-			postbacks.push({
-				...common,
-				event_name: 'af_complete_registration',
-				click_id: `seed_click_${i}_registration_${j}`,
-				clicked_at: at(j * 10),
-				evented_at: at(j * 10 + 60),
-			});
-		}
-		// 구매 — daily_report.purchase(5+i)와 동일 건수, 건당 1000원이라 합계가 daily_report.revenue((5+i)*1000)와 일치
-		for (let j = 0; j < 5 + i; j++) {
-			postbacks.push({
-				...common,
-				event_name: 'af_purchase',
-				click_id: `seed_click_${i}_purchase_${j}`,
-				clicked_at: at(j * 10),
-				evented_at: at(j * 10 + 90),
-				revenue_currency: 'KRW',
-				revenue: '1000',
-			});
-		}
-		// 미등록 이벤트 1건 — campaign_config에 없는 이벤트명이라 미등록 모달에 집계된다 (daily_report에는 집계되지 않는 값)
-		postbacks.push({
-			...common,
-			event_name: 'af_login',
-			click_id: `seed_click_${i}_login`,
-			clicked_at: dayStart,
-			evented_at: at(120),
-		});
 	}
 	await prisma.postback.createMany({ data: postbacks });
 
@@ -223,7 +228,7 @@ async function main() {
 	});
 
 	console.log(
-		`seed 완료: user(admin@test.com / test1234!), advertiser·tracker·media, advertising 2개·campaign 4개(통계 대상 token=${campaign.token}), daily_report ${DAILY_REPORT_DAYS}일치, postback ${postbacks.length}건, reservation 2건`
+		`seed 완료: user(admin@test.com / test1234!), advertiser·tracker·media, advertising 2개·campaign 4개, daily_report 캠페인당 ${DAILY_REPORT_DAYS}일치, postback ${postbacks.length}건, reservation 2건`
 	);
 }
 

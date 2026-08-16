@@ -1,3 +1,0 @@
--- Role enum에 개발자(DEVELOPER) 역할 추가
--- AlterTable
-ALTER TABLE `user` MODIFY `role` ENUM('ADMIN', 'ADVERTISER', 'MEDIA', 'DEVELOPER') NOT NULL DEFAULT 'ADMIN';
