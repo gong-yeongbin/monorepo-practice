@@ -54,40 +54,57 @@ async function main() {
 		},
 	});
 
-	// 5. advertising — advertiser·tracker 연결
-	const advertising = await prisma.advertising.upsert({
-		where: { name: '테스트 광고' },
-		update: {},
-		create: { name: '테스트 광고', advertiser_id: advertiser.id, tracker_id: tracker.id },
-	});
+	// 5. advertising — advertiser·tracker 연결 (2개)
+	const upsertAdvertising = (name: string) =>
+		prisma.advertising.upsert({
+			where: { name },
+			update: {},
+			create: { name, advertiser_id: advertiser.id, tracker_id: tracker.id },
+		});
+	// 이름의 (AOS)/(iOS)는 frontend platformFromName이 플랫폼 컬럼으로 표시한다
+	const advertising1 = await upsertAdvertising('카페 러시(AOS)');
+	const advertising2 = await upsertAdvertising('펫 월드(iOS)');
 
-	// 6. campaign — name이 unique가 아니라 findFirst 후 없을 때만 생성. token은 uuid 기본값으로 자동 생성된다
-	let campaign = await prisma.campaign.findFirst({ where: { name: '테스트 캠페인' } });
-	if (!campaign) {
-		campaign = await prisma.campaign.create({
+	// 6. campaign — advertising마다 2개. name이 unique가 아니라 findFirst 후 없을 때만 생성. token은 uuid 기본값으로 자동 생성된다
+	const findOrCreateCampaign = async (name: string, advertising_id: number) => {
+		const found = await prisma.campaign.findFirst({ where: { name } });
+		if (found) {
+			return found;
+		}
+		return prisma.campaign.create({
 			data: {
-				name: '테스트 캠페인',
+				name,
 				type: 'CPI',
 				tracker_name: tracker.name,
 				tracker_tracking_url: tracker.tracking_url,
-				advertising_id: advertising.id,
+				advertising_id,
 				media_id: media.id,
 			},
 		});
-	}
+	};
+	// 통계·포스트백·예약 시드는 첫 캠페인에만 건다
+	const campaign = await findOrCreateCampaign('카페 러시 론칭 캠페인', advertising1.id);
+	const campaigns = [
+		campaign,
+		await findOrCreateCampaign('카페 러시 부스트 캠페인', advertising1.id),
+		await findOrCreateCampaign('펫 월드 론칭 캠페인', advertising2.id),
+		await findOrCreateCampaign('펫 월드 부스트 캠페인', advertising2.id),
+	];
 
-	// 7. campaign_config — 기본 install 매핑 + purchase 매핑
+	// 7. campaign_config — 모든 캠페인에 기본 install 매핑 + 가입·구매 매핑
 	const configs = [
 		{ tracker_event_name: 'install', admin_event_name: 'install', media_event_name: 'install', send_media: true },
 		{ tracker_event_name: 'af_complete_registration', admin_event_name: 'registration', media_event_name: 'registration', send_media: true },
 		{ tracker_event_name: 'af_purchase', admin_event_name: 'purchase', media_event_name: 'purchase', send_media: true },
 	];
-	for (const config of configs) {
-		await prisma.campaign_config.upsert({
-			where: { campaign_id_admin_event_name: { campaign_id: campaign.id, admin_event_name: config.admin_event_name } },
-			update: {},
-			create: { campaign_id: campaign.id, ...config },
-		});
+	for (const target of campaigns) {
+		for (const config of configs) {
+			await prisma.campaign_config.upsert({
+				where: { campaign_id_admin_event_name: { campaign_id: target.id, admin_event_name: config.admin_event_name } },
+				update: {},
+				create: { campaign_id: target.id, ...config },
+			});
+		}
 	}
 
 	// 8. daily_report — 최근 7일치 통계. view_code는 실제 트래킹과 동일하게 `token:pubId:subId`를 인코딩한 값
@@ -206,7 +223,7 @@ async function main() {
 	});
 
 	console.log(
-		`seed 완료: user(admin@test.com / test1234!), advertiser·tracker·media·advertising·campaign(token=${campaign.token}), daily_report ${DAILY_REPORT_DAYS}일치, postback ${postbacks.length}건, reservation 2건`
+		`seed 완료: user(admin@test.com / test1234!), advertiser·tracker·media, advertising 2개·campaign 4개(통계 대상 token=${campaign.token}), daily_report ${DAILY_REPORT_DAYS}일치, postback ${postbacks.length}건, reservation 2건`
 	);
 }
 
