@@ -50,12 +50,6 @@ const ReservedTable = (props: {
 	const columns = useMemo(
 		() => [
 			columnHelper.accessor('reservationIdx', {}),
-			columnHelper.display({
-				id: 'no',
-				header: 'no',
-				size: 45,
-				cell: info => info.row.index + 1,
-			}),
 			columnHelper.accessor('mediaName', { header: '매체', size: 70 }),
 			columnHelper.accessor('campaignName', { header: '캠페인명' }),
 			columnHelper.accessor(row => dayjs(row.reservedAt).format('YY-MM-DD HH:mm'), {

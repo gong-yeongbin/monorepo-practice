@@ -181,9 +181,11 @@ ${normalize}
     .ant-table-wrapper::-webkit-scrollbar {
       width: 20px;
     }
+    /* table 전체가 아니라 Descriptions 내부 레이아웃 테이블만 채운다 — #change-form table로 넓히면
+       같은 form 안의 예약 목록·변경 캠페인 테이블까지 늘어나 행이 세로로 퍼진다 */
     #change-form,
     #change-form .ant-descriptions,
-    #change-form table{
+    #change-form .ant-descriptions table{
      height:100%;
     }
     #change-form .ant-descriptions-view {
