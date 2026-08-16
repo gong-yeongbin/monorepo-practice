@@ -16,4 +16,6 @@ export interface ReservationRepository {
 	findById(id: number): Promise<Reservation | null>;
 	delete(id: number): Promise<void>;
 	countCampaigns(campaign_ids: number[]): Promise<number>;
+	findDue(now: Date): Promise<Reservation[]>;
+	apply(reservation: Reservation): Promise<void>;
 }

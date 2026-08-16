@@ -3,9 +3,10 @@ import { PrismaReservationRepository } from './prisma-reservation.repository';
 import { PrismaService } from '@infra/prisma/prisma.service';
 
 describe('PrismaReservationRepository', () => {
-	const reservation = { createMany: jest.fn(), findMany: jest.fn(), findUnique: jest.fn(), delete: jest.fn() };
-	const campaign = { count: jest.fn() };
-	const prisma = { reservation, campaign } as unknown as PrismaService;
+	const reservation = { createMany: jest.fn(), findMany: jest.fn(), findUnique: jest.fn(), delete: jest.fn(), update: jest.fn() };
+	const campaign = { count: jest.fn(), update: jest.fn() };
+	const $transaction = jest.fn();
+	const prisma = { reservation, campaign, $transaction } as unknown as PrismaService;
 	const repository = new PrismaReservationRepository(prisma);
 
 	beforeEach(() => jest.clearAllMocks());
@@ -51,5 +52,24 @@ describe('PrismaReservationRepository', () => {
 
 		expect(await repository.countCampaigns([1, 2])).toBe(2);
 		expect(campaign.count).toHaveBeenCalledWith({ where: { id: { in: [1, 2] } } });
+	});
+
+	it('findDue는 미적용이고 예약 시각이 지난 예약만 조회한다', async () => {
+		const now = new Date('2026-08-16T01:00:00Z');
+		reservation.findMany.mockResolvedValue([]);
+
+		await repository.findDue(now);
+
+		expect(reservation.findMany).toHaveBeenCalledWith({ where: { is_applied: false, reserved_at: { lte: now } } });
+	});
+
+	it('apply는 campaign 갱신과 완료 처리를 한 트랜잭션으로 묶는다', async () => {
+		const target = { id: 7, campaign_id: 3, name: '변경명', tracking_url: 'https://new', reserved_at: new Date(), is_applied: false };
+
+		await repository.apply(target);
+
+		expect(campaign.update).toHaveBeenCalledWith({ where: { id: 3 }, data: { name: '변경명', tracker_tracking_url: 'https://new' } });
+		expect(reservation.update).toHaveBeenCalledWith({ where: { id: 7 }, data: { is_applied: true } });
+		expect($transaction).toHaveBeenCalledTimes(1);
 	});
 });

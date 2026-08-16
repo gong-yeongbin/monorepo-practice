@@ -34,4 +34,21 @@ export class PrismaReservationRepository implements ReservationRepository {
 	async countCampaigns(campaign_ids: number[]): Promise<number> {
 		return this.prismaService.campaign.count({ where: { id: { in: campaign_ids } } });
 	}
+
+	// 스케줄러용 — 미적용이고 예약 시각이 지난 예약 (서버 다운 중 지난 건도 걸려 소급 적용된다)
+	async findDue(now: Date): Promise<Reservation[]> {
+		return this.prismaService.reservation.findMany({ where: { is_applied: false, reserved_at: { lte: now } } });
+	}
+
+	// 예약 적용 — campaign 갱신과 완료 처리를 한 트랜잭션으로 묶는다.
+	// campaign이 삭제되면 예약도 FK CASCADE로 함께 지워지므로 대상 없음 케이스는 없다.
+	async apply(reservation: Reservation): Promise<void> {
+		await this.prismaService.$transaction([
+			this.prismaService.campaign.update({
+				where: { id: reservation.campaign_id },
+				data: { name: reservation.name, tracker_tracking_url: reservation.tracking_url },
+			}),
+			this.prismaService.reservation.update({ where: { id: reservation.id }, data: { is_applied: true } }),
+		]);
+	}
 }

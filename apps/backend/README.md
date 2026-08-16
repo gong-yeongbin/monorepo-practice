@@ -129,7 +129,7 @@ PORT=3001
 | campaign | GET, POST `/campaigns`, GET, PATCH, DELETE `/campaigns/:id` |
 | config | GET, PATCH `/config/:campaignId` |
 | partner | GET `/partners/:id` |
-| reservation | GET, POST `/reservations`(advertisingId 필터·campaign별 예약 행 생성), DELETE `/reservations/:id` |
+| reservation | GET, POST `/reservations`(advertisingId 필터·campaign별 예약 행 생성), DELETE `/reservations/:id`. 스케줄러가 매시 정각·부트 시 시각 지난 예약을 campaign(name·tracker_tracking_url)에 적용 |
 | dashboard | GET `/dashboard`, `/dashboard/daily`(token 생략 시 전체 합산), `/dashboard/dailydetail`(token 기준 view_code·pub_id·sub_id 단위), `/dashboard/detail/:id` |
 | postback(로그) | GET `/postbacks/install`, `/postbacks/event`, `/postbacks/unregistered` (어드민 로그 모달용 조회) |
 

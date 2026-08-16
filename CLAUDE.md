@@ -19,7 +19,7 @@ frontend 테스트는 Vitest: `pnpm test`, `pnpm test:watch`, `pnpm test:coverag
 
 ## 구조
 
-- `apps/backend` — NestJS 11 어드민 API + 트래킹·포스트백 서비스, 포트 3001. Swagger UI는 `/docs`, 스펙은 `/docs-json`. ioredis 기반 Redis Stream(비동기 메시징) + Redis 캐시. Prisma(MySQL)도 여기서 관리: 스키마 `apps/backend/prisma/schema.prisma`, `PrismaModule`/`PrismaService`는 `src/infra/prisma/`. `src/` 바로 아래는 `common`/`infra`/`interceptors`/`modules`/`trackers`이며 `common`·`infra`·`modules`·`trackers`에 CLAUDE.md가 있다. `modules/<기능>`(auth·user·advertiser·advertising·campaign·config·media·tracker·partner·dashboard·tracking·postback)은 클린 아키텍처 4계층(`domain`/`application`/`infrastructure`/`presentation`)으로 나뉜다. 엔드포인트 호출용 `.http` 파일은 `apps/backend/http/`에 있다.
+- `apps/backend` — NestJS 11 어드민 API + 트래킹·포스트백 서비스, 포트 3001. Swagger UI는 `/docs`, 스펙은 `/docs-json`. ioredis 기반 Redis Stream(비동기 메시징) + Redis 캐시. Prisma(MySQL)도 여기서 관리: 스키마 `apps/backend/prisma/schema.prisma`, `PrismaModule`/`PrismaService`는 `src/infra/prisma/`. `src/` 바로 아래는 `common`/`infra`/`interceptors`/`modules`/`trackers`이며 `common`·`infra`·`modules`·`trackers`에 CLAUDE.md가 있다. `modules/<기능>`(auth·user·advertiser·advertising·campaign·config·media·tracker·partner·dashboard·tracking·postback·reservation)은 클린 아키텍처 4계층(`domain`/`application`/`infrastructure`/`presentation`)으로 나뉜다. 엔드포인트 호출용 `.http` 파일은 `apps/backend/http/`에 있다.
 - `apps/frontend` — React 19 + Vite 어드민, dev 서버 포트 3000. 서버 상태는 @tanstack/react-query, 전역 UI 상태는 MobX(`src/app/store.tsx`). `src/` 아래는 `app`/`features`/`shared`/`mocks`이며 각 폴더에 CLAUDE.md가 있다. 경로 별칭 `@/*` → `src/*`. dev 모드에서는 MSW 목 서버가 항상 켜져 API 요청을 가로챈다.
 - `packages/typescript-config`, `packages/eslint-config` — 공유 tsconfig / ESLint 설정 (`@repo/*`). ESLint는 `base`/`nestjs`/`react`/`prettier` export를 제공한다.
 

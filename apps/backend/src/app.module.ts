@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { TrackingModule } from '@tracking/tracking.module';
 import { PostbackModule } from '@postback/postback.module';
 import { PrismaModule } from '@infra/prisma/prisma.module';
@@ -19,6 +20,7 @@ import { ReservationModule } from '@reservation/reservation.module';
 @Module({
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true, envFilePath: `${process.cwd()}/.env` }),
+		ScheduleModule.forRoot(),
 		PrismaModule,
 		TrackingModule,
 		PostbackModule,
