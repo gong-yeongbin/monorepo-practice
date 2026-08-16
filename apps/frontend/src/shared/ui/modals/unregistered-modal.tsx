@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useMatch } from 'react-router';
-import { Modal, Skeleton } from 'antd';
+import { Modal } from 'antd';
 import { observer } from 'mobx-react';
 import { useStore } from '@/app/store';
 import { api } from '@/shared/api/api';
@@ -13,7 +13,6 @@ const UnregisteredModal = observer(
 	}) => {
 		const { unregisteredVisible, setUnregisteredVisible } = props;
 
-		const [loading, setLoading] = useState(false);
 		const [data, setData] = useState<Array<UnregisteredModalColumns>>([]);
 
 		const navigate = useNavigate();
@@ -36,13 +35,11 @@ const UnregisteredModal = observer(
 
 		const getUnregistered = async () => {
 			try {
-				setLoading(true);
 				const token = sessionStorage.getItem('detailToken');
 				const params = isCurrentPageDaily
 					? { startDate: dailyDate, endDate: dailyDate, token }
 					: { startDate, endDate, token };
 				setData(await api.getPostbackUnregistered(params));
-				setLoading(false);
 			} catch (error) {
 				sessionStorage.clear();
 				navigate('/login');
@@ -78,11 +75,7 @@ const UnregisteredModal = observer(
 				style={{ minWidth: '42rem' }}
 				centered
 			>
-				{loading ? (
-					<Skeleton active title={false} paragraph={{ width: '100%', rows: 3 }} />
-				) : (
-					<UnregisteredTable data={data} />
-				)}
+				<UnregisteredTable data={data} />
 			</Modal>
 		);
 	},

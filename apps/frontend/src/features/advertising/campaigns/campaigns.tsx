@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { Skeleton, Table as EmptyTable } from 'antd';
+import { Table as EmptyTable } from 'antd';
 import { PlusOutlined, RetweetOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { useStore } from '@/app/store';
@@ -31,7 +31,7 @@ const Campaigns = () => {
 		store.setPageTitle('캠페인 리스트');
 	}, []);
 
-	const { isFetching, data, error } = useQuery({
+	const { data, error } = useQuery({
 		queryKey: ['campaignList'],
 		queryFn: () => api.getCampaigns(paramId),
 	});
@@ -75,9 +75,7 @@ const Campaigns = () => {
 			</Nav>
 
 			<TableContainer>
-				{isFetching ? (
-					<Skeleton active title={false} paragraph={{ width: '100%', rows: 11 }} />
-				) : data && data.length > 0 ? (
+				{data && data.length > 0 ? (
 					<CampaignTable data={data} />
 				) : (
 					<EmptyTable />

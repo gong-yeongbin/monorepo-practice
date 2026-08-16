@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router';
-import { Button, Skeleton, Tooltip, Table as EmptyTable, DatePicker } from 'antd';
+import { Button, Tooltip, Table as EmptyTable, DatePicker } from 'antd';
 import { SyncOutlined } from '@ant-design/icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs, { Dayjs } from 'dayjs';
@@ -81,9 +81,7 @@ const Detail = () => {
 			</Nav>
 
 			<TableContainer>
-				{isFetching ? (
-					<Skeleton active title={false} paragraph={{ width: '100%', rows: 11 }} />
-				) : data && data.length > 0 ? (
+				{data && data.length > 0 ? (
 					<Table data={data} />
 				) : (
 					<EmptyTable />

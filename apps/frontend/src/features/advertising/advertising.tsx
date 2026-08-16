@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { observer } from 'mobx-react';
-import { Input, Skeleton, Table as EmptyTable } from 'antd';
+import { Input, Table as EmptyTable } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { useStore } from '@/app/store';
@@ -73,9 +73,7 @@ const Advertising = observer(() => {
 			</Nav>
 
 			<TableContainer>
-				{isFetching ? (
-					<Skeleton active title={false} paragraph={{ width: '100%', rows: 11 }} />
-				) : data?.length > 0 ? (
+				{data?.length > 0 ? (
 					<AdvertisingTable data={data} />
 				) : (
 					<EmptyTable />

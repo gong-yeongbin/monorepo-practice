@@ -6,7 +6,7 @@ import {
 	createColumnHelper,
 	RowSelectionState,
 } from '@tanstack/react-table';
-import { Button, Skeleton, Table as EmptyTable } from 'antd';
+import { Button, Table as EmptyTable } from 'antd';
 import { TableStyles } from '@/app/global-styles';
 import IndeterminateCheckbox from '@/features/detail/change/indeterminate-checkbox';
 
@@ -23,10 +23,9 @@ const SelectableTable = (props: {
 	setShowUrlModal: React.Dispatch<React.SetStateAction<boolean>>;
 	setURL: React.Dispatch<React.SetStateAction<string>>;
 	setSelectedRows: any;
-	loading: boolean;
 	data: SelectableColumns[];
 }) => {
-	const { setShowUrlModal, setURL, setSelectedRows, loading, data } = props;
+	const { setShowUrlModal, setURL, setSelectedRows, data } = props;
 
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
@@ -115,11 +114,7 @@ const SelectableTable = (props: {
 					))}
 				</thead>
 
-				{loading ? (
-					<div style={{ padding: '1rem' }}>
-						<Skeleton active title={false} paragraph={{ width: '100%', rows: 6 }} />
-					</div>
-				) : data.length === 0 ? (
+				{data.length === 0 ? (
 					<EmptyTable
 						style={{
 							display: 'flex',

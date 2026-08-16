@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { Skeleton, Table as EmptyTable, Button, Popconfirm, message } from 'antd';
+import { Table as EmptyTable, Button, Popconfirm, message } from 'antd';
 import { ArrowLeftOutlined, CheckOutlined } from '@ant-design/icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWrench } from '@fortawesome/free-solid-svg-icons';
@@ -36,7 +36,7 @@ const Events = () => {
 		store.setPageTitle('캠페인 이벤트');
 	}, []);
 
-	const { isFetching, data, error } = useQuery({
+	const { data, error } = useQuery({
 		queryKey: ['campaignEvents'],
 		queryFn: () => api.getCampaignEvents(paramCampaignIdx),
 	});
@@ -125,9 +125,7 @@ const Events = () => {
 			</Nav>
 
 			<TableContainer>
-				{isFetching ? (
-					<Skeleton active title={false} paragraph={{ width: '100%', rows: 11 }} />
-				) : events?.length > 0 ? (
+				{events?.length > 0 ? (
 					editMode ? (
 						<EditTable events={events} setNewEvents={setNewEvents} />
 					) : (

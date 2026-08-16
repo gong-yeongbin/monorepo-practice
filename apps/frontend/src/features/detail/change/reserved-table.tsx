@@ -5,7 +5,7 @@ import {
 	flexRender,
 	createColumnHelper,
 } from '@tanstack/react-table';
-import { Button, message, Popconfirm, Skeleton, Table as EmptyTable } from 'antd';
+import { Button, message, Popconfirm, Table as EmptyTable } from 'antd';
 import dayjs from 'dayjs';
 import { ListWrapper } from '@/features/detail/change/change.styles';
 import { TableStyles } from '@/app/global-styles';
@@ -26,7 +26,6 @@ const ReservedTable = (props: {
 	setShowUrlModal: React.Dispatch<React.SetStateAction<boolean>>;
 	setURL: React.Dispatch<React.SetStateAction<string>>;
 	getReserved: any;
-	loading: boolean;
 	data: {
 		reservationIdx: string;
 		reservedAt: string;
@@ -36,7 +35,7 @@ const ReservedTable = (props: {
 		status: boolean;
 	}[];
 }) => {
-	const { setShowUrlModal, setURL, loading, getReserved, data } = props;
+	const { setShowUrlModal, setURL, getReserved, data } = props;
 
 	const handleDelete = async (idx: string) => {
 		try {
@@ -141,11 +140,7 @@ const ReservedTable = (props: {
 						))}
 					</thead>
 
-					{loading ? (
-						<div style={{ padding: '1rem' }}>
-							<Skeleton active title={false} paragraph={{ width: '100%', rows: 12 }} />
-						</div>
-					) : data.length === 0 ? (
+					{data.length === 0 ? (
 						<EmptyTable
 							style={{
 								display: 'flex',

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useMatch } from 'react-router';
-import { Modal, Skeleton } from 'antd';
+import { Modal } from 'antd';
 import { observer } from 'mobx-react';
 import { api } from '@/shared/api/api';
 import { useStore } from '@/app/store';
@@ -12,7 +12,6 @@ const EventModal = observer(
 		setEventVisible: React.Dispatch<React.SetStateAction<boolean>>;
 	}) => {
 		const [title, setTitle] = useState('');
-		const [loading, setLoading] = useState(false);
 		const [data, setData] = useState<Array<EventModalColumns>>([]);
 
 		const titleRef = useRef<HTMLSpanElement>(null);
@@ -47,7 +46,6 @@ const EventModal = observer(
 
 		const getPostbackEvent = async () => {
 			try {
-				setLoading(true);
 				const token = sessionStorage.getItem('detailToken');
 				let params: Parameters<typeof api.getPostbackEvents>[0] = { startDate, endDate, token, eventName };
 				if (isPageDaily) {
@@ -62,7 +60,6 @@ const EventModal = observer(
 					};
 				}
 				setData(await api.getPostbackEvents(params));
-				setLoading(false);
 			} catch (error) {
 				sessionStorage.clear();
 				navigate('/login');
@@ -122,11 +119,7 @@ const EventModal = observer(
 				bodyStyle={{ overflow: 'auto', height: '87vh' }}
 				className="table-modal"
 			>
-				{loading ? (
-					<Skeleton active title={false} paragraph={{ width: '100%', rows: 50 }} />
-				) : (
-					<EventTable data={data} titleRef={titleRef} />
-				)}
+				<EventTable data={data} titleRef={titleRef} />
 			</Modal>
 		);
 	},

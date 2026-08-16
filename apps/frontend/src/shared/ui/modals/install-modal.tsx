@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Modal, Skeleton } from 'antd';
+import { Modal } from 'antd';
 import { observer } from 'mobx-react';
 import { useNavigate, useMatch } from 'react-router';
 import { useStore } from '@/app/store';
@@ -13,7 +13,6 @@ const InstallModal = observer(
 	}) => {
 		const { installVisible, setInstallVisible } = props;
 
-		const [loading, setLoading] = useState(false);
 		const [data, setData] = useState<Array<InstallModalColumns>>([]);
 
 		const titleRef = useRef<HTMLSpanElement>(null);
@@ -42,7 +41,6 @@ const InstallModal = observer(
 
 		const getPostbackInstall = async () => {
 			try {
-				setLoading(true);
 				const token = sessionStorage.getItem('detailToken');
 				let params: Parameters<typeof api.getPostbackInstalls>[0] = { startDate, endDate, token };
 				if (isPageDaily) {
@@ -51,7 +49,6 @@ const InstallModal = observer(
 					params = { startDate: dailyDetailStartDate, endDate: dailyDetailEndDate, viewCode };
 				}
 				setData(await api.getPostbackInstalls(params));
-				setLoading(false);
 			} catch (error) {
 				sessionStorage.clear();
 				navigate('/login');
@@ -96,11 +93,7 @@ const InstallModal = observer(
 				bodyStyle={{ overflow: 'auto', height: '87vh' }}
 				className="table-modal"
 			>
-				{loading ? (
-					<Skeleton active title={false} paragraph={{ width: '100%', rows: 50 }} />
-				) : (
-					<InstallTable data={data} titleRef={titleRef} />
-				)}
+				<InstallTable data={data} titleRef={titleRef} />
 			</Modal>
 		);
 	},

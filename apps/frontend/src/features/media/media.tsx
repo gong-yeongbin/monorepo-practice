@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Skeleton, Table as EmptyTable } from 'antd';
+import { Table as EmptyTable } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import { PaddingContainer, TableContainer } from '@/app/global-styles';
 import { useStore } from '@/app/store';
@@ -13,14 +13,12 @@ const Media = () => {
 		store.setPageTitle('매체 관리');
 	}, []);
 
-	const { isFetching, data } = useQuery({ queryKey: ['media'], queryFn: api.getMedia });
+	const { data } = useQuery({ queryKey: ['media'], queryFn: api.getMedia });
 
 	return (
 		<PaddingContainer>
 			<TableContainer>
-				{isFetching ? (
-					<Skeleton active title={false} paragraph={{ width: '100%', rows: 11 }} />
-				) : data?.length > 0 ? (
+				{data?.length > 0 ? (
 					<Table data={data} />
 				) : (
 					<EmptyTable />

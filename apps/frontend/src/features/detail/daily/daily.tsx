@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { observer } from 'mobx-react';
-import { Button, DatePicker, Skeleton, Tooltip, Table as EmptyTable } from 'antd';
+import { Button, DatePicker, Tooltip, Table as EmptyTable } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import { SyncOutlined } from '@ant-design/icons';
 import { useStore } from '@/app/store';
@@ -74,9 +74,7 @@ const Daily = observer(() => {
 			</Nav>
 
 			<TableContainer>
-				{isFetching ? (
-					<Skeleton active title={false} paragraph={{ width: '100%', rows: 11 }} />
-				) : data && data.length > 0 ? (
+				{data && data.length > 0 ? (
 					<Table data={data} />
 				) : (
 					<EmptyTable />

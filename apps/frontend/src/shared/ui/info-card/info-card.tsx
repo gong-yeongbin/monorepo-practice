@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react';
-import { Skeleton, Button, Modal, message, Alert, Space, Form } from 'antd';
+import { Button, Modal, message, Alert, Space, Form } from 'antd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCamera } from '@fortawesome/free-solid-svg-icons';
 import { CopyOutlined, InfoCircleFilled, SearchOutlined } from '@ant-design/icons';
@@ -110,16 +110,12 @@ const InfoCard = observer(() => {
 		return mapCampaignInfo(res.data.data);
 	};
 
-	const { isFetching, data: adInfo, error: adInfoError } = useQuery({
+	const { data: adInfo, error: adInfoError } = useQuery({
 		queryKey: ['info', paramId],
 		queryFn: getAdInfo,
 	});
 
-	const {
-		isFetching: isFetchingSecond,
-		data: secondInfo,
-		error: secondInfoError,
-	} = useQuery({
+	const { data: secondInfo, error: secondInfoError } = useQuery({
 		queryKey: ['secondInfo', paramId],
 		queryFn: getSecondInfo,
 		enabled: !!isPageAdvertisingEvent,
@@ -228,15 +224,7 @@ const InfoCard = observer(() => {
 			>
 				<DataContainer>
 					<ImageContainer>
-						{isFetching ? (
-							<Skeleton.Image
-								style={{
-									width: isPageChange ? '55px' : '70px',
-									height: isPageChange ? '55px' : '70px',
-									borderRadius: '30%',
-								}}
-							/>
-						) : isPageAdvertising && !isPageAdvertisingEvent ? (
+						{isPageAdvertising && !isPageAdvertisingEvent ? (
 							<UploadWrapper>
 								<Form form={form} id="infocard-image-form">
 									<Form.Item name="image">
@@ -302,35 +290,18 @@ const InfoCard = observer(() => {
 					</ImageContainer>
 
 					<InfoContainer>
-						{isFetching ? (
-							<Skeleton.Button
-								active
-								style={{ width: '10vw', height: '18px', margin: '0.6rem 0' }}
-							/>
-						) : (
-							<Title>{advertising}</Title>
-						)}
-						{!isPageChange &&
-							(isFetching ? (
-								<Skeleton.Button active style={{ width: '5vw', height: '12px' }} />
-							) : (
-								<li>
-									<Label>광고주</Label>
-									<span> | {advertiser}</span>
-								</li>
-							))}
-						{isFetching ? (
-							<Skeleton.Button active style={{ width: '15vw', height: '12px' }} />
-						) : (
+						<Title>{advertising}</Title>
+						{!isPageChange && (
 							<li>
-								<Label>트랙킹 솔루션</Label>
-								<span> | {tracker}</span>
+								<Label>광고주</Label>
+								<span> | {advertiser}</span>
 							</li>
 						)}
-						{!isPageChange &&
-							(isFetching && (isPageDaily || isPageAdvertisingEvent) ? (
-								<Skeleton.Button active style={{ width: '10vw', height: '12px' }} />
-							) : (
+						<li>
+							<Label>트랙킹 솔루션</Label>
+							<span> | {tracker}</span>
+						</li>
+						{!isPageChange && (
 								<li>
 									{isPageDaily || isPageAdvertisingEvent ? (
 										<>
@@ -357,23 +328,14 @@ const InfoCard = observer(() => {
 										</>
 									)}
 								</li>
-							))}
+						)}
 					</InfoContainer>
 				</DataContainer>
 
 				{isPageAdvertisingEvent && (
 					<DataContainer>
 						<InfoContainer style={{ lineHeight: 2 }}>
-							{isFetchingSecond ? (
-								<>
-									<Skeleton.Button active style={{ width: '10vw', height: '12px' }} />
-									<Skeleton.Button active style={{ width: '5vw', height: '12px' }} />
-									<Skeleton.Button active style={{ width: '5vw', height: '12px' }} />
-									<Skeleton.Button active style={{ width: '10vw', height: '12px' }} />
-									<Skeleton.Button active style={{ width: '10vw', height: '12px' }} />
-								</>
-							) : (
-								<>
+							<>
 									<li>
 										<Label>캠페인</Label>
 										<span> | {secondInfo?.name}</span>
@@ -440,8 +402,7 @@ const InfoCard = observer(() => {
 											/>
 										</CopyToClipboard>
 									</li>
-								</>
-							)}
+							</>
 						</InfoContainer>
 					</DataContainer>
 				)}

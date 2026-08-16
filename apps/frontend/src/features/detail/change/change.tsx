@@ -41,17 +41,13 @@ const Change = () => {
 	const queryClient = useQueryClient();
 
 	// 변경 캠페인 영역 — 해당 advertising의 campaign 전체 목록
-	const { isFetching: loadingCampaigns, data: campaigns } = useQuery({
+	const { data: campaigns } = useQuery({
 		queryKey: ['campaignList'],
 		queryFn: () => api.getCampaigns(paramId),
 	});
 
 	// 예약 목록 — 해당 advertising의 캠페인에 걸린 예약 전체
-	const {
-		isFetching: loadingReserved,
-		data: reserved,
-		refetch: refetchReserved,
-	} = useQuery({
+	const { data: reserved, refetch: refetchReserved } = useQuery({
 		queryKey: ['reservations', paramId],
 		queryFn: () => api.getReservations(paramId),
 	});
@@ -235,7 +231,6 @@ const Change = () => {
 										setShowUrlModal={setShowUrlModal}
 										setURL={setURL}
 										setSelectedRows={setSelectedRows}
-										loading={loadingCampaigns}
 										data={campaigns ?? []}
 									/>
 								</Form.Item>
@@ -247,7 +242,6 @@ const Change = () => {
 						setShowUrlModal={setShowUrlModal}
 						setURL={setURL}
 						getReserved={refetchReserved}
-						loading={loadingReserved}
 						data={reserved ?? []}
 					/>
 				</MainWrapper>

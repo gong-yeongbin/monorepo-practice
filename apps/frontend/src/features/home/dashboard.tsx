@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react';
-import { Skeleton, Table as EmptyTable } from 'antd';
+import { Table as EmptyTable } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import { useQuery } from '@tanstack/react-query';
 import DashboardTable from '@/features/home/dashboard-table';
@@ -52,9 +52,7 @@ const Dashboard = observer(() => {
 				disabledDate={disabledDate}
 			/>
 			<TableContainer>
-				{isFetching ? (
-					<Skeleton active title={false} paragraph={{ width: '100%', rows: 11 }} />
-				) : data?.length > 0 ? (
+				{data?.length > 0 ? (
 					<DashboardTable data={data} />
 				) : (
 					<EmptyTable />
