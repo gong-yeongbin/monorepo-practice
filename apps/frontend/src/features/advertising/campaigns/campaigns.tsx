@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { Skeleton, Table as EmptyTable } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, RetweetOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { useStore } from '@/app/store';
 import InfoCard from '@/shared/ui/info-card/info-card';
@@ -53,6 +53,10 @@ const Campaigns = () => {
 		setDrawerVisible(true);
 	};
 
+	const handleChangeBtn = () => {
+		navigate(`/${paramId}/change`);
+	};
+
 	return (
 		<PaddingContainer>
 			<InfoCard />
@@ -60,6 +64,9 @@ const Campaigns = () => {
 			<Nav>
 				<NavLeft />
 				<NavRight>
+					<NavBtn icon={<RetweetOutlined />} onClick={handleChangeBtn} style={{ marginRight: '0.5rem' }}>
+						예약 변경
+					</NavBtn>
 					<NavBtn icon={<PlusOutlined />} onClick={handleAddBtn}>
 						캠페인 등록
 					</NavBtn>

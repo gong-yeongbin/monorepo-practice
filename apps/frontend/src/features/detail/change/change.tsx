@@ -126,7 +126,7 @@ const Change = () => {
 	};
 
 	const handleCancel = () => {
-		navigate(`/${paramId}`);
+		navigate(`/advertising/${paramId}`);
 	};
 
 	const handleReset = () => {

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import { Button, Skeleton, Tooltip, Table as EmptyTable, DatePicker } from 'antd';
-import { RetweetOutlined, SyncOutlined } from '@ant-design/icons';
+import { SyncOutlined } from '@ant-design/icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs, { Dayjs } from 'dayjs';
 import { useStore } from '@/app/store';
 import Table from '@/features/detail/detail-table';
 import InfoCard from '@/shared/ui/info-card/info-card';
-import { Nav, NavBtn, NavLeft, NavRight, TableContainer } from '@/app/global-styles';
+import { Nav, NavLeft, NavRight, TableContainer } from '@/app/global-styles';
 import { api } from '@/shared/api/api';
 
 const { RangePicker } = DatePicker;
@@ -21,8 +21,6 @@ const Detail = () => {
 	const store = useStore();
 
 	const { id: paramId } = useParams();
-
-	const navigate = useNavigate();
 
 	const queryClient = useQueryClient();
 
@@ -38,10 +36,6 @@ const Detail = () => {
 
 	const handleRefreshBtn = () => {
 		queryClient.invalidateQueries({ queryKey: ['detail'] });
-	};
-
-	const handleChangeBtn = () => {
-		navigate(`/${paramId}/change`);
 	};
 
 	const onDateChange = (dates: (Dayjs | null)[] | null, dateStrings: [string, string]) => {
@@ -83,18 +77,7 @@ const Detail = () => {
 						<Button icon={<SyncOutlined />} onClick={handleRefreshBtn} disabled={isFetching} />
 					</Tooltip>
 				</NavLeft>
-				<NavRight>
-					{isFetching ? (
-						<>
-							<Skeleton.Button shape="round" style={{ width: '8.5rem' }} />
-							<Skeleton.Button shape="round" style={{ width: '8.5rem', marginLeft: '0.5rem' }} />
-						</>
-					) : (
-						<NavBtn icon={<RetweetOutlined />} onClick={handleChangeBtn}>
-							예약 변경
-						</NavBtn>
-					)}
-				</NavRight>
+				<NavRight />
 			</Nav>
 
 			<TableContainer>
