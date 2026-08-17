@@ -1,27 +1,34 @@
-### 트래커 install 포스트백 — :name은 appsflyer | airbridge | adjust | adbrix-remaster
-# 아래는 appsflyer 파라미터 예시 (트래커별로 쿼리 키가 다름)
-GET {{host}}/appsflyer/install?clickid=click-0001&af_siteid=site-1&af_c_id=CAMPAIGN_TOKEN&advertising_id=38400000-8cf0-11bd-b23e-10b96e40000d&device_ip=1.2.3.4&country_code=KR&click_time=2026-07-22T10:00:00Z&install_time=2026-07-22T10:05:00Z
+# 포스트백 수신·로그 조회 예시.
+# token·view_code는 seed 고정값이라 그대로 실행된다 (campaign token: seed-token-cafe-launch 등 4개, prisma/seed.ts).
+# view_code는 `token:seed_pub:seed_sub`를 viewCodeCodec으로 인코딩한 결정값 — seed daily_report의 view_code와 같아
+# 아래 수신 예시를 쏘면 통계·로그 화면의 seed 데이터에 그대로 누적된다.
+# 트래커별로 쿼리 키가 다르다(src/trackers/<name>/install.mapper.ts 참고). 날짜·타임스탬프는 필요 시 오늘 기준으로 바꿀 것.
 
-### 트래커 event 포스트백 (appsflyer 예시)
-GET {{host}}/appsflyer/event?clickid=click-0001&af_siteid=site-1&af_c_id=CAMPAIGN_TOKEN&advertising_id=38400000-8cf0-11bd-b23e-10b96e40000d&device_ip=1.2.3.4&country_code=KR&install_time=2026-07-22T10:05:00Z&event_time=2026-07-22T11:00:00Z&event_name=af_purchase&event_revenue=1000&event_revenue_currency=KRW
+### 트래커 install 포스트백 — appsflyer (clickid / af_siteid=viewCode / af_c_id=token)
+GET {{host}}/appsflyer/install?clickid=click-0001&af_siteid=lvpo%2F4xJXLWflTJldMlwFFfAwl3R9T5KUZ9yETOdq1na7I91cPHYvcdCsi0OZuIM&af_c_id=seed-token-cafe-launch&advertising_id=38400000-8cf0-11bd-b23e-10b96e40000d&device_ip=1.2.3.4&country_code=KR&click_time=2026-08-17T10:00:00Z&install_time=2026-08-17T10:05:00Z
 
-### adjust install 포스트백 예시
-GET {{host}}/adjust/install?clickid=click-0002&af_siteid=site-1&af_c_id=CAMPAIGN_TOKEN
+### 트래커 event 포스트백 — appsflyer (event_name은 campaign_config.tracker_event_name과 매칭돼야 통계 반영)
+GET {{host}}/appsflyer/event?clickid=click-0001&af_siteid=lvpo%2F4xJXLWflTJldMlwFFfAwl3R9T5KUZ9yETOdq1na7I91cPHYvcdCsi0OZuIM&af_c_id=seed-token-cafe-launch&advertising_id=38400000-8cf0-11bd-b23e-10b96e40000d&device_ip=1.2.3.4&country_code=KR&install_time=2026-08-17T10:05:00Z&event_time=2026-08-17T11:00:00Z&event_name=af_purchase&event_revenue=1000&event_revenue_currency=KRW
 
-### airbridge install 포스트백 예시
-GET {{host}}/airbridge/install?clickid=click-0003&af_siteid=site-1&af_c_id=CAMPAIGN_TOKEN
+### adjust install 포스트백 (click_id / publisher_id=viewCode / cp_token=token, 시각은 유닉스 초)
+GET {{host}}/adjust/install?click_id=click-0002&publisher_id=lvpo%2F4xJXLWflTJldMlwFFfAwl3R9T5KUZ9yETOdq1na7I91cPHYvcdCsi0OZuIM&cp_token=seed-token-cafe-launch&adid=38400000-8cf0-11bd-b23e-10b96e40000d&ip_address=1.2.3.4&country=KR&click_time=1786928400&installed_at=1786928700
 
-### adbrix-remaster install 포스트백 예시
-GET {{host}}/adbrix-remaster/install?clickid=click-0004&af_siteid=site-1&af_c_id=CAMPAIGN_TOKEN
+### airbridge install 포스트백 (click_id / sub_id=viewCode / custom_param1=token, 시각은 유닉스 밀리초)
+GET {{host}}/airbridge/install?click_id=click-0003&sub_id=lvpo%2F4xJXLWflTJldMlwFFfAwl3R9T5KUZ9yETOdq1na7I91cPHYvcdCsi0OZuIM&custom_param1=seed-token-cafe-launch&google_aid=38400000-8cf0-11bd-b23e-10b96e40000d&device_ip=1.2.3.4&country=KR&click_timestamp=1786928400000&install_timestamp=1786928700000
+
+### adbrix-remaster install 포스트백 (cb_3=clickId / cb_2=viewCode / cb_1=token)
+GET {{host}}/adbrix-remaster/install?cb_3=click-0004&cb_2=lvpo%2F4xJXLWflTJldMlwFFfAwl3R9T5KUZ9yETOdq1na7I91cPHYvcdCsi0OZuIM&cb_1=seed-token-cafe-launch&adid=38400000-8cf0-11bd-b23e-10b96e40000d&a_ip=1.2.3.4&device_country=KR&a_server_datetime=2026-08-17T01:00:00&event_datetime=2026-08-17T01:05:00
+
+# 로그 조회 — seed 데이터는 실행일 기준 최근 7일에 생성되므로 날짜 범위가 오늘을 포함해야 결과가 나온다.
 
 ### install 포스트백 로그 — token 기준
-GET {{host}}/postbacks/install?token=CAMPAIGN_TOKEN&start_date=2026-07-01&end_date=2026-07-22
+GET {{host}}/postbacks/install?token=seed-token-cafe-launch&start_date=2026-08-01&end_date=2026-08-31
 
-### install 포스트백 로그 — view_code 기준(일자별 상세 화면)
-GET {{host}}/postbacks/install?view_code=VIEW_CODE&start_date=2026-07-01&end_date=2026-07-22
+### install 포스트백 로그 — view_code 기준(일자별 상세 화면). 저장값이 percent-encoded라 한 번 더 인코딩해 보낸다
+GET {{host}}/postbacks/install?view_code=lvpo%252F4xJXLWflTJldMlwFFfAwl3R9T5KUZ9yETOdq1na7I91cPHYvcdCsi0OZuIM&start_date=2026-08-01&end_date=2026-08-31
 
 ### event 포스트백 로그 — admin 이벤트명을 campaign_config로 변환해 조회
-GET {{host}}/postbacks/event?token=CAMPAIGN_TOKEN&event_name=purchase&start_date=2026-07-01&end_date=2026-07-22
+GET {{host}}/postbacks/event?token=seed-token-cafe-launch&event_name=purchase&start_date=2026-08-01&end_date=2026-08-31
 
 ### 미등록 이벤트 카운트 — campaign_config에 없는 이벤트명 그룹 합계
-GET {{host}}/postbacks/unregistered?token=CAMPAIGN_TOKEN&start_date=2026-07-01&end_date=2026-07-22
+GET {{host}}/postbacks/unregistered?token=seed-token-cafe-launch&start_date=2026-08-01&end_date=2026-08-31

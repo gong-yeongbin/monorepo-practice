@@ -1,17 +1,20 @@
+# seed 통계는 실행일 기준 최근 7일에 생성되므로 날짜가 오늘을 포함해야 결과가 나온다.
+# token은 seed 고정값(prisma/seed.ts의 campaign 4개 참고).
+
 ### 대시보드 — 특정 일자 집계
-GET {{host}}/dashboard?date=2026-07-22
+GET {{host}}/dashboard?date=2026-08-17
 
 ### 일별 통계 — 날짜 범위 (token 생략 시 전체 합산)
-GET {{host}}/dashboard/daily?start_date=2026-07-01&end_date=2026-07-22
+GET {{host}}/dashboard/daily?start_date=2026-08-01&end_date=2026-08-31
 
 ### 일별 통계 — 특정 campaign token 기준
-GET {{host}}/dashboard/daily?start_date=2026-07-01&end_date=2026-07-22&token=CAMPAIGN_TOKEN
+GET {{host}}/dashboard/daily?start_date=2026-08-01&end_date=2026-08-31&token=seed-token-cafe-launch
 
 ### 일자별 상세 — campaign token 기준, view_code·pub_id·sub_id 단위 (카운터 정렬)
-GET {{host}}/dashboard/dailydetail?start_date=2026-07-01&end_date=2026-07-22&token=CAMPAIGN_TOKEN&type=install&order=desc
+GET {{host}}/dashboard/dailydetail?start_date=2026-08-01&end_date=2026-08-31&token=seed-token-cafe-launch&type=install&order=desc
 
 ### 상세 통계 — advertising 단위, media_id 필터 선택
-GET {{host}}/dashboard/detail/1?start_date=2026-07-01&end_date=2026-07-22
+GET {{host}}/dashboard/detail/1?start_date=2026-08-01&end_date=2026-08-31
 
 ### 상세 통계 — media_id 필터 포함
-GET {{host}}/dashboard/detail/1?start_date=2026-07-01&end_date=2026-07-22&media_id=1
+GET {{host}}/dashboard/detail/1?start_date=2026-08-01&end_date=2026-08-31&media_id=1

@@ -65,15 +65,18 @@ async function main() {
 	const advertising1 = await upsertAdvertising('카페 러시(AOS)');
 	const advertising2 = await upsertAdvertising('펫 월드(iOS)');
 
-	// 6. campaign — advertising마다 2개. name이 unique가 아니라 findFirst 후 없을 때만 생성. token은 uuid 기본값으로 자동 생성된다
-	const findOrCreateCampaign = async (name: string, advertising_id: number) => {
+	// 6. campaign — advertising마다 2개. name이 unique가 아니라 findFirst 후 없을 때만 생성.
+	// token은 http/의 .http 예시가 그대로 실행되도록 고정값을 쓴다(uuid 자동 생성이면 재시드마다 달라져 예시와 어긋남).
+	// 기존 행의 token도 고정값으로 갱신한다 — 이전 uuid token으로 쌓인 daily_report·postback 행은 고아가 되므로 pnpm reset으로 정리하는 걸 권장.
+	const findOrCreateCampaign = async (name: string, advertising_id: number, token: string) => {
 		const found = await prisma.campaign.findFirst({ where: { name } });
 		if (found) {
-			return found;
+			return found.token === token ? found : prisma.campaign.update({ where: { id: found.id }, data: { token } });
 		}
 		return prisma.campaign.create({
 			data: {
 				name,
+				token,
 				type: 'CPI',
 				tracker_name: tracker.name,
 				tracker_tracking_url: tracker.tracking_url,
@@ -83,12 +86,12 @@ async function main() {
 		});
 	};
 	// 통계·포스트백·예약 시드는 첫 캠페인에만 건다
-	const campaign = await findOrCreateCampaign('카페 러시 론칭 캠페인', advertising1.id);
+	const campaign = await findOrCreateCampaign('카페 러시 론칭 캠페인', advertising1.id, 'seed-token-cafe-launch');
 	const campaigns = [
 		campaign,
-		await findOrCreateCampaign('카페 러시 부스트 캠페인', advertising1.id),
-		await findOrCreateCampaign('펫 월드 론칭 캠페인', advertising2.id),
-		await findOrCreateCampaign('펫 월드 부스트 캠페인', advertising2.id),
+		await findOrCreateCampaign('카페 러시 부스트 캠페인', advertising1.id, 'seed-token-cafe-boost'),
+		await findOrCreateCampaign('펫 월드 론칭 캠페인', advertising2.id, 'seed-token-pet-launch'),
+		await findOrCreateCampaign('펫 월드 부스트 캠페인', advertising2.id, 'seed-token-pet-boost'),
 	];
 
 	// 7. campaign_config — 모든 캠페인에 기본 install 매핑 + 가입·구매 매핑
