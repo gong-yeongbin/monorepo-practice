@@ -9,14 +9,14 @@ describe('PrismaCampaignRepository (postback)', () => {
 
 	beforeEach(() => jest.clearAllMocks());
 
-	it('token으로 campaign_config를 include해 조회한다', async () => {
-		const campaign = { token: 'token-1', campaign_config: [] };
+	it('token으로 campaign_config·media를 include해 조회한다', async () => {
+		const campaign = { token: 'token-1', campaign_config: [], media: { install_postback_url: '', event_postback_url: '' } };
 		findUnique.mockResolvedValue(campaign);
 
 		const result = await repository.findByToken('token-1');
 
 		expect(result).toBe(campaign);
-		expect(findUnique).toHaveBeenCalledWith({ where: { token: 'token-1' }, include: { campaign_config: true } });
+		expect(findUnique).toHaveBeenCalledWith({ where: { token: 'token-1' }, include: { campaign_config: true, media: true } });
 	});
 
 	it('없으면 null을 반환한다', async () => {

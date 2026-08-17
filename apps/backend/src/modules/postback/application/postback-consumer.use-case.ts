@@ -4,7 +4,10 @@ import { POSTBACK_REPOSITORY, PostbackRepository } from '@postback/domain/postba
 import { CAMPAIGN_REPOSITORY, CampaignRepository } from '@postback/domain/campaign.repository';
 import { DAILY_REPORT_REPOSITORY, DailyReportRepository } from '@postback/domain/daily-report.repository';
 import { Campaign } from '@postback/domain/campaign.entity';
+import { CampaignConfig } from '@postback/domain/campaign-config.entity';
 import { DailyReport, createDailyReport } from '@postback/domain/daily-report.entity';
+import { buildMediaPostbackUrl, MEDIA_POSTBACK_STREAM, MediaPostbackMessage } from '@postback/domain/media-postback';
+import { StreamProducer } from '@infra/stream/stream-producer.service';
 import { kstBaseDate } from '@common/utils/date.util';
 
 @Injectable()
@@ -14,14 +17,15 @@ export class PostbackConsumerUseCase {
 	constructor(
 		@Inject(POSTBACK_REPOSITORY) private readonly postbackRepository: PostbackRepository,
 		@Inject(CAMPAIGN_REPOSITORY) private readonly campaignRepository: CampaignRepository,
-		@Inject(DAILY_REPORT_REPOSITORY) private readonly dailyReportRepository: DailyReportRepository
+		@Inject(DAILY_REPORT_REPOSITORY) private readonly dailyReportRepository: DailyReportRepository,
+		private readonly producer: StreamProducer
 	) {}
 
 	async execute(messages: string[]) {
 		const baseDate = kstBaseDate();
 		const campaigns = new Map<string, Campaign | null>();
-		const postbacks: Postback[] = [];
 		const dailyReportMap = new Map<string, DailyReport>();
+		const mediaMessages: MediaPostbackMessage[] = [];
 
 		for (const message of messages) {
 			const postback = this.parse(message);
@@ -43,11 +47,27 @@ export class PostbackConsumerUseCase {
 				continue;
 			}
 
-			postbacks.push(postback);
-			this.accumulate(dailyReportMap, postback, campaign, baseDate);
+			const config = campaign.campaign_config.find((campaignConfig) => campaignConfig.tracker_event_name === postback.event_name);
+
+			// 저장 실패 건은 통계 누산·매체 전송도 제외해 postback 로그와의 정합을 지킨다
+			let postbackId: number;
+			try {
+				postbackId = await this.postbackRepository.create(postback);
+			} catch (error) {
+				this.logger.error(`postback 저장에 실패해 건너뜁니다: token=${postback.token}, ${error}`);
+				continue;
+			}
+
+			this.accumulate(dailyReportMap, postback, config, baseDate);
+
+			if (config?.send_media) mediaMessages.push({ postback_id: postbackId, url: buildMediaPostbackUrl(campaign.media, config, postback), attempt: 0 });
 		}
 
-		if (postbacks.length) await this.postbackRepository.createMany(postbacks);
+		// 매체 전송 적재 실패가 통계 저장을 막지 않도록 격리한다(전송 자체는 media-postback 컨슈머가 수행)
+		const enqueueResults = await Promise.allSettled(mediaMessages.map((mediaMessage) => this.producer.send(MEDIA_POSTBACK_STREAM, JSON.stringify(mediaMessage))));
+		for (const result of enqueueResults) {
+			if (result.status === 'rejected') this.logger.error(`매체 포스트백 적재 실패: ${result.reason}`);
+		}
 
 		// 개별 upsert 실패가 배치 전체를 무한 재소비시키지 않도록 실패는 로그로 격리한다
 		const results = await Promise.allSettled([...dailyReportMap.values()].map((dailyReport) => this.dailyReportRepository.upsert(dailyReport)));
@@ -65,15 +85,14 @@ export class PostbackConsumerUseCase {
 		}
 	}
 
-	private accumulate(dailyReportMap: Map<string, DailyReport>, postback: Postback, campaign: Campaign, baseDate: Date) {
+	private accumulate(dailyReportMap: Map<string, DailyReport>, postback: Postback, config: CampaignConfig | undefined, baseDate: Date) {
 		let dailyReportDto = dailyReportMap.get(postback.view_code);
 		if (!dailyReportDto) {
 			dailyReportDto = createDailyReport({ view_code: postback.view_code, token: postback.token, pub_id: postback.pub_id, sub_id: postback.sub_id, created_date: baseDate });
 			dailyReportMap.set(postback.view_code, dailyReportDto);
 		}
 
-		const event = campaign.campaign_config.find((campaignConfig) => campaignConfig.tracker_event_name === postback.event_name);
-		switch (event?.admin_event_name) {
+		switch (config?.admin_event_name) {
 			case 'install':
 				dailyReportDto.install += 1;
 				break;

@@ -3,15 +3,20 @@ import { PostbackConsumerUseCase } from './postback-consumer.use-case';
 import { POSTBACK_REPOSITORY } from '@postback/domain/postback.repository';
 import { CAMPAIGN_REPOSITORY } from '@postback/domain/campaign.repository';
 import { DAILY_REPORT_REPOSITORY } from '@postback/domain/daily-report.repository';
+import { StreamProducer } from '@infra/stream/stream-producer.service';
 
 describe('PostbackConsumerUseCase', () => {
-	const postbackRepository = { createMany: jest.fn() };
+	const postbackRepository = { create: jest.fn() };
 	const campaignRepository = { findByToken: jest.fn() };
 	const dailyReportRepository = { upsert: jest.fn() };
+	const producer = { send: jest.fn() };
 	let useCase: PostbackConsumerUseCase;
+
+	const media = { install_postback_url: 'https://media.example.com/install?click_id={click_id}', event_postback_url: 'https://media.example.com/event?click_id={click_id}&event={event}' };
 
 	beforeEach(async () => {
 		jest.clearAllMocks();
+		postbackRepository.create.mockResolvedValue(1);
 
 		const module = await Test.createTestingModule({
 			providers: [
@@ -19,6 +24,7 @@ describe('PostbackConsumerUseCase', () => {
 				{ provide: POSTBACK_REPOSITORY, useValue: postbackRepository },
 				{ provide: CAMPAIGN_REPOSITORY, useValue: campaignRepository },
 				{ provide: DAILY_REPORT_REPOSITORY, useValue: dailyReportRepository },
+				{ provide: StreamProducer, useValue: producer },
 			],
 		}).compile();
 
@@ -35,8 +41,7 @@ describe('PostbackConsumerUseCase', () => {
 		await useCase.execute([message, message]);
 
 		expect(campaignRepository.findByToken).toHaveBeenCalledTimes(1);
-		expect(postbackRepository.createMany).toHaveBeenCalledTimes(1);
-		expect(postbackRepository.createMany.mock.calls[0][0]).toHaveLength(2);
+		expect(postbackRepository.create).toHaveBeenCalledTimes(2);
 		expect(dailyReportRepository.upsert).toHaveBeenCalledTimes(1);
 
 		const dailyReport = dailyReportRepository.upsert.mock.calls[0][0];
@@ -49,7 +54,7 @@ describe('PostbackConsumerUseCase', () => {
 
 		await useCase.execute(['not-json', JSON.stringify({ view_code: 'vc-1' }), JSON.stringify({ token: 'no-campaign', view_code: 'vc-1' })]);
 
-		expect(postbackRepository.createMany).not.toHaveBeenCalled();
+		expect(postbackRepository.create).not.toHaveBeenCalled();
 		expect(dailyReportRepository.upsert).not.toHaveBeenCalled();
 	});
 
@@ -104,5 +109,63 @@ describe('PostbackConsumerUseCase', () => {
 		dailyReportRepository.upsert.mockRejectedValue(new Error('db down'));
 
 		await expect(useCase.execute([JSON.stringify({ token: 'token-1', view_code: 'vc-1', event_name: 'purchase_done', revenue: '10' })])).resolves.toBeUndefined();
+	});
+
+	it('send_media 설정이 켜진 이벤트는 치환된 URL과 저장 id로 media-postback 스트림에 적재한다', async () => {
+		campaignRepository.findByToken.mockResolvedValue({
+			token: 'token-1',
+			media,
+			campaign_config: [{ tracker_event_name: 'ev_install', admin_event_name: 'install', media_event_name: 'm_install', send_media: true }],
+		});
+		postbackRepository.create.mockResolvedValue(77);
+
+		await useCase.execute([JSON.stringify({ token: 'token-1', view_code: 'vc-1', event_name: 'ev_install', click_id: 'c-1' })]);
+
+		expect(producer.send).toHaveBeenCalledWith('media-postback', JSON.stringify({ postback_id: 77, url: 'https://media.example.com/install?click_id=c-1', attempt: 0 }));
+	});
+
+	it('send_media가 꺼졌거나 config 미매칭(unregistered)이면 적재하지 않는다', async () => {
+		campaignRepository.findByToken.mockResolvedValue({
+			token: 'token-1',
+			media,
+			campaign_config: [{ tracker_event_name: 'ev_install', admin_event_name: 'install', media_event_name: 'm_install', send_media: false }],
+		});
+
+		await useCase.execute([
+			JSON.stringify({ token: 'token-1', view_code: 'vc-1', event_name: 'ev_install' }),
+			JSON.stringify({ token: 'token-1', view_code: 'vc-1', event_name: 'unknown_event' }),
+		]);
+
+		expect(postbackRepository.create).toHaveBeenCalledTimes(2);
+		expect(producer.send).not.toHaveBeenCalled();
+	});
+
+	it('postback 저장이 실패한 건은 누산·매체 적재도 건너뛰고 나머지는 정상 처리한다', async () => {
+		campaignRepository.findByToken.mockResolvedValue({
+			token: 'token-1',
+			media,
+			campaign_config: [{ tracker_event_name: 'ev_install', admin_event_name: 'install', media_event_name: 'm_install', send_media: true }],
+		});
+		postbackRepository.create.mockRejectedValueOnce(new Error('db down')).mockResolvedValueOnce(2);
+
+		const message = JSON.stringify({ token: 'token-1', view_code: 'vc-1', event_name: 'ev_install', click_id: 'c-1' });
+		await useCase.execute([message, message]);
+
+		const report = dailyReportRepository.upsert.mock.calls[0][0];
+		expect(report.install).toBe(1);
+		expect(producer.send).toHaveBeenCalledTimes(1);
+		expect(producer.send).toHaveBeenCalledWith('media-postback', expect.stringContaining('"postback_id":2'));
+	});
+
+	it('media-postback 적재가 실패해도 예외를 전파하지 않고 통계는 저장된다', async () => {
+		campaignRepository.findByToken.mockResolvedValue({
+			token: 'token-1',
+			media,
+			campaign_config: [{ tracker_event_name: 'ev_install', admin_event_name: 'install', media_event_name: 'm_install', send_media: true }],
+		});
+		producer.send.mockRejectedValue(new Error('redis down'));
+
+		await expect(useCase.execute([JSON.stringify({ token: 'token-1', view_code: 'vc-1', event_name: 'ev_install' })])).resolves.toBeUndefined();
+		expect(dailyReportRepository.upsert).toHaveBeenCalledTimes(1);
 	});
 });

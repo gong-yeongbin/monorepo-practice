@@ -4,23 +4,32 @@ import { PrismaService } from '@infra/prisma/prisma.service';
 import { Postback } from '@postback/domain/postback.entity';
 
 describe('PrismaPostbackRepository', () => {
-	const createMany = jest.fn();
+	const create = jest.fn();
+	const update = jest.fn();
 	const findMany = jest.fn();
 	const groupBy = jest.fn();
-	const prisma = { postback: { createMany, findMany, groupBy } } as unknown as PrismaService;
+	const prisma = { postback: { create, update, findMany, groupBy } } as unknown as PrismaService;
 	const repository = new PrismaPostbackRepository(prisma);
 
 	const range = { start: new Date('2026-06-30T15:00:00Z'), end: new Date('2026-07-10T15:00:00Z') };
 
 	beforeEach(() => jest.clearAllMocks());
 
-	it('postback 배열을 data로 넘겨 createMany를 호출한다', async () => {
-		const postbacks = [{ token: 'token-1' }, { token: 'token-2' }] as unknown as Postback[];
-		createMany.mockResolvedValue({ count: 2 });
+	it('create는 postback을 저장하고 생성된 id를 반환한다', async () => {
+		const postback = { token: 'token-1' } as unknown as Postback;
+		create.mockResolvedValue({ id: 7 });
 
-		await repository.createMany(postbacks);
+		expect(await repository.create(postback)).toBe(7);
+		expect(create).toHaveBeenCalledWith({ data: postback, select: { id: true } });
+	});
 
-		expect(createMany).toHaveBeenCalledWith({ data: postbacks });
+	it('updateMediaSentAt는 id로 media_sent_at을 갱신한다', async () => {
+		const sentAt = new Date('2026-08-17T00:00:00Z');
+		update.mockResolvedValue({});
+
+		await repository.updateMediaSentAt(7, sentAt);
+
+		expect(update).toHaveBeenCalledWith({ where: { id: 7 }, data: { media_sent_at: sentAt } });
 	});
 
 	it('findInstalls는 token 필터와 installed_at 범위로 event_name=install만 조회한다', async () => {

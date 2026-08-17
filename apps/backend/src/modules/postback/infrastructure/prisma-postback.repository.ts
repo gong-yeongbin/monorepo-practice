@@ -14,8 +14,13 @@ const LOG_SELECT = {
 export class PrismaPostbackRepository implements PostbackRepository {
 	constructor(private readonly prismaService: PrismaService) {}
 
-	async createMany(postbacks: Postback[]): Promise<void> {
-		await this.prismaService.postback.createMany({ data: postbacks });
+	async create(postback: Postback): Promise<number> {
+		const row = await this.prismaService.postback.create({ data: postback, select: { id: true } });
+		return row.id;
+	}
+
+	async updateMediaSentAt(id: number, sentAt: Date): Promise<void> {
+		await this.prismaService.postback.update({ where: { id }, data: { media_sent_at: sentAt } });
 	}
 
 	// install 포스트백은 수신 시 event_name='install'로 저장된다(install-postback.use-case)

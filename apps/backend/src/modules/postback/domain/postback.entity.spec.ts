@@ -47,6 +47,10 @@ describe('createPostback', () => {
 		expect(postback.revenue).toBeNull();
 	});
 
+	it('media_sent_at은 항상 null(미전송)로 생성한다', () => {
+		expect(createPostback(base).media_sent_at).toBeNull();
+	});
+
 	it('선택 시각·수익 필드가 있으면 그대로 반영한다', () => {
 		const postback = createPostback({
 			...base,

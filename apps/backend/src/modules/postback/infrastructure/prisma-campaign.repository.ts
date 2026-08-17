@@ -9,6 +9,6 @@ export class PrismaCampaignRepository implements CampaignRepository {
 	constructor(private readonly prismaService: PrismaService) {}
 
 	async findByToken(token: string): Promise<Campaign | null> {
-		return this.prismaService.campaign.findUnique({ where: { token }, include: { campaign_config: true } });
+		return this.prismaService.campaign.findUnique({ where: { token }, include: { campaign_config: true, media: true } });
 	}
 }

@@ -18,7 +18,8 @@ export interface UnregisteredCount {
 }
 
 export interface PostbackRepository {
-	createMany(postbacks: Postback[]): Promise<void>;
+	create(postback: Postback): Promise<number>; // 매체 전송 후 media_sent_at 갱신에 쓸 생성 id 반환
+	updateMediaSentAt(id: number, sentAt: Date): Promise<void>;
 	findInstalls(filter: PostbackLogFilter): Promise<PostbackLog[]>;
 	findEvents(filter: PostbackLogFilter, tracker_event_names: string[]): Promise<PostbackLog[]>;
 	countUnregistered(token: string, registered_event_names: string[], start: Date, end: Date): Promise<UnregisteredCount[]>;
