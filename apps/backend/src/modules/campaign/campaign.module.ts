@@ -7,8 +7,10 @@ import { GetCampaignUseCase } from '@campaign/application/get-campaign.use-case'
 import { ListCampaignUseCase } from '@campaign/application/list-campaign.use-case';
 import { CAMPAIGN_REPOSITORY } from '@campaign/domain/campaign.repository';
 import { PrismaCampaignRepository } from '@campaign/infrastructure/prisma-campaign.repository';
+import { CacheModule } from '@infra/cache/cache.module';
 
 @Module({
+	imports: [CacheModule],
 	controllers: [CampaignController],
 	providers: [
 		CreateCampaignUseCase,

@@ -1,4 +1,4 @@
-// Prisma로 일별 리포트를 upsert하는 repository 구현체
+// Prisma raw query로 일별 리포트를 배치 upsert하는 repository 구현체
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '@infra/prisma/prisma.service';
@@ -9,40 +9,34 @@ import { DailyReportRepository } from '@tracking/domain/daily-report.repository'
 export class PrismaDailyReportRepository implements DailyReportRepository {
 	constructor(private readonly prismaService: PrismaService) {}
 
-	async upsert(dailyReport: DailyReport): Promise<void> {
-		try {
-			await this.doUpsert(dailyReport);
-		} catch (e) {
-			// 동시 upsert 레이스로 create 경로가 unique 제약(P2002)에 걸리면 한 번 재시도한다 (재시도는 update 경로를 탄다)
-			if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
-				await this.doUpsert(dailyReport);
-			} else {
-				throw e;
-			}
-		}
-	}
+	// 배치 전체를 multi-row INSERT ... ON DUPLICATE KEY UPDATE(MySQL 8.0.19+ alias 문법) 한 문장으로 처리한다.
+	// row 단위로 원자적이라 SELECT→INSERT 분기 레이스(P2002)가 없고, 문장이 실패하면 아무것도 반영되지 않아 배치 재전달이 안전하다.
+	async upsertMany(dailyReports: DailyReport[]): Promise<void> {
+		if (dailyReports.length === 0) return;
 
-	private async doUpsert(dailyReport: DailyReport): Promise<void> {
-		const { view_code, token, pub_id, sub_id, click, install, registration, retention, purchase, revenue, etc1, etc2, etc3, etc4, etc5, unregistered, created_date } =
-			dailyReport;
+		// created_date는 드라이버의 타임존 변환을 피하려고 UTC 기준 'YYYY-MM-DD' 문자열로 바인딩한다(@db.Date 컬럼)
+		const rows = dailyReports.map(
+			(r) =>
+				Prisma.sql`(${r.view_code}, ${r.token}, ${r.pub_id}, ${r.sub_id}, ${r.click}, ${r.install}, ${r.registration}, ${r.retention}, ${r.purchase}, ${r.revenue}, ${r.etc1}, ${r.etc2}, ${r.etc3}, ${r.etc4}, ${r.etc5}, ${r.unregistered}, ${r.created_date.toISOString().slice(0, 10)})`
+		);
 
-		await this.prismaService.daily_report.upsert({
-			where: { view_code_created_date: { view_code, created_date } },
-			create: { view_code, token, pub_id, sub_id, click, install, registration, retention, purchase, revenue, etc1, etc2, etc3, etc4, etc5, unregistered, created_date },
-			update: {
-				click: { increment: click },
-				install: { increment: install },
-				registration: { increment: registration },
-				retention: { increment: retention },
-				purchase: { increment: purchase },
-				revenue: { increment: revenue },
-				etc1: { increment: etc1 },
-				etc2: { increment: etc2 },
-				etc3: { increment: etc3 },
-				etc4: { increment: etc4 },
-				etc5: { increment: etc5 },
-				unregistered: { increment: unregistered },
-			},
-		});
+		await this.prismaService.$executeRaw(Prisma.sql`
+			INSERT INTO daily_report
+				(view_code, token, pub_id, sub_id, click, install, registration, retention, purchase, revenue, etc1, etc2, etc3, etc4, etc5, unregistered, created_date)
+			VALUES ${Prisma.join(rows)} AS new
+			ON DUPLICATE KEY UPDATE
+				click = daily_report.click + new.click,
+				install = daily_report.install + new.install,
+				registration = daily_report.registration + new.registration,
+				retention = daily_report.retention + new.retention,
+				purchase = daily_report.purchase + new.purchase,
+				revenue = daily_report.revenue + new.revenue,
+				etc1 = daily_report.etc1 + new.etc1,
+				etc2 = daily_report.etc2 + new.etc2,
+				etc3 = daily_report.etc3 + new.etc3,
+				etc4 = daily_report.etc4 + new.etc4,
+				etc5 = daily_report.etc5 + new.etc5,
+				unregistered = daily_report.unregistered + new.unregistered
+		`);
 	}
 }

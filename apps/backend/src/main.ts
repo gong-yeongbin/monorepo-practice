@@ -1,17 +1,21 @@
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
-	const app = await NestFactory.create(AppModule);
+	const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
 	// 로컬 frontend(3000)에서의 브라우저 호출 허용
 	app.enableCors({ origin: 'http://localhost:3000' });
 
 	const configService = app.get<ConfigService>(ConfigService);
 	const port = configService.get<number>('PORT');
+
+	// 프록시(LB) 뒤 배포 시 X-Forwarded-For의 실제 클라이언트 IP를 쓰도록 한다(IP 기준 rate limit 전제)
+	if (configService.get('TRUST_PROXY')) app.set('trust proxy', 1);
 
 	app.useGlobalPipes(
 		new ValidationPipe({

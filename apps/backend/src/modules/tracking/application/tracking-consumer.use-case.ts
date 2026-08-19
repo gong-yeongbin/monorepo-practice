@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { DAILY_REPORT_REPOSITORY, DailyReportRepository } from '@tracking/domain/daily-report.repository';
 import { DailyReport, createDailyReport } from '@tracking/domain/daily-report.entity';
 import { viewCodeCodec } from '@common/utils/view-code.util';
@@ -6,8 +6,6 @@ import { kstBaseDate } from '@common/utils/date.util';
 
 @Injectable()
 export class TrackingConsumerUseCase {
-	private readonly logger = new Logger(TrackingConsumerUseCase.name);
-
 	constructor(@Inject(DAILY_REPORT_REPOSITORY) private readonly dailyReportRepository: DailyReportRepository) {}
 
 	async execute(viewCodes: string[]) {
@@ -25,10 +23,7 @@ export class TrackingConsumerUseCase {
 			dailyReportDto.click += 1;
 		}
 
-		// 개별 upsert 실패가 배치 전체를 무한 재소비시키지 않도록 실패는 로그로 격리한다
-		const results = await Promise.allSettled([...dailyReportMap.values()].map((dailyReport) => this.dailyReportRepository.upsert(dailyReport)));
-		for (const result of results) {
-			if (result.status === 'rejected') this.logger.error(`daily report upsert 실패: ${result.reason}`);
-		}
+		// 배치 전체를 한 문장으로 upsert한다. 실패는 throw로 전파해 배치가 ack되지 않고 재전달되게 한다(문장이 원자적이라 재시도 안전).
+		await this.dailyReportRepository.upsertMany([...dailyReportMap.values()]);
 	}
 }

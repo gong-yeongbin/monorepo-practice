@@ -27,7 +27,8 @@ Stream 컨슈머의 `XREADGROUP BLOCK`은 연결을 장시간 점유하므로 **
 
 `StreamConsumer` 세부:
 - `register(stream, handler)`는 `OnApplicationBootstrap`의 소비 루프 시작 **전**에 끝나야 한다. 그래서 소비자 어댑터는 `OnModuleInit`에서 등록한다.
-- 배치 처리 후 성공/실패와 무관하게 ID를 `xack`한다(poison pill로 인한 무한 재소비 방지). at-least-once가 아니라 at-most-once에 가까움을 인지할 것.
+- 핸들러가 **성공했을 때만** `xack`한다. 실패(throw)한 배치는 PEL에 남아 `XAUTOCLAIM`으로 재전달되고, `STREAM_MAX_DELIVERIES`회 이상 전달된 메시지는 처리 없이 ack로 폐기한다(poison pill 차단). 즉 at-least-once에 가까우므로 핸들러는 개별 건 실패를 내부에서 격리(`Promise.allSettled`)하고 배치 전체를 재처리해야 하는 인프라 장애 시에만 throw하며, 재전달에 대비해 멱등성에 유의할 것.
+- `APP_ROLE=api`인 프로세스는 소비 루프를 시작하지 않는다(API·컨슈머 프로세스 분리, 엔트리포인트는 `src/main.consumer.ts`).
 
 ## 규칙
 

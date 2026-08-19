@@ -10,6 +10,12 @@ import { buildMediaPostbackUrl, MEDIA_POSTBACK_STREAM, MediaPostbackMessage } fr
 import { StreamProducer } from '@infra/stream/stream-producer.service';
 import { kstBaseDate } from '@common/utils/date.util';
 
+interface PostbackCandidate {
+	postback: Postback;
+	config: CampaignConfig | undefined;
+	campaign: Campaign;
+}
+
 @Injectable()
 export class PostbackConsumerUseCase {
 	private readonly logger = new Logger(PostbackConsumerUseCase.name);
@@ -27,6 +33,7 @@ export class PostbackConsumerUseCase {
 		const dailyReportMap = new Map<string, DailyReport>();
 		const mediaMessages: MediaPostbackMessage[] = [];
 
+		const candidates: PostbackCandidate[] = [];
 		for (const message of messages) {
 			const postback = this.parse(message);
 			if (!postback) continue;
@@ -48,19 +55,25 @@ export class PostbackConsumerUseCase {
 			}
 
 			const config = campaign.campaign_config.find((campaignConfig) => campaignConfig.tracker_event_name === postback.event_name);
+			candidates.push({ postback, config, campaign });
+		}
 
-			// 저장 실패 건은 통계 누산·매체 전송도 제외해 postback 로그와의 정합을 지킨다
-			let postbackId: number;
-			try {
-				postbackId = await this.postbackRepository.create(postback);
-			} catch (error) {
-				this.logger.error(`postback 저장에 실패해 건너뜁니다: token=${postback.token}, ${error}`);
+		// 저장은 병렬로 수행하고(순차 대비 커넥션 풀 폭만큼 빨라짐), 실패 건은 통계 누산·매체 전송도 제외해 postback 로그와의 정합을 지킨다
+		const createResults = await Promise.allSettled(candidates.map(({ postback }) => this.postbackRepository.create(postback)));
+		for (const [index, result] of createResults.entries()) {
+			const candidate = candidates[index];
+			if (!candidate) continue;
+
+			if (result.status === 'rejected') {
+				this.logger.error(`postback 저장에 실패해 건너뜁니다: token=${candidate.postback.token}, ${result.reason}`);
 				continue;
 			}
 
-			this.accumulate(dailyReportMap, postback, config, baseDate);
+			this.accumulate(dailyReportMap, candidate.postback, candidate.config, baseDate);
 
-			if (config?.send_media) mediaMessages.push({ postback_id: postbackId, url: buildMediaPostbackUrl(campaign.media, config, postback), attempt: 0 });
+			if (candidate.config?.send_media) {
+				mediaMessages.push({ postback_id: result.value, url: buildMediaPostbackUrl(candidate.campaign.media, candidate.config, candidate.postback), attempt: 0 });
+			}
 		}
 
 		// 매체 전송 적재 실패가 통계 저장을 막지 않도록 격리한다(전송 자체는 media-postback 컨슈머가 수행)
@@ -69,10 +82,12 @@ export class PostbackConsumerUseCase {
 			if (result.status === 'rejected') this.logger.error(`매체 포스트백 적재 실패: ${result.reason}`);
 		}
 
-		// 개별 upsert 실패가 배치 전체를 무한 재소비시키지 않도록 실패는 로그로 격리한다
-		const results = await Promise.allSettled([...dailyReportMap.values()].map((dailyReport) => this.dailyReportRepository.upsert(dailyReport)));
-		for (const result of results) {
-			if (result.status === 'rejected') this.logger.error(`daily report upsert 실패: ${result.reason}`);
+		// 통계는 배치 한 문장으로 upsert한다. postback 로그가 이미 저장된 뒤라 여기서 throw해 배치를 재전달시키면
+		// 로그가 중복 INSERT되므로(unique 제약 없음) 실패는 로그로 격리한다.
+		try {
+			await this.dailyReportRepository.upsertMany([...dailyReportMap.values()]);
+		} catch (error) {
+			this.logger.error(`daily report 배치 upsert 실패: ${String(error)}`);
 		}
 	}
 

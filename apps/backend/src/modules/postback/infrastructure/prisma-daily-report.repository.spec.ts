@@ -1,60 +1,63 @@
-// PrismaDailyReportRepository의 upsert 정상·P2002 재시도·기타 예외 전파를 검증
-import { Prisma } from '@prisma/client';
+// PrismaDailyReportRepository의 배치 upsert SQL 실행·빈 배치 스킵·예외 전파를 검증
 import { PrismaDailyReportRepository } from './prisma-daily-report.repository';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import { DailyReport } from '@postback/domain/daily-report.entity';
 
-const dailyReport = {
-	view_code: 'vc-1',
-	token: 'token-1',
-	pub_id: 'pub-1',
-	sub_id: 'sub-1',
-	click: 1,
-	install: 0,
-	registration: 0,
-	retention: 0,
-	purchase: 0,
-	revenue: 0,
-	etc1: 0,
-	etc2: 0,
-	etc3: 0,
-	etc4: 0,
-	etc5: 0,
-	unregistered: 0,
-	created_date: new Date('2026-07-10T00:00:00.000Z'),
-} as DailyReport;
+const dailyReport = (overrides: Partial<DailyReport>) =>
+	({
+		view_code: 'vc-1',
+		token: 'token-1',
+		pub_id: 'pub-1',
+		sub_id: 'sub-1',
+		click: 0,
+		install: 1,
+		registration: 0,
+		retention: 0,
+		purchase: 0,
+		revenue: 0,
+		etc1: 0,
+		etc2: 0,
+		etc3: 0,
+		etc4: 0,
+		etc5: 0,
+		unregistered: 0,
+		created_date: new Date('2026-07-10T00:00:00.000Z'),
+		...overrides,
+	});
 
 describe('PrismaDailyReportRepository (postback)', () => {
-	const upsert = jest.fn();
-	const prisma = { daily_report: { upsert } } as unknown as PrismaService;
+	const executeRaw = jest.fn();
+	const prisma = { $executeRaw: executeRaw } as unknown as PrismaService;
 	const repository = new PrismaDailyReportRepository(prisma);
 
 	beforeEach(() => jest.clearAllMocks());
 
-	it('정상적으로 upsert를 한 번 호출한다', async () => {
-		upsert.mockResolvedValue(undefined);
+	it('빈 배치는 쿼리를 실행하지 않는다', async () => {
+		await repository.upsertMany([]);
 
-		await repository.upsert(dailyReport);
-
-		expect(upsert).toHaveBeenCalledTimes(1);
-		expect(upsert.mock.calls[0][0].where).toEqual({ view_code_created_date: { view_code: 'vc-1', created_date: dailyReport.created_date } });
-		expect(upsert.mock.calls[0][0].update.click).toEqual({ increment: 1 });
+		expect(executeRaw).not.toHaveBeenCalled();
 	});
 
-	it('P2002 유니크 충돌이면 한 번 재시도한다', async () => {
-		const p2002 = new Prisma.PrismaClientKnownRequestError('unique', { code: 'P2002', clientVersion: 'test' });
-		upsert.mockRejectedValueOnce(p2002).mockResolvedValueOnce(undefined);
+	it('배치 전체를 ON DUPLICATE KEY UPDATE 한 문장으로 실행한다', async () => {
+		executeRaw.mockResolvedValue(2);
 
-		await repository.upsert(dailyReport);
+		await repository.upsertMany([dailyReport({ view_code: 'vc-1', install: 2 }), dailyReport({ view_code: 'vc-2', purchase: 1, revenue: 1000 })]);
 
-		expect(upsert).toHaveBeenCalledTimes(2);
+		expect(executeRaw).toHaveBeenCalledTimes(1);
+		const query = executeRaw.mock.calls[0][0];
+		expect(query.sql).toContain('INSERT INTO daily_report');
+		expect(query.sql).toContain('ON DUPLICATE KEY UPDATE');
+		expect(query.sql).toContain('revenue = daily_report.revenue + new.revenue');
+		expect(query.values).toContain('vc-1');
+		expect(query.values).toContain('vc-2');
+		// created_date는 타임존 변환을 피해 UTC 기준 날짜 문자열로 바인딩된다
+		expect(query.values).toContain('2026-07-10');
 	});
 
-	it('P2002가 아닌 예외는 재시도 없이 전파한다', async () => {
-		const other = new Prisma.PrismaClientKnownRequestError('fk', { code: 'P2003', clientVersion: 'test' });
-		upsert.mockRejectedValue(other);
+	it('쿼리 실패는 그대로 전파한다 (호출부에서 격리)', async () => {
+		const error = new Error('db down');
+		executeRaw.mockRejectedValue(error);
 
-		await expect(repository.upsert(dailyReport)).rejects.toBe(other);
-		expect(upsert).toHaveBeenCalledTimes(1);
+		await expect(repository.upsertMany([dailyReport({})])).rejects.toBe(error);
 	});
 });

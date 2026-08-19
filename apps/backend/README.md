@@ -77,9 +77,28 @@ DATABASE_URL="mysql://root:1234@localhost:3306/mecross"
 # Redis 접속 URL (캐시·스트림 공용, 미설정 시 redis://localhost:6379)
 VALKEY="redis://localhost:6379"
 
-# Redis Stream 컨슈머 (미설정 시 mecross-system / consumer-1)
+# Redis Stream 컨슈머 (미설정 시 mecross-system / consumer-<호스트명>-<PID>)
 REDIS_STREAM_GROUP="mecross-system"
-REDIS_STREAM_CONSUMER="consumer-1"
+REDIS_STREAM_CONSUMER=""
+
+# 프로세스 역할 — api(HTTP만, 소비 루프·스케줄러 없음) / consumer(소비 전용) / all(단일 프로세스, 기본값)
+# 운영에서 API·컨슈머를 분리 기동할 때 API 측에 반드시 api를 지정 (컨슈머는 start:consumer가 consumer로 강제)
+APP_ROLE="all"
+
+# Redis Stream 튜닝 — XADD MAXLEN 상한(기본 100000), XAUTOCLAIM 회수 최소 유휴 ms(기본 60000)
+REDIS_STREAM_MAXLEN=100000
+STREAM_CLAIM_MIN_IDLE_MS=60000
+
+# DB 커넥션 풀 크기 (미설정 시 mariadb 드라이버 기본 10, 권장: API 30 / 컨슈머 10, 합계 < MySQL max_connections)
+DB_CONNECTION_LIMIT=10
+
+# 공개 엔드포인트 rate limit — 60초 창, IP 기준 (기본 tracking 300 / postback 600)
+# in-memory 저장소라 API 단일 프로세스 전제. 수평 확장 시 Redis storage 도입 필요.
+THROTTLE_TRACKING_LIMIT=300
+THROTTLE_POSTBACK_LIMIT=600
+
+# 프록시(LB) 뒤 배포 시 1로 설정 — X-Forwarded-For 기반 클라이언트 IP 식별(rate limit 전제)
+# TRUST_PROXY=1
 
 # AWS SES — 회원가입 인증 코드 메일 발송
 # 자격 증명은 AWS SDK 기본 체인(AWS_ACCESS_KEY_ID·AWS_SECRET_ACCESS_KEY 등)을 사용

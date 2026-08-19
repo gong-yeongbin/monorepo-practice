@@ -57,7 +57,7 @@ use-case는 절대 `PrismaService`를 직접 주입하지 않는다. 항상 repo
 - 계층별 방식:
   - `domain/` 팩토리(`createPostback`·`createDailyReport`)는 순수 함수라 **직접 호출**로 검증.
   - `application/` use-case는 `Test.createTestingModule`로 repository·`StreamProducer`·`CachePort`를 `jest.fn()`으로 목킹. `TRACKERS`가 반환하는 값을 제어해야 하면 `jest.mock('@trackers/tracker.registry')`.
-  - `infrastructure/` repository는 `PrismaService`를 목킹. daily-report는 **P2002 재시도 경로**(`Prisma.PrismaClientKnownRequestError`)까지 검증.
+  - `infrastructure/` repository는 `PrismaService`를 목킹. daily-report는 raw 배치 upsert(`$executeRaw`)라 **빈 배치 스킵·SQL 생성(ON DUPLICATE KEY UPDATE)·예외 전파**를 검증.
   - `presentation/` controller는 use-case 위임을, consumer는 `StreamConsumer.register(stream, handler)` 호출과 핸들러 위임을 검증.
 - `*.module.ts`(DI 배선 전용)는 커버리지 대상에서 제외한다(`package.json`의 jest `collectCoverageFrom`에 `!**/*.module.ts`). 로직이 없어 단위 테스트 대상이 아니다.
 - `Promise.allSettled`로 실패를 격리하는 use-case는 **개별 upsert 실패 경로**도 반드시 케이스로 남긴다.

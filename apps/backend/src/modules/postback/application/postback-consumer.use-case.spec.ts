@@ -8,7 +8,7 @@ import { StreamProducer } from '@infra/stream/stream-producer.service';
 describe('PostbackConsumerUseCase', () => {
 	const postbackRepository = { create: jest.fn() };
 	const campaignRepository = { findByToken: jest.fn() };
-	const dailyReportRepository = { upsert: jest.fn() };
+	const dailyReportRepository = { upsertMany: jest.fn() };
 	const producer = { send: jest.fn() };
 	let useCase: PostbackConsumerUseCase;
 
@@ -42,9 +42,10 @@ describe('PostbackConsumerUseCase', () => {
 
 		expect(campaignRepository.findByToken).toHaveBeenCalledTimes(1);
 		expect(postbackRepository.create).toHaveBeenCalledTimes(2);
-		expect(dailyReportRepository.upsert).toHaveBeenCalledTimes(1);
+		expect(dailyReportRepository.upsertMany).toHaveBeenCalledTimes(1);
+		expect(dailyReportRepository.upsertMany.mock.calls[0][0]).toHaveLength(1);
 
-		const dailyReport = dailyReportRepository.upsert.mock.calls[0][0];
+		const dailyReport = dailyReportRepository.upsertMany.mock.calls[0][0][0];
 		expect(dailyReport.purchase).toBe(2);
 		expect(dailyReport.revenue).toBe(2000);
 	});
@@ -55,7 +56,7 @@ describe('PostbackConsumerUseCase', () => {
 		await useCase.execute(['not-json', JSON.stringify({ view_code: 'vc-1' }), JSON.stringify({ token: 'no-campaign', view_code: 'vc-1' })]);
 
 		expect(postbackRepository.create).not.toHaveBeenCalled();
-		expect(dailyReportRepository.upsert).not.toHaveBeenCalled();
+		expect(dailyReportRepository.upsertMany).toHaveBeenCalledWith([]);
 	});
 
 	it('admin_event_name별로 해당 카운터를 누산하고 매핑 없는 이벤트는 unregistered로 집계한다', async () => {
@@ -76,7 +77,7 @@ describe('PostbackConsumerUseCase', () => {
 		const msg = (event_name: string) => JSON.stringify({ token: 'token-1', view_code: 'vc-1', event_name });
 		await useCase.execute([msg('ev_install'), msg('ev_reg'), msg('ev_ret'), msg('ev_etc1'), msg('ev_etc2'), msg('ev_etc3'), msg('ev_etc4'), msg('ev_etc5'), msg('unknown_event')]);
 
-		const report = dailyReportRepository.upsert.mock.calls[0][0];
+		const report = dailyReportRepository.upsertMany.mock.calls[0][0][0];
 		expect(report.install).toBe(1);
 		expect(report.registration).toBe(1);
 		expect(report.retention).toBe(1);
@@ -96,17 +97,17 @@ describe('PostbackConsumerUseCase', () => {
 
 		await useCase.execute([JSON.stringify({ token: 'token-1', view_code: 'vc-1', event_name: 'purchase_done', revenue: 'not-a-number' })]);
 
-		const report = dailyReportRepository.upsert.mock.calls[0][0];
+		const report = dailyReportRepository.upsertMany.mock.calls[0][0][0];
 		expect(report.purchase).toBe(1);
 		expect(report.revenue).toBe(0);
 	});
 
-	it('daily report upsert가 실패해도 예외를 전파하지 않는다', async () => {
+	it('daily report 배치 upsert가 실패해도 예외를 전파하지 않는다 (postback 로그 중복 방지)', async () => {
 		campaignRepository.findByToken.mockResolvedValue({
 			token: 'token-1',
 			campaign_config: [{ tracker_event_name: 'purchase_done', admin_event_name: 'purchase' }],
 		});
-		dailyReportRepository.upsert.mockRejectedValue(new Error('db down'));
+		dailyReportRepository.upsertMany.mockRejectedValue(new Error('db down'));
 
 		await expect(useCase.execute([JSON.stringify({ token: 'token-1', view_code: 'vc-1', event_name: 'purchase_done', revenue: '10' })])).resolves.toBeUndefined();
 	});
@@ -151,7 +152,7 @@ describe('PostbackConsumerUseCase', () => {
 		const message = JSON.stringify({ token: 'token-1', view_code: 'vc-1', event_name: 'ev_install', click_id: 'c-1' });
 		await useCase.execute([message, message]);
 
-		const report = dailyReportRepository.upsert.mock.calls[0][0];
+		const report = dailyReportRepository.upsertMany.mock.calls[0][0][0];
 		expect(report.install).toBe(1);
 		expect(producer.send).toHaveBeenCalledTimes(1);
 		expect(producer.send).toHaveBeenCalledWith('media-postback', expect.stringContaining('"postback_id":2'));
@@ -166,6 +167,6 @@ describe('PostbackConsumerUseCase', () => {
 		producer.send.mockRejectedValue(new Error('redis down'));
 
 		await expect(useCase.execute([JSON.stringify({ token: 'token-1', view_code: 'vc-1', event_name: 'ev_install' })])).resolves.toBeUndefined();
-		expect(dailyReportRepository.upsert).toHaveBeenCalledTimes(1);
+		expect(dailyReportRepository.upsertMany).toHaveBeenCalledTimes(1);
 	});
 });

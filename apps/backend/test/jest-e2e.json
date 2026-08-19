@@ -3,6 +3,25 @@
   "rootDir": ".",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
+  "moduleNameMapper": {
+    "^@common/(.*)$": "<rootDir>/../src/common/$1",
+    "^@infra/(.*)$": "<rootDir>/../src/infra/$1",
+    "^@trackers/(.*)$": "<rootDir>/../src/trackers/$1",
+    "^@tracking/(.*)$": "<rootDir>/../src/modules/tracking/$1",
+    "^@postback/(.*)$": "<rootDir>/../src/modules/postback/$1",
+    "^@user/(.*)$": "<rootDir>/../src/modules/user/$1",
+    "^@auth/(.*)$": "<rootDir>/../src/modules/auth/$1",
+    "^@advertiser/(.*)$": "<rootDir>/../src/modules/advertiser/$1",
+    "^@advertising/(.*)$": "<rootDir>/../src/modules/advertising/$1",
+    "^@media/(.*)$": "<rootDir>/../src/modules/media/$1",
+    "^@reservation/(.*)$": "<rootDir>/../src/modules/reservation/$1",
+    "^@tracker/(.*)$": "<rootDir>/../src/modules/tracker/$1",
+    "^@campaign/(.*)$": "<rootDir>/../src/modules/campaign/$1",
+    "^@config/(.*)$": "<rootDir>/../src/modules/config/$1",
+    "^@partner/(.*)$": "<rootDir>/../src/modules/partner/$1",
+    "^@dashboard/(.*)$": "<rootDir>/../src/modules/dashboard/$1",
+    "^@interceptors/(.*)$": "<rootDir>/../src/interceptors/$1"
+  },
   "transform": {
     "^.+\\.(t|j)s$": ["ts-jest", { "diagnostics": { "ignoreCodes": [151002] } }]
   }

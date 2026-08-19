@@ -1,11 +1,14 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { SkipThrottle, ThrottlerGuard } from '@nestjs/throttler';
 import { TRACKER_NAMES } from '@trackers/tracker.registry';
 import { Tracker } from '@postback/presentation/dto/tracker.dto';
 import { InstallPostbackUseCase } from '@postback/application/install-postback.use-case';
 import { EventPostbackUseCase } from '@postback/application/event-postback.use-case';
 
 @ApiTags('postback')
+@UseGuards(ThrottlerGuard)
+@SkipThrottle({ tracking: true })
 @Controller()
 export class PostbackController {
 	constructor(
@@ -18,6 +21,7 @@ export class PostbackController {
 	@ApiParam({ name: 'name', enum: TRACKER_NAMES })
 	@ApiResponse({ status: 200, description: '수신 성공 — 스트림에 적재 후 비동기 처리' })
 	@ApiResponse({ status: 400, description: '지원하지 않는 트래커 이름' })
+	@ApiResponse({ status: 429, description: 'IP 기준 요청 한도 초과' })
 	async install(@Param() tracker: Tracker, @Query() query: Record<string, string>) {
 		return await this.installPostbackUseCase.execute(tracker.name, query);
 	}
@@ -27,6 +31,7 @@ export class PostbackController {
 	@ApiParam({ name: 'name', enum: TRACKER_NAMES })
 	@ApiResponse({ status: 200, description: '수신 성공 — 스트림에 적재 후 비동기 처리' })
 	@ApiResponse({ status: 400, description: '지원하지 않는 트래커 이름' })
+	@ApiResponse({ status: 429, description: 'IP 기준 요청 한도 초과' })
 	async event(@Param() tracker: Tracker, @Query() query: Record<string, string>) {
 		return await this.eventPostbackUseCase.execute(tracker.name, query);
 	}
