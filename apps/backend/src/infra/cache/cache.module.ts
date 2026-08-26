@@ -11,8 +11,10 @@ import { RedisCacheAdapter } from '@infra/cache/redis-cache.adapter';
 		{
 			provide: REDIS_CACHE_CLIENT,
 			inject: [ConfigService],
-			// 스트림 컨슈머의 BLOCK 대기와 간섭하지 않도록 캐시 전용 연결을 별도로 둔다
-			useFactory: (configService: ConfigService) => new Redis(configService.get<string>('VALKEY') || 'redis://localhost:6379'),
+			// 스트림 컨슈머의 BLOCK 대기와 간섭하지 않도록 캐시 전용 연결을 별도로 둔다.
+			// 같은 틱의 GET/SET을 한 왕복으로 묶도록 자동 파이프라이닝을 켠다 (대량 트래킹 조회 대응)
+			useFactory: (configService: ConfigService) =>
+				new Redis(configService.get<string>('VALKEY') || 'redis://localhost:6379', { enableAutoPipelining: true }),
 		},
 		{ provide: CACHE_PORT, useClass: RedisCacheAdapter },
 	],

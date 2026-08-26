@@ -28,6 +28,8 @@ export class StreamConsumer implements OnApplicationBootstrap, OnApplicationShut
 	private readonly claimMinIdleMs: number;
 	private readonly role: string;
 	private running = false;
+	// XREADGROUP BLOCK이 연결을 점유하므로, 자동 파이프라이닝되는 공유 클라이언트와 분리한 블로킹 전용 연결
+	private blocking?: Redis;
 
 	constructor(
 		@Inject(REDIS_STREAM_CLIENT) private readonly redis: Redis,
@@ -50,6 +52,7 @@ export class StreamConsumer implements OnApplicationBootstrap, OnApplicationShut
 		// API 전용 프로세스(APP_ROLE=api)는 소비 루프를 돌리지 않는다(컨슈머 프로세스 분리)
 		if (this.role === 'api') return;
 
+		this.blocking = this.redis.duplicate({ enableAutoPipelining: false });
 		this.running = true;
 		for (const stream of this.handlers.keys()) {
 			await this.ensureGroup(stream);
@@ -62,17 +65,23 @@ export class StreamConsumer implements OnApplicationBootstrap, OnApplicationShut
 		this.running = false;
 		// 진행 중인 배치가 끝난 뒤(BLOCK 5초 내 루프 종료) 연결을 닫아 in-flight 유실을 막는다
 		await Promise.all(this.loops);
+		await this.quitClient(this.blocking);
+		await this.quitClient(this.redis);
+	}
+
+	private async quitClient(client?: Redis) {
+		if (!client) return;
 		try {
-			await this.redis.quit();
+			await client.quit();
 		} catch {
-			this.redis.disconnect();
+			client.disconnect();
 		}
 	}
 
 	// 그룹이 이미 있으면 BUSYGROUP 에러가 나므로 무시한다
 	private async ensureGroup(stream: string) {
 		try {
-			await this.redis.xgroup('CREATE', stream, this.groupId, '$', 'MKSTREAM');
+			await this.blocking!.xgroup('CREATE', stream, this.groupId, '$', 'MKSTREAM');
 		} catch (error) {
 			if (!(error instanceof Error && error.message.includes('BUSYGROUP'))) throw error;
 		}
@@ -87,7 +96,7 @@ export class StreamConsumer implements OnApplicationBootstrap, OnApplicationShut
 				// 다른(죽은) 컨슈머가 ack하지 못하고 남긴 PEL 메시지를 회수해 먼저 처리한다
 				await this.reclaimIdle(stream, handler);
 
-				const response = await this.redis.xreadgroup(
+				const response = await this.blocking!.xreadgroup(
 					'GROUP',
 					this.groupId,
 					this.consumerName,
@@ -118,12 +127,12 @@ export class StreamConsumer implements OnApplicationBootstrap, OnApplicationShut
 		const messages = entries.map(([, fields]) => this.extractData(fields)).filter((value): value is string => value !== undefined);
 
 		await handler(messages);
-		await this.redis.xack(stream, this.groupId, ...ids);
+		await this.blocking!.xack(stream, this.groupId, ...ids);
 	}
 
 	private async reclaimIdle(stream: string, handler: BatchHandler) {
 		const cursor = this.claimCursors.get(stream) ?? '0';
-		const response = (await this.redis.xautoclaim(stream, this.groupId, this.consumerName, this.claimMinIdleMs, cursor, 'COUNT', STREAM_READ_COUNT)) as [
+		const response = (await this.blocking!.xautoclaim(stream, this.groupId, this.consumerName, this.claimMinIdleMs, cursor, 'COUNT', STREAM_READ_COUNT)) as [
 			string,
 			(StreamEntry | null)[],
 			...unknown[],
@@ -141,7 +150,7 @@ export class StreamConsumer implements OnApplicationBootstrap, OnApplicationShut
 
 		if (poison.length) {
 			this.logger.error(`stream '${stream}' 최대 전달 횟수(${STREAM_MAX_DELIVERIES}) 초과로 폐기: ${poison.map(([id]) => id).join(', ')}`);
-			await this.redis.xack(stream, this.groupId, ...poison.map(([id]) => id));
+			await this.blocking!.xack(stream, this.groupId, ...poison.map(([id]) => id));
 		}
 		if (retryable.length) await this.processBatch(stream, handler, retryable);
 	}
@@ -150,7 +159,7 @@ export class StreamConsumer implements OnApplicationBootstrap, OnApplicationShut
 	private async getDeliveryCounts(stream: string, ids: string[]): Promise<Map<string, number>> {
 		const [first, last] = [ids[0], ids[ids.length - 1]];
 		if (!first || !last) return new Map();
-		const pending = (await this.redis.xpending(stream, this.groupId, first, last, ids.length)) as [string, string, number, number][];
+		const pending = (await this.blocking!.xpending(stream, this.groupId, first, last, ids.length)) as [string, string, number, number][];
 		return new Map(pending.map(([id, , , deliveryCount]) => [id, deliveryCount]));
 	}
 
