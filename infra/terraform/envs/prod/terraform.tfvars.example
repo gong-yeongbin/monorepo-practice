@@ -1,0 +1,23 @@
+# terraform.tfvars 로 복사해 값을 채운 뒤 사용한다. (terraform.tfvars 는 gitignore 됨)
+#
+# 배포 절차:
+#   0. bootstrap/ 에서 state 버킷 생성 후 backend.tf 의 bucket 교체 (bootstrap/main.tf 주석 참고)
+#   1. terraform init && terraform plan && terraform apply
+#      - 최초 apply 는 backend_desired_count = 0 (ECR에 이미지가 아직 없으므로)
+#   2. backend 이미지를 빌드해 ECR에 push (ecr_repository_url 출력 참조, arm64 빌드)
+#   3. backend_desired_count = 2, backend_autoscaling_enabled = true 로 바꿔 재-apply
+#      → 온디맨드 1 + Spot 증설, CPU 60% 기준 2~10대 오토스케일링
+#   4. frontend 빌드(VITE_API_URL=https://api.<domain>) 후
+#      frontend_bucket_name 버킷에 sync + CloudFront invalidation
+#
+# 수동 작업 (Terraform 범위 밖):
+#   - SES 샌드박스 해제 신청
+#   - backend CORS 허용 origin에 https://app.<domain> 추가 (apps/backend/src/main.ts)
+
+domain_name    = "example.com"
+ses_from_email = "no-reply@example.com"
+
+# frontend_subdomain    = "app"
+# api_subdomain         = "api"
+# backend_desired_count = 0
+# image_tag             = "latest"

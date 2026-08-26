@@ -1,0 +1,123 @@
+# AWS 배포 인프라 (Terraform)
+
+광고 트래킹 플랫폼의 AWS 배포 인프라. **일 1억 클릭(평균 ~1,160 RPS) 실트래픽** 전제로 설계됨. (2026-08-26 확정)
+
+## 아키텍처
+
+```
+사용자/매체 클릭
+  │
+  ├─ app.<도메인>  → CloudFront → S3 (frontend, private + OAC)
+  └─ api.<도메인>  → ALB (HTTPS, ECDSA 인증서)
+                      → ECS Fargate (backend, ARM64)
+                          ├─ RDS MySQL   (private subnet)
+                          ├─ ElastiCache Valkey (private subnet)
+                          ├─ S3 (앱 스토리지) / SES (task role 권한)
+                          └─ CloudWatch Logs
+```
+
+- VPC `10.0.0.0/16`, 2AZ. public 서브넷(ALB + Fargate), private 서브넷(RDS/Valkey — 인터넷 경로 없음)
+- **NAT Gateway 없음**: Fargate를 public subnet + public IP로 두고 보안그룹으로 차단 (인바운드는 ALB→3001만). 월 ~$37 절감
+- 보안그룹 체인: `alb(80,443) → app(3001) → rds(3306)/redis(6379)`, 전부 network 모듈에서 생성
+- 시크릿(DB 비밀번호, JWT)은 Terraform이 생성해 SSM Parameter Store(SecureString, 무료)에만 저장 → task definition `secrets`로 주입. tfvars에 비밀 없음
+- IAM은 execution role(이미지 pull·로그·시크릿)과 task role(앱 버킷 S3 + SES) 분리 → **정적 AWS 키 불필요**
+
+## 확정된 설계 결정과 근거
+
+| 결정 | 근거 |
+|---|---|
+| ECS Fargate ARM64 (Graviton) | x86 대비 컴퓨팅 단가 ~20% 절감. **이미지는 arm64로 빌드 필수** |
+| 온디맨드 base 1 + 증설분 Spot | Spot 최대 70% 절감. base 1대는 절대 회수 안 되므로 어드민 API 안전. Spot 회수 시 2분 예고 + ALB draining으로 신규 요청은 온디맨드로 라우팅 |
+| 오토스케일링 CPU 60%, 2~10대 | 기존 EC2 5대(12 vCPU 버스트, 항상 가동)와 달리 평시 2 vCPU 전용 + 피크에만 증설. Node는 싱글 스레드라 1vCPU/태스크가 적정 단위 |
+| RDS `db.t4g.large` Single-AZ | 기존 xlarge급($373/월)이 오버스펙이라는 판단. 스토리지 20→100GB 자동확장. 부족 시 tfvars에서 m6g.large로 |
+| ElastiCache **Valkey** `cache.t4g.medium` | 환경변수도 `VALKEY`, ioredis 호환(Stream 포함), Redis OSS 대비 ~20% 저렴. 3.1GB = 소비자 지연 ~2시간 버퍼 |
+| Global Accelerator 제거 | 고정 IP 불필요 확인 — Route53 alias(도메인→ALB)로 충분. GA 고정비 + DT 프리미엄 제거 |
+| frontend는 CloudFront 필수 | S3 정적 웹 호스팅 단독은 HTTPS 불가. 403/404→index.html로 SPA 라우팅, PriceClass_200(한국 엣지 포함) |
+| ACM 인증서 **ECDSA(P-256)** | 핸드셰이크 바이트 절감. 단, 트래킹이 HTTP로 확인되어(아래) 효과는 HTTPS를 쓰는 어드민 트래픽에 한정 |
+| **80 포트: 트래킹·포스트백만 직접 포워드** | 매체에 배포된 링크가 `http://api.mecrosspro.com/tracking?...` — HTTPS 강제 리다이렉트를 끼우면 클릭당 왕복 2배. `/tracking*`, `/postback*`만 80에서 포워드하고 나머지는 HTTPS로 리다이렉트 (`http_forward_paths` 변수) |
+| 도메인은 기존 것 사용 | 같은 계정 Route53 zone을 data source로 조회, `api.`/`app.` 레코드만 추가. 기존 레코드 무영향 |
+| DB/Redis 새로 생성 | 기존 RDS/ElastiCache는 데이터 이전(mysqldump) 후 삭제 예정 |
+
+## 비용
+
+**기존 (2026-07 청구서, Onetwoad 계정): 월 $1,792** — Data Transfer $865(48%), RDS $373, EC2 $348, ElastiCache $147, VPC $37, GA $19
+
+**새 설계 예상: 월 $950~1,280 (기본 30~40% 절감, 전송량 최적화 성공 시 ~50%)**
+
+| 항목 | 예상/월 |
+|---|---|
+| Fargate (온디맨드 1 + Spot 평균 2~3) | $50~80 |
+| ALB (신규 연결 ~46 LCU 가정) | $200~300 |
+| RDS db.t4g.large | ~$110 |
+| ElastiCache cache.t4g.medium | ~$48 |
+| **Data Transfer** (GA 제거 + ECDSA 반영) | **$500~700** |
+| Route53/S3/ECR/IPv4/로그 등 | ~$40 |
+
+### 전송량 절감 계획 (최대 변수 — apply 후 Cost Explorer로 실측 필요)
+
+**2026-08-26 실측 발견**: `api.mecrosspro.com`은 EC2 1대(3.34.25.161)에 A 레코드 직결(nginx→Express), ALB/GA 미경유, **HTTP 전용(TLS 없음)**. 302 응답 실측 기준 리다이렉트 트래픽은 월 2~3TB 수준으로 추산되는데 청구는 7.6TB — **4~5TB의 출처 불명 트래픽 존재**. 유력 용의자: 매체 포스트백 발신(재시도 3회 포함), 긴 Location URL, 타 서브도메인. → Cost Explorer 실측이 절감의 열쇠.
+
+1. ✅ 80 포트 트래킹 직접 포워드 (리다이렉트 왕복 제거, Terraform 반영됨)
+2. ✅ GA 제거 (현재도 트래킹 경로엔 미사용으로 확인 — 월 $19 정리 대상)
+3. ⬜ 앱 레벨: `res.redirect()` 기본 HTML 바디 제거, `X-Powered-By`·ETag 헤더 제거 (현 서버 기준 월 $50~100 수준)
+4. ⬜ **Cost Explorer로 미확인 4~5TB 출처 규명** — 가장 큰 잠재 절감
+
+### ⚠️ 비용 함정
+
+- **트래킹 경로에서 클릭당 CloudWatch 로그 1줄 = 월 $400+** (하루 20GB 유입). 앱에서 반드시 억제할 것
+- RDS t4g는 unlimited 모드라 크레딧 소진 시 스로틀 대신 추가 과금 — CPU 크레딧 잔량 모니터링
+- Redis 메모리 사용률 모니터링 (스트림 소비 지연 시 3GB가 한계선)
+
+## 디렉토리 구조
+
+```
+infra/terraform/
+├── bootstrap/        # state 버킷 생성 (로컬 state, 1회 apply)
+├── modules/
+│   ├── network/      # VPC, 서브넷, 보안그룹 4종
+│   ├── database/     # RDS + DATABASE_URL SSM 파라미터
+│   ├── cache/        # ElastiCache Valkey
+│   ├── ecr/          # backend 이미지 리포지토리
+│   ├── acm/          # 인증서 + DNS 검증 (ALB용 서울 / CloudFront용 us-east-1)
+│   ├── backend/      # ALB, ECS, IAM, 오토스케일링, JWT SSM
+│   └── frontend/     # S3 + CloudFront OAC
+└── envs/prod/        # 모듈 배선, Route53, SES, 앱 S3 버킷, tfvars
+```
+
+## 배포 절차
+
+```bash
+# 0. 사전 준비 (1회)
+brew install awscli && aws configure     # 새 IAM 키, region: ap-northeast-2
+# ⚠️ apps/backend/.env의 기존 AKIA... 키는 재사용 금지 — 폐기 대상
+
+# 1. state 버킷 bootstrap (1회)
+cd infra/terraform/bootstrap
+terraform init && terraform apply
+# → 출력된 버킷명을 envs/prod/backend.tf 의 bucket 에 기입
+
+# 2. 본 인프라
+cd ../envs/prod
+cp terraform.tfvars.example terraform.tfvars   # domain_name, ses_from_email 기입
+terraform init && terraform plan && terraform apply
+# 최초 apply는 backend_desired_count = 0 (ECR에 이미지가 아직 없음)
+
+# 3. 이미지 push 후 (Dockerfile은 후속 단계)
+# backend_desired_count = 2, backend_autoscaling_enabled = true 로 재-apply
+```
+
+검증만 할 때 (자격증명 불필요):
+
+```bash
+terraform fmt -check -recursive
+cd envs/prod && terraform init -backend=false && terraform validate
+```
+
+## 남은 작업 (순서대로)
+
+1. AWS 자격증명 설정 → **Cost Explorer로 DT $865 구성 실측** → bootstrap → plan/apply
+2. Dockerfile (pnpm workspace + **arm64** + `prisma migrate deploy` 전략) + CI/CD
+3. 앱 수정: CORS `localhost:3000` 하드코딩 해제(`apps/backend/src/main.ts`), 302 응답 슬림화, 트래킹 로그 억제
+4. frontend 빌드(`VITE_API_URL=https://api.<도메인>`) → S3 sync + CloudFront invalidation
+5. 데이터 이전(mysqldump → 새 RDS) → 기존 EC2/RDS/ElastiCache/GA 정리
+6. SES 샌드박스 해제(수동), 노출된 IAM 키 폐기
