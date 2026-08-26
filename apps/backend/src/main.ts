@@ -8,6 +8,9 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
 	const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+	// 트래킹 응답 바이트 절감 — 모든 응답에서 X-Powered-By 헤더 제거
+	app.getHttpAdapter().getInstance().disable('x-powered-by');
+
 	// 로컬 frontend(3000)에서의 브라우저 호출 허용
 	app.enableCors({ origin: 'http://localhost:3000' });
 
