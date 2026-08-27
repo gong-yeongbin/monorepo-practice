@@ -10,10 +10,10 @@
     "test": "turbo run test",
     "docker:up": "docker compose -f ./docker-compose.yml up -d --wait",
     "docker:down": "docker compose -f ./docker-compose.yml down",
-    "db:deploy": "pnpm --filter backend deploy",
-    "db:generate": "pnpm --filter backend generate",
-    "db:seed": "pnpm --filter backend seed",
-    "db:reset": "pnpm --filter backend reset"
+    "db:deploy": "pnpm --filter backend run deploy",
+    "db:generate": "pnpm --filter backend run generate",
+    "db:seed": "pnpm --filter backend run seed",
+    "db:reset": "pnpm --filter backend run reset"
   },
   "devDependencies": {
     "prettier": "^3.9.4",
