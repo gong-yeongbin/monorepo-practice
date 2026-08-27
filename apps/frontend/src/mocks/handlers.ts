@@ -8,9 +8,4 @@ export const handlers = [
 	http.patch(`${baseURL}/advertising/:id`, () => {
 		return HttpResponse.json({ data: null });
 	}),
-
-	// 캠페인 block 토글 — backend에 block 필드가 없다
-	http.patch(`${baseURL}/campaigns/:id/block`, () => {
-		return HttpResponse.json({ data: null });
-	}),
 ];

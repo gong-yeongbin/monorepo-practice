@@ -119,11 +119,11 @@ backend는 응답을 `{ statusCode, data, _meta }`로 감싸고 카운터를 sna
 
 개발 모드에서만 워커가 뜹니다(`app/index.tsx`). `onUnhandledRequest: 'bypass'`이므로 **핸들러에 등록된 경로만 가로채고 나머지는 실제 backend로 통과**합니다. 즉 목을 끄려고 코드를 고칠 필요가 없습니다.
 
-현재 목킹 대상은 backend에 아직 없는 세 경로뿐입니다.
+현재 목킹 대상은 backend에 아직 없는 한 경로뿐입니다.
 
-- `PATCH /advertising/:id` (상태 토글)
-- `PATCH /campaigns/:id/block`
-- `POST /users`
+- `PATCH /advertising/:id` (상태 토글 — backend의 광고 상태는 활성 캠페인 여부에서 파생되는 값이라 토글 엔드포인트가 없습니다)
+
+캠페인 목록의 활성 토글은 목이 아니라 실제 `PATCH /campaigns/:id`(`{ "is_active": boolean }`)를 호출합니다.
 
 워커 기동을 `await`한 뒤 렌더하는 이유는, 기다리지 않으면 새로고침 직후 첫 요청이 목에 걸리지 않고 backend로 흘러가 404 → 로그인 이동이 되기 때문입니다. 위 엔드포인트가 backend에 구현되면 핸들러를 지워야 실제 응답이 화면에 반영됩니다. 워커 스크립트(`public/mockServiceWorker.js`)의 위치는 `package.json`의 `msw.workerDirectory`가 지정합니다.
 

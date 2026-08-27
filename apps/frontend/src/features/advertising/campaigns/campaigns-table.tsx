@@ -18,7 +18,6 @@ export interface CampaignColumns {
 	mediaName: string;
 	trackerName: string;
 	campaignStatus: number;
-	campaignBlock: number;
 }
 
 const columnHelper = createColumnHelper<CampaignColumns>();
@@ -30,10 +29,11 @@ const CampaignsTable = (props: { data: Array<CampaignColumns> }) => {
 
 	const { id: paramId } = useParams();
 
-	const confirmBlock = async (idx: string) => {
-		updateData(idx, 'campaignBlock');
+	// 서버 반영에 실패하면 Switch가 잘못된 상태로 남지 않도록 PATCH 성공 후에 로컬 state를 뒤집는다
+	const confirmActive = async (idx: string, nextActive: boolean) => {
 		try {
-			await axiosInstance.patch(`/campaigns/${idx}/block`);
+			await axiosInstance.patch(`/campaigns/${idx}`, { is_active: nextActive });
+			updateData(idx, 'campaignStatus');
 		} catch (error) {
 			handleError();
 		}
@@ -67,7 +67,6 @@ const CampaignsTable = (props: { data: Array<CampaignColumns> }) => {
 		() => [
 			columnHelper.accessor('campaignIdx', {}),
 			columnHelper.accessor('campaignStatus', {}),
-			columnHelper.accessor('campaignBlock', {}),
 			columnHelper.accessor('token', {}),
 			columnHelper.accessor('mediaName', { header: '매체', maxSize: 60 }),
 			columnHelper.accessor('campaignType', { header: '타입', maxSize: 30 }),
@@ -91,18 +90,18 @@ const CampaignsTable = (props: { data: Array<CampaignColumns> }) => {
 				},
 			}),
 			columnHelper.display({
-				id: 'block-switch',
-				header: 'block',
+				id: 'active-switch',
+				header: '활성',
 				cell: info => {
-					const { campaignIdx, campaignBlock } = info.row.original;
+					const { campaignIdx, campaignStatus } = info.row.original;
 					return (
 						<Popconfirm
 							title="진행하시겠습니까?"
-							onConfirm={() => confirmBlock(campaignIdx)}
+							onConfirm={() => confirmActive(campaignIdx, campaignStatus === 0)}
 							okText="Yes"
 							cancelText="No"
 						>
-							<Switch checked={!!campaignBlock} size="small" />
+							<Switch checked={campaignStatus === 1} size="small" />
 						</Popconfirm>
 					);
 				},
@@ -122,7 +121,6 @@ const CampaignsTable = (props: { data: Array<CampaignColumns> }) => {
 				campaignIdx: false,
 				campaignStatus: false,
 				token: false,
-				campaignBlock: false,
 			},
 		},
 	});

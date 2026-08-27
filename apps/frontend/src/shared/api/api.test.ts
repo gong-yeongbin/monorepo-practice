@@ -292,7 +292,6 @@ describe('mapCampaignListItem', () => {
 			campaignName: '캠페인A',
 			campaignType: 'CPA',
 			campaignStatus: 1,
-			campaignBlock: 0,
 			mediaName: 'vikingmedia',
 			trackerName: '',
 			trackerTrackingUrl: 'https://tracker.example.com/click',

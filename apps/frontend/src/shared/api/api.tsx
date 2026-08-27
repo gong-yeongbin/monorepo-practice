@@ -193,7 +193,6 @@ export const mapCampaignListItem = (row: {
 	campaignName: row.campaign_name,
 	campaignType: row.type,
 	campaignStatus: row.is_active ? 1 : 0,
-	campaignBlock: 0, // backend에 block 필드가 없다 (미구현 보고 대상)
 	mediaName: row.media_name,
 	trackerName: '',
 	trackerTrackingUrl: row.tracker_tracking_url,
