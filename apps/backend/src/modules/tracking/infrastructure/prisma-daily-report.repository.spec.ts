@@ -38,7 +38,7 @@ describe('PrismaDailyReportRepository (tracking)', () => {
 		expect(executeRaw).not.toHaveBeenCalled();
 	});
 
-	it('배치 전체를 ON DUPLICATE KEY UPDATE 한 문장으로 실행한다', async () => {
+	it('배치 전체를 ON CONFLICT DO UPDATE 한 문장으로 실행한다', async () => {
 		executeRaw.mockResolvedValue(2);
 
 		await repository.upsertMany([dailyReport({ view_code: 'vc-1', click: 3 }), dailyReport({ view_code: 'vc-2', click: 1 })]);
@@ -46,8 +46,8 @@ describe('PrismaDailyReportRepository (tracking)', () => {
 		expect(executeRaw).toHaveBeenCalledTimes(1);
 		const query = executeRaw.mock.calls[0][0];
 		expect(query.sql).toContain('INSERT INTO daily_report');
-		expect(query.sql).toContain('ON DUPLICATE KEY UPDATE');
-		expect(query.sql).toContain('click = daily_report.click + new.click');
+		expect(query.sql).toContain('ON CONFLICT (view_code, created_date) DO UPDATE SET');
+		expect(query.sql).toContain('click = daily_report.click + EXCLUDED.click');
 		expect(query.values).toContain('vc-1');
 		expect(query.values).toContain('vc-2');
 		// created_date는 타임존 변환을 피해 UTC 기준 날짜 문자열로 바인딩된다

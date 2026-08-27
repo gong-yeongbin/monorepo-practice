@@ -90,7 +90,7 @@ variable "backend_autoscaling_max" {
 }
 
 variable "backend_desired_count" {
-  description = "백엔드 태스크 수 (최초 apply 시 0, ECR에 이미지 push 후 1)"
+  description = "백엔드 태스크 수 (서비스 최초 생성 시에만 적용 — 이후엔 ignore_changes, 증설은 오토스케일링 min으로)"
   type        = number
   default     = 0
 }
@@ -105,12 +105,6 @@ variable "redis_stream_group" {
   description = "REDIS_STREAM_GROUP 환경변수"
   type        = string
   default     = "mecross-system"
-}
-
-variable "redis_stream_consumer" {
-  description = "REDIS_STREAM_CONSUMER 환경변수"
-  type        = string
-  default     = "consumer-1"
 }
 
 variable "ses_from_email" {

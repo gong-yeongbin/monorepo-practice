@@ -9,7 +9,7 @@ import { DailyReportRepository } from '@postback/domain/daily-report.repository'
 export class PrismaDailyReportRepository implements DailyReportRepository {
 	constructor(private readonly prismaService: PrismaService) {}
 
-	// 배치 전체를 multi-row INSERT ... ON DUPLICATE KEY UPDATE(MySQL 8.0.19+ alias 문법) 한 문장으로 처리한다.
+	// 배치 전체를 multi-row INSERT ... ON CONFLICT DO UPDATE(PostgreSQL) 한 문장으로 처리한다.
 	// row 단위로 원자적이라 SELECT→INSERT 분기 레이스(P2002)가 없고, 문장이 실패하면 아무것도 반영되지 않아 배치 재전달이 안전하다.
 	async upsertMany(dailyReports: DailyReport[]): Promise<void> {
 		if (dailyReports.length === 0) return;
@@ -23,20 +23,20 @@ export class PrismaDailyReportRepository implements DailyReportRepository {
 		await this.prismaService.$executeRaw(Prisma.sql`
 			INSERT INTO daily_report
 				(view_code, token, pub_id, sub_id, click, install, registration, retention, purchase, revenue, etc1, etc2, etc3, etc4, etc5, unregistered, created_date)
-			VALUES ${Prisma.join(rows)} AS new
-			ON DUPLICATE KEY UPDATE
-				click = daily_report.click + new.click,
-				install = daily_report.install + new.install,
-				registration = daily_report.registration + new.registration,
-				retention = daily_report.retention + new.retention,
-				purchase = daily_report.purchase + new.purchase,
-				revenue = daily_report.revenue + new.revenue,
-				etc1 = daily_report.etc1 + new.etc1,
-				etc2 = daily_report.etc2 + new.etc2,
-				etc3 = daily_report.etc3 + new.etc3,
-				etc4 = daily_report.etc4 + new.etc4,
-				etc5 = daily_report.etc5 + new.etc5,
-				unregistered = daily_report.unregistered + new.unregistered
+			VALUES ${Prisma.join(rows)}
+			ON CONFLICT (view_code, created_date) DO UPDATE SET
+				click = daily_report.click + EXCLUDED.click,
+				install = daily_report.install + EXCLUDED.install,
+				registration = daily_report.registration + EXCLUDED.registration,
+				retention = daily_report.retention + EXCLUDED.retention,
+				purchase = daily_report.purchase + EXCLUDED.purchase,
+				revenue = daily_report.revenue + EXCLUDED.revenue,
+				etc1 = daily_report.etc1 + EXCLUDED.etc1,
+				etc2 = daily_report.etc2 + EXCLUDED.etc2,
+				etc3 = daily_report.etc3 + EXCLUDED.etc3,
+				etc4 = daily_report.etc4 + EXCLUDED.etc4,
+				etc5 = daily_report.etc5 + EXCLUDED.etc5,
+				unregistered = daily_report.unregistered + EXCLUDED.unregistered
 		`);
 	}
 }

@@ -1,6 +1,6 @@
 # CPU 기준 target tracking 오토스케일링.
 # 최초 배포(이미지 없음, desired_count = 0) 시점에는 꺼두고,
-# 이미지 push 후 enable_autoscaling = true + desired_count = min 값으로 켠다.
+# 이미지 push 후 enable_autoscaling = true 로 켠다 (min_capacity가 태스크를 띄운다).
 # 증설분은 capacity provider 전략에 따라 Spot으로 뜬다.
 
 resource "aws_appautoscaling_target" "ecs" {

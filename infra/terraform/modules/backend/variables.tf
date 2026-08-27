@@ -57,7 +57,7 @@ variable "memory" {
 }
 
 variable "desired_count" {
-  description = "태스크 수 (최초 apply 시 0, 이미지 push 후 1)"
+  description = "태스크 수 (서비스 최초 생성 시에만 적용 — 이후엔 ignore_changes)"
   type        = number
   default     = 0
 }
@@ -82,11 +82,13 @@ variable "app_bucket_arn" {
 variable "http_forward_paths" {
   description = "HTTPS 리다이렉트 없이 80 포트에서 바로 포워드할 경로 (http:// 로 배포된 트래킹·포스트백 링크)"
   type        = list(string)
-  default     = ["/tracking*", "/postback*"]
+  # 포스트백 수신 URL은 /<트래커명>/install·event 형태 (예: /appsflyer/install) — PostbackController 참고.
+  # /postback* 은 실제 수신 URL과 매치되지 않고 어드민 API(/postbacks)만 평문으로 여는 오매치라 쓰지 않는다.
+  default = ["/tracking*", "/*/install", "/*/event"]
 }
 
 variable "enable_autoscaling" {
-  description = "오토스케일링 활성화 (이미지 push 후 켤 것 — 켜면 desired_count는 min 값으로 맞출 것)"
+  description = "오토스케일링 활성화 (이미지 push 후 켤 것 — min_capacity가 태스크를 띄운다)"
   type        = bool
   default     = false
 }

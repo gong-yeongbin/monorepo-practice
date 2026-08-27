@@ -11,9 +11,10 @@
 - **어드민 리소스 관리**: 광고주·광고·캠페인·매체·트래커·파트너 CRUD와 대시보드 조회
 - **인증**: 이메일 인증 코드 기반 2단계 회원가입 + JWT access/refresh 토큰
 - **트래킹 처리**: 다양한 트래킹 솔루션(AppsFlyer, Adjust, Airbridge, AdbrixRemaster) 지원
-- **포스트백 전송**: 매체사로 포스트백 전송
+- **포스트백 전송**: 매체사로 포스트백 전송 (공개 수신 엔드포인트는 IP 기준 rate limit)
 - **일별 집계**: `daily_report`로 클릭/설치/이벤트/매출 등을 KST 기준 일별 집계
-- **비동기 메시징**: Redis Stream 기반 consumer group으로 트래킹·포스트백 배치 처리
+- **예약 변경**: 캠페인 상위 트래커 URL을 지정 시각에 일괄 변경 (스케줄러 실행)
+- **비동기 메시징**: Redis Stream 기반 consumer group으로 트래킹·포스트백 배치 처리 (API·컨슈머 프로세스 분리 가능)
 - **API 문서**: Swagger(OpenAPI) UI 제공 (`/docs`)
 
 ## 🏗️ 아키텍처
@@ -32,7 +33,7 @@
 │                        Prisma ────────────┼──── Redis          │
 │                                           │  (Stream + Cache)  │
 │                                  ┌────────▼────────┐           │
-│                                  │  MySQL (Prisma) │           │
+│                                  │ Postgres(Prisma)│           │
 │                                  └─────────────────┘           │
 │                                                                │
 │  ┌──────────────┐  ┌──────────────┐                            │
@@ -48,10 +49,12 @@
 ### 백엔드 (`apps/backend`)
 
 - **NestJS 11**: Node.js 프레임워크
-- **Prisma 7**: ORM 및 데이터베이스 관리 (`@prisma/adapter-mariadb` driver adapter)
+- **Prisma 7**: ORM 및 데이터베이스 관리 (`@prisma/adapter-pg` driver adapter)
 - **ioredis**: Redis Stream(비동기 메시징) + Redis 캐시 클라이언트
 - **@nestjs/jwt / bcrypt**: JWT access·refresh 토큰과 비밀번호 해싱
-- **@aws-sdk/client-ses**: 회원가입 인증 코드 메일 발송
+- **@nestjs/throttler**: 공개 엔드포인트(트래킹·포스트백) IP 기준 rate limit
+- **@nestjs/schedule**: 트래커 URL 예약 변경 스케줄러
+- **@aws-sdk/client-ses / client-s3**: 회원가입 인증 코드 메일 발송, advertising 이미지 업로드
 - **@nestjs/swagger**: OpenAPI 문서 생성
 - **class-transformer / class-validator**: 요청 DTO 및 트래커 파라미터 매핑·검증
 - **dayjs**: KST 기준 날짜 처리
@@ -70,7 +73,7 @@
 ### 인프라
 
 - **Docker & Docker Compose**: 로컬 인프라 컨테이너 관리
-- **MySQL 8.0**: 관계형 데이터베이스
+- **PostgreSQL 17**: 관계형 데이터베이스
 - **Redis (alpine)**: 캐시·스트림 서버
 - **Turborepo**: 모노레포 빌드 시스템
 - **pnpm 9**: 패키지 매니저
@@ -87,6 +90,8 @@ monorepo-practice/
 │   │   │   │   ├── cache/         # Redis 캐시 (포트/어댑터)
 │   │   │   │   ├── stream/        # Redis Stream 프로듀서/컨슈머
 │   │   │   │   ├── mail/          # AWS SES 메일 어댑터
+│   │   │   │   ├── storage/       # AWS S3 파일 업로드 (포트/어댑터)
+│   │   │   │   ├── http/          # 외부 HTTP 호출 (매체 포스트백 재전송)
 │   │   │   │   └── prisma/        # Prisma 모듈/서비스
 │   │   │   ├── interceptors/      # 응답 래핑 인터셉터
 │   │   │   ├── modules/           # 기능 모듈 (모듈별 클린 아키텍처 4계층)
@@ -101,9 +106,11 @@ monorepo-practice/
 │   │   │   │   ├── partner/       # 파트너
 │   │   │   │   ├── dashboard/     # 대시보드·일별 리포트
 │   │   │   │   ├── tracking/      # 트래킹 처리
-│   │   │   │   └── postback/      # 포스트백 처리
+│   │   │   │   ├── postback/      # 포스트백 처리
+│   │   │   │   └── reservation/   # 트래커 URL 예약 변경
 │   │   │   ├── trackers/          # 트래커별 파라미터 매핑 (anti-corruption)
-│   │   │   └── main.ts
+│   │   │   ├── main.ts
+│   │   │   └── main.consumer.ts   # 컨슈머 전용 엔트리포인트 (APP_ROLE=consumer)
 │   │   ├── prisma/                # Prisma 스키마 및 마이그레이션
 │   │   ├── http/                  # 엔드포인트별 HTTP 요청 파일
 │   │   └── README.md
@@ -111,7 +118,7 @@ monorepo-practice/
 │   └── frontend/                  # React 어드민 (:3000)
 │       ├── src/
 │       │   ├── app/               # 진입점·라우팅·MobX Store·전역 스타일
-│       │   ├── features/          # 기능별 화면 (home/login/advertising/detail/media/tracker/developer)
+│       │   ├── features/          # 기능별 화면 (home/login/signup/advertising/detail/media/tracker/developer)
 │       │   ├── shared/            # 공용 api / lib / ui
 │       │   └── mocks/             # MSW 핸들러
 │       ├── vite.config.ts
@@ -126,6 +133,9 @@ monorepo-practice/
 │   └── typescript-config/         # TypeScript 설정 (@repo/typescript-config)
 │       ├── base.json
 │       └── nestjs.json
+│
+├── infra/
+│   └── terraform/                 # AWS 배포 인프라 (ECS Fargate·RDS·ElastiCache·S3+CloudFront)
 │
 ├── docker-compose.yml             # Docker Compose 설정
 ├── turbo.json                     # Turborepo 설정
@@ -166,7 +176,7 @@ cd ../..
 
 ### Docker Compose 실행 (선택사항)
 
-로컬 개발을 위해 MySQL, Redis를 Docker로 실행합니다.
+로컬 개발을 위해 PostgreSQL, Redis를 Docker로 실행합니다.
 
 ```bash
 # Docker Compose로 인프라 시작
@@ -178,7 +188,7 @@ pnpm docker:down
 
 이 명령으로 시작되는 서비스는 다음과 같습니다.
 
-- **MySQL 8.0**: `localhost:3306` (DB명 `mecross`)
+- **PostgreSQL 17**: `localhost:5432` (DB명 `mecross`)
 - **Redis**: `localhost:6379`
 
 ### 환경 변수 설정
@@ -189,15 +199,14 @@ pnpm docker:down
 
 ```env
 # 데이터베이스
-DATABASE_URL="mysql://root:1234@localhost:3306/mecross"
+DATABASE_URL="postgresql://postgres:1234@localhost:5432/mecross"
 
 # 서버
 PORT=3001
 
-# Redis (캐시·스트림 공용)
+# Redis (캐시·스트림 공용) — 컨슈머 이름은 미설정 시 consumer-<호스트명>-<PID>로 자동 생성
 VALKEY="redis://localhost:6379"
 REDIS_STREAM_GROUP="mecross-system"
-REDIS_STREAM_CONSUMER="consumer-1"
 
 # JWT — signin·refresh 토큰 서명 키
 JWT_ACCESS_SECRET="change-me-access"
@@ -207,7 +216,12 @@ JWT_REFRESH_SECRET="change-me-refresh"
 # 자격 증명은 AWS SDK 기본 체인(AWS_ACCESS_KEY_ID·AWS_SECRET_ACCESS_KEY 등)을 사용
 AWS_REGION="ap-northeast-2"
 SES_FROM_EMAIL="<SES에서 검증한 발신자 이메일>"
+
+# AWS S3 — advertising 이미지 업로드 저장소 (이미지 업로드를 안 쓰면 생략 가능)
+S3_BUCKET="my-bucket"
 ```
+
+> 프로세스 역할(`APP_ROLE`), rate limit, 스트림 튜닝 등 전체 환경변수 목록은 [backend README](./apps/backend/README.md)를 참고하세요.
 
 > 회원가입은 2단계입니다. `POST /auth/signup`에 email·password를 제출하면 6자리 인증 코드가 발송되고(AWS SES, 이 시점엔 계정 미생성), `POST /auth/signup/verify`에 email·code를 제출해 검증을 통과해야 계정이 생성됩니다. SES sandbox 상태에서는 발신자뿐 아니라 수신자 이메일도 SES identity로 등록·검증되어 있어야 합니다.
 
@@ -215,10 +229,6 @@ SES_FROM_EMAIL="<SES에서 검증한 발신자 이메일>"
 
 ```env
 VITE_API_URL=http://localhost:3001
-VITE_USER_POOL_ID_ADVERTISER=<Cognito user pool id>
-VITE_USER_POOL_ID_PARTNER=<Cognito user pool id>
-VITE_USER_POOL_CLIENT_ID_ADVERTISER=<Cognito client id>
-VITE_USER_POOL_CLIENT_ID_PARTNER=<Cognito client id>
 ```
 
 > 개발 모드에서는 MSW 목 서버가 항상 켜져 요청을 가로챕니다. 실제 backend에 붙이려면 `src/app/index.tsx`의 `import.meta.env.DEV` 분기를 우회해야 합니다. 자세한 내용은 [frontend README](./apps/frontend/README.md)를 참고하세요.
@@ -402,7 +412,7 @@ pnpm seed
 npx prisma studio
 ```
 
-`pnpm seed`는 로그인 가능한 계정(`admin@test.com` / `test1234!`)과 광고주·트래커·매체·광고·캠페인, 최근 7일치 대시보드 통계를 생성합니다. SES 인증 코드 수신이 어려운 로컬 환경에서 이 계정으로 바로 로그인할 수 있습니다.
+`pnpm seed`는 로그인 가능한 계정(`admin@test.com` / `test1234!`)과 광고주·트래커·매체·광고·캠페인, 최근 7일치 대시보드 통계와 포스트백 로그를 생성합니다. SES 인증 코드 수신이 어려운 로컬 환경에서 이 계정으로 바로 로그인할 수 있습니다.
 
 스키마는 `apps/backend/prisma/schema.prisma`에 있고, datasource URL은 `prisma.config.ts`가 `DATABASE_URL`에서 주입합니다.
 
@@ -410,7 +420,7 @@ npx prisma studio
 
 ### Docker Compose 서비스
 
-- **MySQL 8.0**: 관계형 데이터베이스 (`monorepo-mysql`)
+- **PostgreSQL 17**: 관계형 데이터베이스 (`monorepo-postgres`)
 - **Redis (alpine)**: 캐시·스트림 서버 (`monorepo-redis`)
 
 ### 서비스 시작/중지
@@ -426,7 +436,7 @@ pnpm docker:down
 docker compose logs -f
 
 # 특정 서비스만 시작
-docker compose up mysql
+docker compose up postgres
 ```
 
 ## 🚀 배포
@@ -437,14 +447,21 @@ docker compose up mysql
 # 전체 빌드
 pnpm build
 
-# backend 실행
+# backend 실행 (API — 운영에서 분리 기동 시 APP_ROLE=api 지정)
 cd apps/backend
 pnpm start:prod
+
+# backend 컨슈머 프로세스 실행 (Redis Stream 소비 전용)
+pnpm start:consumer
 
 # frontend 정적 결과물 확인
 cd apps/frontend
 pnpm preview
 ```
+
+### AWS 배포
+
+ECS Fargate·RDS PostgreSQL·ElastiCache Valkey·S3+CloudFront 구성의 Terraform 코드가 `infra/terraform/`에 있습니다. 아키텍처·비용·배포 절차는 [infra/terraform/README.md](./infra/terraform/README.md)를 참고하세요.
 
 ## 🤝 기여 가이드
 

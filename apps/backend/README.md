@@ -5,7 +5,7 @@
 ## 기술 스택
 
 - **Framework**: NestJS 11.x
-- **Database**: MySQL 8 — Prisma 7 (`@prisma/adapter-mariadb` driver adapter)
+- **Database**: PostgreSQL 17 — Prisma 7 (`@prisma/adapter-pg` driver adapter)
 - **Messaging**: Redis Stream (ioredis) — 트래킹·포스트백 비동기 처리
 - **Cache**: Redis (ioredis) — 가입 대기 정보·refresh token 저장
 - **Mail**: AWS SES — 회원가입 인증 코드 발송
@@ -21,7 +21,7 @@ src/
 ├── app.controller.ts          # GET /health
 ├── common/                    # 상태 없는 순수 유틸
 ├── infra/                     # 공유 인프라 (포트 + 어댑터)
-│   ├── prisma/                # PrismaService — MySQL 연결 수명주기
+│   ├── prisma/                # PrismaService — PostgreSQL 연결 수명주기
 │   ├── cache/                 # CachePort + Redis 어댑터 (TTL은 밀리초)
 │   ├── stream/                # Redis Stream 프로듀서·컨슈머
 │   ├── mail/                  # MailPort + AWS SES 어댑터
@@ -47,12 +47,12 @@ src/
 
 ## 실행
 
-로컬 인프라(MySQL + Redis)는 모노레포 루트의 docker compose로 띄웁니다.
+로컬 인프라(PostgreSQL + Redis)는 모노레포 루트의 docker compose로 띄웁니다.
 
 ```bash
 # 루트에서
 pnpm install
-pnpm docker:up          # mysql:8.0 (DB: mecross) + redis:alpine
+pnpm docker:up          # postgres:17 (DB: mecross) + redis:alpine
 
 # apps/backend에서 — Prisma 마이그레이션 적용·클라이언트 생성
 pnpm deploy
@@ -72,7 +72,7 @@ pnpm start:prod
 
 ```env
 # 데이터베이스 (docker-compose 기본값 기준)
-DATABASE_URL="mysql://root:1234@localhost:3306/mecross"
+DATABASE_URL="postgresql://postgres:1234@localhost:5432/mecross"
 
 # Redis 접속 URL (캐시·스트림 공용, 미설정 시 redis://localhost:6379)
 VALKEY="redis://localhost:6379"
@@ -89,7 +89,7 @@ APP_ROLE="all"
 REDIS_STREAM_MAXLEN=100000
 STREAM_CLAIM_MIN_IDLE_MS=60000
 
-# DB 커넥션 풀 크기 (미설정 시 mariadb 드라이버 기본 10, 권장: API 30 / 컨슈머 10, 합계 < MySQL max_connections)
+# DB 커넥션 풀 크기 (미설정 시 pg Pool 기본 10, 권장: API 30 / 컨슈머 10, 합계 < PostgreSQL max_connections)
 DB_CONNECTION_LIMIT=10
 
 # 공개 엔드포인트 rate limit — 60초 창, IP 기준 (기본 tracking 300 / postback 600)

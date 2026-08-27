@@ -13,11 +13,11 @@ export class PrismaDashboardRepository implements DashboardRepository {
 		// 특정 일자, advertising별 카운터 합산. daily_report → campaign(token) → advertising 조인.
 		const rows = await this.prismaService.$queryRaw<DashboardRow[]>`
 			SELECT a.id AS advertising_id, a.name AS advertising_name,
-				CAST(SUM(d.click) AS SIGNED) AS click, CAST(SUM(d.install) AS SIGNED) AS install,
-				CAST(SUM(d.registration) AS SIGNED) AS registration, CAST(SUM(d.retention) AS SIGNED) AS retention,
-				CAST(SUM(d.purchase) AS SIGNED) AS purchase, CAST(SUM(d.revenue) AS SIGNED) AS revenue,
-				CAST(SUM(d.etc1) AS SIGNED) AS etc1, CAST(SUM(d.etc2) AS SIGNED) AS etc2, CAST(SUM(d.etc3) AS SIGNED) AS etc3,
-				CAST(SUM(d.etc4) AS SIGNED) AS etc4, CAST(SUM(d.etc5) AS SIGNED) AS etc5
+				CAST(SUM(d.click) AS BIGINT) AS click, CAST(SUM(d.install) AS BIGINT) AS install,
+				CAST(SUM(d.registration) AS BIGINT) AS registration, CAST(SUM(d.retention) AS BIGINT) AS retention,
+				CAST(SUM(d.purchase) AS BIGINT) AS purchase, CAST(SUM(d.revenue) AS BIGINT) AS revenue,
+				CAST(SUM(d.etc1) AS BIGINT) AS etc1, CAST(SUM(d.etc2) AS BIGINT) AS etc2, CAST(SUM(d.etc3) AS BIGINT) AS etc3,
+				CAST(SUM(d.etc4) AS BIGINT) AS etc4, CAST(SUM(d.etc5) AS BIGINT) AS etc5
 			FROM daily_report d
 			JOIN campaign c ON d.token = c.token
 			JOIN advertising a ON a.id = c.advertising_id
@@ -58,12 +58,12 @@ export class PrismaDashboardRepository implements DashboardRepository {
 		const rows = await this.prismaService.$queryRaw<DetailRow[]>`
 			SELECT m.id AS media_id, m.name AS media_name, c.token AS token, c.id AS campaign_id,
 				c.name AS campaign_name, c.type AS type, c.is_active AS is_active,
-				CAST(SUM(d.click) AS SIGNED) AS click, CAST(SUM(d.install) AS SIGNED) AS install,
-				CAST(SUM(d.registration) AS SIGNED) AS registration, CAST(SUM(d.retention) AS SIGNED) AS retention,
-				CAST(SUM(d.purchase) AS SIGNED) AS purchase, CAST(SUM(d.revenue) AS SIGNED) AS revenue,
-				CAST(SUM(d.etc1) AS SIGNED) AS etc1, CAST(SUM(d.etc2) AS SIGNED) AS etc2, CAST(SUM(d.etc3) AS SIGNED) AS etc3,
-				CAST(SUM(d.etc4) AS SIGNED) AS etc4, CAST(SUM(d.etc5) AS SIGNED) AS etc5,
-				CAST(SUM(d.unregistered) AS SIGNED) AS unregistered
+				CAST(SUM(d.click) AS BIGINT) AS click, CAST(SUM(d.install) AS BIGINT) AS install,
+				CAST(SUM(d.registration) AS BIGINT) AS registration, CAST(SUM(d.retention) AS BIGINT) AS retention,
+				CAST(SUM(d.purchase) AS BIGINT) AS purchase, CAST(SUM(d.revenue) AS BIGINT) AS revenue,
+				CAST(SUM(d.etc1) AS BIGINT) AS etc1, CAST(SUM(d.etc2) AS BIGINT) AS etc2, CAST(SUM(d.etc3) AS BIGINT) AS etc3,
+				CAST(SUM(d.etc4) AS BIGINT) AS etc4, CAST(SUM(d.etc5) AS BIGINT) AS etc5,
+				CAST(SUM(d.unregistered) AS BIGINT) AS unregistered
 			FROM daily_report d
 			JOIN campaign c ON d.token = c.token
 			JOIN media m ON m.id = c.media_id
@@ -76,7 +76,7 @@ export class PrismaDashboardRepository implements DashboardRepository {
 	}
 }
 
-// raw 쿼리의 CAST(SUM ... AS SIGNED)는 BIGINT라 Prisma가 BigInt로 반환한다.
+// raw 쿼리의 CAST(SUM ... AS BIGINT)는 BIGINT라 Prisma가 BigInt로 반환한다.
 // BigInt는 JSON 직렬화가 불가능하므로 응답 전에 number로 변환한다.
 function toNumberRow<T extends object>(row: T): T {
 	const converted = { ...row } as Record<string, unknown>;

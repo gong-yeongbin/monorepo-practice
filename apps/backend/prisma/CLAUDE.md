@@ -1,6 +1,6 @@
 # prisma
 
-`schema.prisma`(단일 스키마)와 `migrations/`(적용 이력). MySQL 대상이며 domain·repository는 이 스키마에서 파생된 Prisma 생성 타입을 그대로 쓴다(`modules/CLAUDE.md`의 도메인 타입 규칙 참고).
+`schema.prisma`(단일 스키마)와 `migrations/`(적용 이력). PostgreSQL 대상이며 domain·repository는 이 스키마에서 파생된 Prisma 생성 타입을 그대로 쓴다(`modules/CLAUDE.md`의 도메인 타입 규칙 참고).
 
 ## 명령어 (`apps/backend`에서 실행)
 
@@ -14,15 +14,15 @@
 
 ## datasource url은 schema가 아니라 config/service에서 주입 (주의)
 
-`datasource db`에는 `provider = "mysql"`만 있고 **`url`이 없다.** Prisma 7에선 schema에 url을 둘 수 없다. 여기에 `url = env("DATABASE_URL")`을 추가하지 말 것. url은 두 경로로 주입된다.
+`datasource db`에는 `provider = "postgresql"`만 있고 **`url`이 없다.** Prisma 7에선 schema에 url을 둘 수 없다. 여기에 `url = env("DATABASE_URL")`을 추가하지 말 것. url은 두 경로로 주입된다.
 
 - **마이그레이션·CLI**(`migrate`/`deploy`/`reset`/`generate`): `prisma.config.ts`가 `process.env.DATABASE_URL`을 주입한다. `.env`에 `DATABASE_URL`이 있어야 동작한다.
-- **런타임 앱 연결**: `PrismaService`가 driver adapter `PrismaMariaDb(process.env.DATABASE_URL)`로 직접 만든다(`src/infra/prisma/prisma.service.ts`).
+- **런타임 앱 연결**: `PrismaService`가 driver adapter `PrismaPg({ connectionString: process.env.DATABASE_URL })`로 직접 만든다(`src/infra/prisma/prisma.service.ts`).
 
 ## 스키마 규칙 (기존 컨벤션 유지)
 
 - 모델명·컬럼명은 **snake_case**(예: `daily_report`, `tracker_name`, `created_date`). domain 타입이 이 이름을 그대로 쓰므로 어긴 뒤 매핑을 손으로 맞추지 말 것.
-- 컬럼 타입은 `@db.VarChar(n)`, `@db.Text`, `@db.Date`, `@db.DateTime` 등으로 **명시**한다.
+- 컬럼 타입은 `@db.VarChar(n)`, `@db.Text`, `@db.Date`, `@db.Timestamp(0)` 등으로 **명시**한다.
 - enum은 파일 하단에 모아 둔다(`Role`, `Type`). enum 값은 대문자.
 - 집계 카운터(`daily_report`의 click/install/…)는 `Int @default(0)`. upsert의 `increment`로 누산한다(`prisma-daily-report.repository.ts`).
 - 복합 unique는 `@@unique([...])`. 예: `daily_report`의 `[view_code, created_date]`(일자별 유일), `campaign_config`의 `[campaign_id, admin_event_name]`.

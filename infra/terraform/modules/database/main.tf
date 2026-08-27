@@ -1,4 +1,4 @@
-# RDS MySQL (single-AZ, 최소 사양) + DATABASE_URL SSM 파라미터.
+# RDS PostgreSQL (single-AZ, 최소 사양) + DATABASE_URL SSM 파라미터.
 # 비밀번호는 Terraform이 생성해 SSM(SecureString)에만 기록하고 ARN만 노출한다.
 # 주의: random_password 값은 Terraform state에 평문으로 남는다 — state 버킷 접근 통제로 갈음.
 
@@ -18,10 +18,10 @@ resource "aws_db_subnet_group" "this" {
 }
 
 resource "aws_db_instance" "this" {
-  identifier = "${var.project}-mysql"
+  identifier = "${var.project}-postgres"
 
-  engine         = "mysql"
-  engine_version = "8.0"
+  engine         = "postgres"
+  engine_version = "17"
   instance_class = var.instance_class
 
   allocated_storage     = 20
@@ -37,17 +37,18 @@ resource "aws_db_instance" "this" {
   publicly_accessible    = false
   multi_az               = false
 
-  backup_retention_period = 1
-  skip_final_snapshot     = true
-  deletion_protection     = false
+  backup_retention_period   = 1
+  skip_final_snapshot       = false
+  final_snapshot_identifier = "${var.project}-postgres-final"
+  deletion_protection       = true
 
   tags = {
-    Name = "${var.project}-mysql"
+    Name = "${var.project}-postgres"
   }
 }
 
 resource "aws_ssm_parameter" "database_url" {
   name  = "/${var.project}/prod/DATABASE_URL"
   type  = "SecureString"
-  value = "mysql://${var.db_username}:${random_password.db.result}@${aws_db_instance.this.address}:3306/${var.db_name}"
+  value = "postgresql://${var.db_username}:${random_password.db.result}@${aws_db_instance.this.address}:5432/${var.db_name}"
 }

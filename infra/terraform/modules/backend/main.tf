@@ -2,7 +2,8 @@
 #
 # 초기 배포 순서 주의:
 #   첫 apply 시점에는 ECR에 이미지가 없으므로 desired_count = 0 으로 시작하고,
-#   이미지 push 후 desired_count = 1 로 재-apply 한다 (terraform.tfvars.example 참고).
+#   이미지 push 후 enable_autoscaling = true 로 재-apply 하면 오토스케일링 min이 태스크를 띄운다.
+#   (desired_count는 ignore_changes라 최초 생성 이후 apply로는 바뀌지 않음, terraform.tfvars.example 참고)
 
 # --- ALB ---
 
@@ -284,6 +285,12 @@ resource "aws_ecs_service" "this" {
   deployment_circuit_breaker {
     enable   = true
     rollback = true
+  }
+
+  # 오토스케일링이 조정한 태스크 수를 apply가 var 값으로 되돌리지 않도록 무시한다.
+  # 값 자체는 최초 생성 시에만 쓰이므로 이미지 push 후 증설은 오토스케일링 min으로 관리한다.
+  lifecycle {
+    ignore_changes = [desired_count]
   }
 
   depends_on = [aws_lb_listener.https, aws_ecs_cluster_capacity_providers.this]

@@ -11,7 +11,7 @@ describe('PrismaDashboardRepository', () => {
 	beforeEach(() => jest.clearAllMocks());
 
 	it('dashboard는 $queryRaw의 BigInt 카운터를 number로 변환해 반환한다', async () => {
-		// CAST(SUM ... AS SIGNED)는 BIGINT라 Prisma가 BigInt로 반환한다 — JSON 직렬화를 위해 number 변환 필수
+		// CAST(SUM ... AS BIGINT)는 Prisma가 BigInt로 반환한다 — JSON 직렬화를 위해 number 변환 필수
 		$queryRaw.mockResolvedValue([{ advertising_id: 1, advertising_name: 'a', click: BigInt(10) }]);
 
 		expect(await repository.dashboard(new Date('2026-07-10'))).toEqual([{ advertising_id: 1, advertising_name: 'a', click: 10 }]);

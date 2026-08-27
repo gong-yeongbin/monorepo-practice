@@ -1,6 +1,6 @@
 // 로컬 개발용 테스트 데이터를 생성하는 Prisma seed 스크립트 (pnpm seed 또는 pnpm reset 시 실행, upsert 기반이라 재실행해도 안전)
 import { Prisma, PrismaClient } from '@prisma/client';
-import { PrismaMariaDb } from '@prisma/adapter-mariadb';
+import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcrypt';
 import { viewCodeCodec } from '../src/common/utils/view-code.util';
 import { kstBaseDate } from '../src/common/utils/date.util';
@@ -12,7 +12,7 @@ try {
 	// .env가 없으면 무시
 }
 
-const prisma = new PrismaClient({ adapter: new PrismaMariaDb(process.env.DATABASE_URL as string) });
+const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL as string }) });
 
 const BCRYPT_SALT_ROUNDS = 10;
 const DAILY_REPORT_DAYS = 7;

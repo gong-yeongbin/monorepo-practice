@@ -10,7 +10,7 @@
   ├─ app.<도메인>  → CloudFront → S3 (frontend, private + OAC)
   └─ api.<도메인>  → ALB (HTTPS, ECDSA 인증서)
                       → ECS Fargate (backend, ARM64)
-                          ├─ RDS MySQL   (private subnet)
+                          ├─ RDS PostgreSQL (private subnet)
                           ├─ ElastiCache Valkey (private subnet)
                           ├─ S3 (앱 스토리지) / SES (task role 권한)
                           └─ CloudWatch Logs
@@ -18,7 +18,7 @@
 
 - VPC `10.0.0.0/16`, 2AZ. public 서브넷(ALB + Fargate), private 서브넷(RDS/Valkey — 인터넷 경로 없음)
 - **NAT Gateway 없음**: Fargate를 public subnet + public IP로 두고 보안그룹으로 차단 (인바운드는 ALB→3001만). 월 ~$37 절감
-- 보안그룹 체인: `alb(80,443) → app(3001) → rds(3306)/redis(6379)`, 전부 network 모듈에서 생성
+- 보안그룹 체인: `alb(80,443) → app(3001) → rds(5432)/redis(6379)`, 전부 network 모듈에서 생성
 - 시크릿(DB 비밀번호, JWT)은 Terraform이 생성해 SSM Parameter Store(SecureString, 무료)에만 저장 → task definition `secrets`로 주입. tfvars에 비밀 없음
 - IAM은 execution role(이미지 pull·로그·시크릿)과 task role(앱 버킷 S3 + SES) 분리 → **정적 AWS 키 불필요**
 
@@ -34,9 +34,9 @@
 | Global Accelerator 제거 | 고정 IP 불필요 확인 — Route53 alias(도메인→ALB)로 충분. GA 고정비 + DT 프리미엄 제거 |
 | frontend는 CloudFront 필수 | S3 정적 웹 호스팅 단독은 HTTPS 불가. 403/404→index.html로 SPA 라우팅, PriceClass_200(한국 엣지 포함) |
 | ACM 인증서 **ECDSA(P-256)** | 핸드셰이크 바이트 절감. 단, 트래킹이 HTTP로 확인되어(아래) 효과는 HTTPS를 쓰는 어드민 트래픽에 한정 |
-| **80 포트: 트래킹·포스트백만 직접 포워드** | 매체에 배포된 링크가 `http://api.mecrosspro.com/tracking?...` — HTTPS 강제 리다이렉트를 끼우면 클릭당 왕복 2배. `/tracking*`, `/postback*`만 80에서 포워드하고 나머지는 HTTPS로 리다이렉트 (`http_forward_paths` 변수) |
+| **80 포트: 트래킹·포스트백만 직접 포워드** | 매체에 배포된 링크가 `http://api.mecrosspro.com/tracking?...` — HTTPS 강제 리다이렉트를 끼우면 클릭당 왕복 2배. `/tracking*`, `/*/install`, `/*/event`(트래커 포스트백 수신 URL 형태)만 80에서 포워드하고 나머지는 HTTPS로 리다이렉트 (`http_forward_paths` 변수) |
 | 도메인은 기존 것 사용 | 같은 계정 Route53 zone을 data source로 조회, `api.`/`app.` 레코드만 추가. 기존 레코드 무영향 |
-| DB/Redis 새로 생성 | 기존 RDS/ElastiCache는 데이터 이전(mysqldump) 후 삭제 예정 |
+| DB/Redis 새로 생성 | 기존 RDS/ElastiCache는 데이터 이전 후 삭제 예정. 새 DB는 PostgreSQL이라 mysqldump 불가 — pgloader 또는 AWS DMS 등 이기종 이전 도구 필요 |
 
 ## 비용
 
@@ -119,5 +119,5 @@ cd envs/prod && terraform init -backend=false && terraform validate
 2. Dockerfile (pnpm workspace + **arm64** + `prisma migrate deploy` 전략) + CI/CD
 3. 앱 수정: CORS `localhost:3000` 하드코딩 해제(`apps/backend/src/main.ts`), 302 응답 슬림화, 트래킹 로그 억제
 4. frontend 빌드(`VITE_API_URL=https://api.<도메인>`) → S3 sync + CloudFront invalidation
-5. 데이터 이전(mysqldump → 새 RDS) → 기존 EC2/RDS/ElastiCache/GA 정리
+5. 데이터 이전(MySQL → PostgreSQL 이기종: pgloader/AWS DMS) → 기존 EC2/RDS/ElastiCache/GA 정리
 6. SES 샌드박스 해제(수동), 노출된 IAM 키 폐기

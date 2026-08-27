@@ -9,7 +9,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
 }
 
 model user {
@@ -18,11 +18,11 @@ model user {
   password   String   @db.VarChar(60)
   role       Role     @default(ADMIN)
   approved   Boolean  @default(false)
-  created_at DateTime @default(now()) @db.DateTime()
-  updated_at DateTime @default(now()) @updatedAt @db.DateTime()
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamp(0)
 
   advertiser    advertiser? @relation(fields: [advertiser_id], references: [id])
-  advertiser_id Int?        @unique @db.Int
+  advertiser_id Int?        @unique @db.Integer
 }
 
 model advertiser {
@@ -49,9 +49,9 @@ model advertising {
   image String? @db.Text
 
   advertiser    advertiser @relation(fields: [advertiser_id], references: [id], onUpdate: Cascade)
-  advertiser_id Int        @db.Int
+  advertiser_id Int        @db.Integer
   tracker       tracker    @relation(fields: [tracker_id], references: [id], onUpdate: Cascade)
-  tracker_id    Int        @db.Int
+  tracker_id    Int        @db.Integer
 
   campaign campaign[]
 }
@@ -66,9 +66,9 @@ model campaign {
   tracker_tracking_url String  @db.Text
 
   advertising    advertising @relation(fields: [advertising_id], references: [id], onUpdate: Cascade)
-  advertising_id Int         @db.Int
+  advertising_id Int         @db.Integer
   media          media       @relation(fields: [media_id], references: [id], onUpdate: Cascade)
-  media_id       Int         @db.Int
+  media_id       Int         @db.Integer
 
   campaign_config campaign_config[]
   daily_report    daily_report[]
@@ -87,7 +87,7 @@ model media {
 model campaign_config {
   id                 Int      @id @default(autoincrement())
   campaign           campaign @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
-  campaign_id        Int      @db.Int
+  campaign_id        Int      @db.Integer
   send_media         Boolean  @default(true)
   tracker_event_name String   @default("install") @db.VarChar(30)
   admin_event_name   String   @default("install") @db.VarChar(30)
@@ -100,10 +100,10 @@ model campaign_config {
 model reservation {
   id           Int      @id @default(autoincrement())
   campaign     campaign @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
-  campaign_id  Int      @db.Int
+  campaign_id  Int      @db.Integer
   name         String   @db.VarChar(30)
   tracking_url String   @db.Text
-  reserved_at  DateTime @db.DateTime()
+  reserved_at  DateTime @db.Timestamp(0)
   is_applied   Boolean  @default(false)
 }
 
@@ -120,10 +120,10 @@ model postback {
   idfa             String?   @db.VarChar(50)
   ip               String    @db.VarChar(30)
   country_code     String?   @db.VarChar(10)
-  clicked_at       DateTime? @db.DateTime()
-  installed_at     DateTime? @db.DateTime()
-  evented_at       DateTime? @db.DateTime()
-  media_sent_at    DateTime? @db.DateTime()
+  clicked_at       DateTime? @db.Timestamp(0)
+  installed_at     DateTime? @db.Timestamp(0)
+  evented_at       DateTime? @db.Timestamp(0)
+  media_sent_at    DateTime? @db.Timestamp(0)
   revenue_currency String?   @db.VarChar(10)
   // revenue는 트래커 원본 문자열을 손실 없이 보존한다(소수·통화 혼재 가능). 집계용 daily_report.revenue(Int)와 타입이 다른 것은 의도적이다.
   revenue          String?   @db.VarChar(50)

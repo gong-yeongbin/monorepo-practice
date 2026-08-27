@@ -1,10 +1,10 @@
 # infra
 
-외부 시스템(Redis, MySQL)과의 연결·어댑터를 담는 계층. 각 하위 폴더는 하나의 인프라 관심사를 캡슐화하는 NestJS 모듈이며, 도메인 로직은 절대 두지 않는다.
+외부 시스템(Redis, PostgreSQL)과의 연결·어댑터를 담는 계층. 각 하위 폴더는 하나의 인프라 관심사를 캡슐화하는 NestJS 모듈이며, 도메인 로직은 절대 두지 않는다.
 
 ## 구조
 
-- `prisma/` — `PrismaService`(연결 수명주기)와 `PrismaModule`. Prisma 7이라 driver adapter(`@prisma/adapter-mariadb`)로 `DATABASE_URL`에 연결한다.
+- `prisma/` — `PrismaService`(연결 수명주기)와 `PrismaModule`. Prisma 7이라 driver adapter(`@prisma/adapter-pg`)로 `DATABASE_URL`에 연결한다.
 - `cache/` — Redis 캐시. `CachePort` 인터페이스 + `CACHE_PORT` 심볼 토큰, `RedisCacheAdapter` 구현. **TTL은 밀리초 단위**로 받아 `PX`로 넘긴다.
 - `stream/` — Redis Stream 프로듀서/컨슈머. 비동기 메시징(구 Kafka).
 - `storage/` — AWS S3 파일 업로드. `StoragePort` 인터페이스 + `STORAGE_PORT` 심볼 토큰, `S3StorageAdapter` 구현. 업로드 후 public-read 정적 URL을 반환한다.
