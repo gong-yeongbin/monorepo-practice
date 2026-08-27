@@ -75,6 +75,16 @@ async function main() {
 	const advertising1 = await upsertAdvertising('카페 러시(AOS)');
 	const advertising2 = await upsertAdvertising('펫 월드(iOS)');
 
+	// 5-1. user_advertising — 허용 목록이 비면 USER는 아무 광고도 못 보므로(스코핑 기본값) 조회 확인용 계정을 연결한다.
+	// viewer에 카페 러시만 걸어 두면 펫 월드가 안 보이는지로 스코핑이 실제로 동작하는지 바로 검증된다.
+	// admin(DEVELOPER)·ops(ADMIN)는 스코핑 면제라 연결하지 않는다. pending은 승인 화면에서 직접 지정해 보는 용도라 비워 둔다.
+	const viewer = await prisma.user.findUnique({ where: { email: 'viewer@test.com' } });
+	if (viewer) {
+		// upsert 대신 전건 삭제 후 삽입 — 재실행해도 중복 없이 같은 상태가 된다
+		await prisma.user_advertising.deleteMany({ where: { user_id: viewer.id } });
+		await prisma.user_advertising.create({ data: { user_id: viewer.id, advertising_id: advertising1.id } });
+	}
+
 	// 6. campaign — advertising마다 2개. name이 unique가 아니라 findFirst 후 없을 때만 생성.
 	// token은 http/의 .http 예시가 그대로 실행되도록 고정값을 쓴다(uuid 자동 생성이면 재시드마다 달라져 예시와 어긋남).
 	// 기존 행의 token도 고정값으로 갱신한다 — 이전 uuid token으로 쌓인 daily_report·postback 행은 고아가 되므로 pnpm reset으로 정리하는 걸 권장.
@@ -241,7 +251,7 @@ async function main() {
 	});
 
 	console.log(
-		`seed 완료: user 4개(admin=DEVELOPER / ops=ADMIN / viewer=USER / pending=미승인, 전부 @test.com · test1234!), advertiser·tracker·media, advertising 2개·campaign 4개, daily_report 캠페인당 ${DAILY_REPORT_DAYS}일치, postback ${postbacks.length}건, reservation 2건`
+		`seed 완료: user 4개(admin=DEVELOPER / ops=ADMIN / viewer=USER · 카페 러시만 허용 / pending=미승인, 전부 @test.com · test1234!), advertiser·tracker·media, advertising 2개·campaign 4개, daily_report 캠페인당 ${DAILY_REPORT_DAYS}일치, postback ${postbacks.length}건, reservation 2건`
 	);
 }
 

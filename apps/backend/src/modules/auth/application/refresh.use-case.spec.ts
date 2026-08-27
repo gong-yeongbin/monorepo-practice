@@ -14,7 +14,7 @@ describe('RefreshUseCase', () => {
 	const configService = { getOrThrow: jest.fn() };
 	let useCase: RefreshUseCase;
 
-	const user = { id: 1, email: 'user@example.com', role: 'ADMIN', approved: true };
+	const user = { id: 1, email: 'user@example.com', role: 'ADMIN', approved: true, advertising_ids: [1, 2] };
 
 	beforeEach(async () => {
 		jest.clearAllMocks();
@@ -43,7 +43,11 @@ describe('RefreshUseCase', () => {
 
 		expect(jwtService.verifyAsync).toHaveBeenCalledWith('refresh-token', { secret: 'refresh-secret' });
 		expect(cache.get).toHaveBeenCalledWith('refresh:1');
-		expect(jwtService.signAsync).toHaveBeenCalledWith({ sub: 1, email: 'user@example.com', role: 'ADMIN' }, { secret: 'access-secret', expiresIn: '15m' });
+		// 허용 광고 목록 변경은 이 재발급 시점에 새 access token으로 반영된다
+		expect(jwtService.signAsync).toHaveBeenCalledWith(
+			{ sub: 1, email: 'user@example.com', role: 'ADMIN', advertising_ids: [1, 2] },
+			{ secret: 'access-secret', expiresIn: '15m' }
+		);
 		expect(result).toEqual({ access_token: 'new-access-token' });
 	});
 

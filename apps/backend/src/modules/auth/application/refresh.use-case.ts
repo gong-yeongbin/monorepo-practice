@@ -42,7 +42,8 @@ export class RefreshUseCase {
 			throw new ForbiddenException('not approved');
 		}
 
-		const accessPayload: AccessTokenPayload = { sub: user.id, email: user.email, role: user.role };
+		// 허용 광고 목록은 findById가 이미 실어 오므로 추가 조회가 없다. 목록 변경은 이 재발급 시점에 반영된다.
+		const accessPayload: AccessTokenPayload = { sub: user.id, email: user.email, role: user.role, advertising_ids: user.advertising_ids };
 		const accessToken = await this.jwtService.signAsync(accessPayload, { secret: this.configService.getOrThrow<string>('JWT_ACCESS_SECRET'), expiresIn: ACCESS_TOKEN_EXPIRES_IN });
 
 		return { access_token: accessToken };

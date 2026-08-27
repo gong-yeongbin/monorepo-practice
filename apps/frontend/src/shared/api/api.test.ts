@@ -19,6 +19,7 @@ import {
 	mapMediaRow,
 	mapTrackerRow,
 	mapAdvertiserRow,
+	mapUserRow,
 	mapAdvertisingInfo,
 	mapCampaignInfo,
 } from '@/shared/api/api';
@@ -418,6 +419,32 @@ describe('mapTrackerRow', () => {
 describe('mapAdvertiserRow', () => {
 	it('id를 문자열 idx로 매핑한다', () => {
 		expect(mapAdvertiserRow({ id: 5, name: '플레이디' })).toEqual({ idx: '5', name: '플레이디' });
+	});
+});
+
+describe('mapUserRow', () => {
+	const backendUser = {
+		id: 3,
+		email: 'viewer@test.com',
+		role: 'USER',
+		approved: true,
+		created_at: '2026-08-27T00:00:00.000Z',
+		advertising_ids: [1, 2],
+	};
+
+	it('id와 허용 광고 id를 문자열로 매핑한다', () => {
+		expect(mapUserRow(backendUser)).toEqual({
+			idx: '3',
+			email: 'viewer@test.com',
+			role: 'USER',
+			approved: true,
+			createdAt: '2026-08-27T00:00:00.000Z',
+			advertisingIds: ['1', '2'],
+		});
+	});
+
+	it('허용 광고가 없으면 빈 배열이다', () => {
+		expect(mapUserRow({ ...backendUser, advertising_ids: [] }).advertisingIds).toEqual([]);
 	});
 });
 

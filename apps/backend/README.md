@@ -127,11 +127,20 @@ PORT=3001
 
 | 역할 | 접근 범위 |
 |---|---|
-| `USER` | 대시보드 조회(`/dashboard/*`)와 그 상세 화면이 쓰는 `GET /advertising/:id`·`GET /postbacks/*`. 신규 가입자의 기본 역할 |
+| `USER` | 대시보드 조회(`/dashboard/*`)와 그 상세 화면이 쓰는 `GET /advertising/:id`·`GET /postbacks/*`. 신규 가입자의 기본 역할. **단 허용 목록(`user_advertising`)에 있는 광고의 데이터만 보입니다** |
 | `ADMIN` | 광고 운영 API 전반 (광고주·광고·캠페인·매체·트래커·설정·예약·포스트백 로그·대시보드) |
-| `DEVELOPER` | 전부 + 사용자 관리(`/users`) — 가입 승인·역할 변경·삭제 |
+| `DEVELOPER` | 전부 + 사용자 관리(`/users`) — 가입 승인·역할 변경·허용 광고 지정·삭제 |
 
-가입은 `POST /auth/signup/verify`로 `role=USER`, `approved=false` 상태의 user를 만듭니다. 승인 전에는 로그인이 403이며, `DEVELOPER`가 `GET /users?approved=false`로 대기 목록을 확인하고 `PATCH /users/:id`에 `{"approved": true}`를 보내 승인합니다.
+가입은 `POST /auth/signup/verify`로 `role=USER`, `approved=false` 상태의 user를 만듭니다. 승인 전에는 로그인이 403이며, `DEVELOPER`가 `GET /users?approved=false`로 대기 목록을 확인하고 `PATCH /users/:id`에 `{"approved": true, "advertising_ids": [...]}`를 보내 **승인과 동시에 볼 수 있는 광고를 지정**합니다.
+
+#### 광고 스코프 (USER 전용)
+
+`USER`는 `user_advertising`에 연결된 광고의 데이터만 조회됩니다. `DEVELOPER`·`ADMIN`은 면제입니다.
+
+- 허용 목록은 로그인·재발급 시 access token payload의 `advertising_ids`에 실립니다. 따라서 관리자가 목록을 바꿔도 **기존 access token이 만료(15분)되거나 `/auth/refresh`로 재발급될 때 반영**됩니다.
+- **허용 목록이 비어 있으면 아무 광고도 보이지 않습니다**(전체 허용이 아닙니다). `advertising_ids: []`는 이 상태를 만드는 유효한 값입니다.
+- 스코프 밖 요청은 403이 아니라 **빈 결과(목록) 또는 404(`GET /advertising/:id`)** 로 응답합니다. 프론트가 403을 세션 만료로 보고 로그아웃시키기 때문입니다.
+- `GET /dashboard/daily`는 `token`을 생략하면 전체 합산인데, 이 합산도 허용 목록 안으로 제한됩니다.
 
 ### 인증 (`/auth`) — 공개
 
@@ -155,7 +164,7 @@ PORT=3001
 
 | 리소스 | 접근 | 라우트 |
 |---|---|---|
-| user | DEVELOPER | GET `/users`(`?approved=false`로 승인 대기 목록), GET `/users/:id`, PATCH `/users/:id`(role·approved 수정 = 가입 승인), DELETE `/users/:id` |
+| user | DEVELOPER | GET `/users`(`?approved=false`로 승인 대기 목록), GET `/users/:id`, PATCH `/users/:id`(role·approved·advertising_ids 수정 = 가입 승인 + 허용 광고 지정), DELETE `/users/:id` |
 | advertiser | ADMIN 이상 | GET, POST `/advertisers`, GET, PATCH, DELETE `/advertisers/:id` |
 | advertising | ADMIN 이상<br>(`GET /advertising/:id`만 USER 이상) | GET, POST `/advertising`, GET, PUT, DELETE `/advertising/:id`, POST `/advertising/:id/image`. 단건 조회는 대시보드 상세 화면의 InfoCard가 쓰므로 USER에게도 열려 있다 |
 | media | ADMIN 이상 | GET, POST `/media`, GET, PATCH, DELETE `/media/:id` |
@@ -198,8 +207,8 @@ seed는 역할별 유저 4개와 광고주→트래커→매체→광고(2개)�
 |---|---|---|---|
 | `admin@test.com` | DEVELOPER | ✅ | 전체 기능 + 사용자 관리 |
 | `ops@test.com` | ADMIN | ✅ | 광고 운영 (사용자 관리 불가) |
-| `viewer@test.com` | USER | ✅ | 대시보드 조회만 |
-| `pending@test.com` | USER | ❌ | 승인 대기 — 로그인 시 403, 승인 API 검증용 |
+| `viewer@test.com` | USER | ✅ | 대시보드 조회만. 허용 광고는 **카페 러시(AOS) 하나** — 펫 월드가 안 보이는 것으로 광고 스코프를 확인 |
+| `pending@test.com` | USER | ❌ | 승인 대기 — 로그인 시 403, 승인 API 검증용. 허용 광고 없음(승인 시 지정) |
 
 비밀번호는 모두 `test1234!`입니다.
 

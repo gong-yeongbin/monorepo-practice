@@ -17,7 +17,7 @@ describe('SigninUseCase', () => {
 	const configService = { getOrThrow: jest.fn() };
 	let useCase: SigninUseCase;
 
-	const user = { id: 1, email: 'user@example.com', password: 'hashed-password', role: 'ADMIN', approved: true };
+	const user = { id: 1, email: 'user@example.com', password: 'hashed-password', role: 'ADMIN', approved: true, advertising_ids: [1, 2] };
 
 	beforeEach(async () => {
 		jest.clearAllMocks();
@@ -44,7 +44,11 @@ describe('SigninUseCase', () => {
 		const result = await useCase.execute('user@example.com', 'password123');
 
 		expect(bcrypt.compare).toHaveBeenCalledWith('password123', 'hashed-password');
-		expect(jwtService.signAsync).toHaveBeenNthCalledWith(1, { sub: 1, email: 'user@example.com', role: 'ADMIN' }, { secret: 'access-secret', expiresIn: '15m' });
+		expect(jwtService.signAsync).toHaveBeenNthCalledWith(
+			1,
+			{ sub: 1, email: 'user@example.com', role: 'ADMIN', advertising_ids: [1, 2] },
+			{ secret: 'access-secret', expiresIn: '15m' }
+		);
 		expect(jwtService.signAsync).toHaveBeenNthCalledWith(2, { sub: 1 }, { secret: 'refresh-secret', expiresIn: '7d' });
 		expect(cache.set).toHaveBeenCalledWith('refresh:1', 'refresh-token', 1000 * 60 * 60 * 24 * 7);
 		expect(result).toEqual({ access_token: 'access-token', refresh_token: 'refresh-token' });

@@ -13,9 +13,4 @@ export const handlers = [
 	http.patch(`${baseURL}/campaigns/:id/block`, () => {
 		return HttpResponse.json({ data: null });
 	}),
-
-	// developer 화면의 사용자 생성 — backend의 POST /auth/signup은 이메일 인증 플로우라 다른 기능이다
-	http.post(`${baseURL}/users`, () => {
-		return HttpResponse.json({ data: null });
-	}),
 ];

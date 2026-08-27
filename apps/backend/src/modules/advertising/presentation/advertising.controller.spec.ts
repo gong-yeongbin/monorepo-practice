@@ -32,10 +32,16 @@ describe('AdvertisingController', () => {
 		expect(list.execute).toHaveBeenCalledWith(query);
 	});
 
-	it('get은 조회 use-case에 id를 위임한다', async () => {
+	it('get은 조회 use-case에 id와 스코프를 위임한다', async () => {
 		(get.execute as jest.Mock).mockResolvedValue({});
-		await controller.get({ id: 1 });
-		expect(get.execute).toHaveBeenCalledWith(1);
+		await controller.get({ id: 1 }, { sub: 1, email: 'viewer@test.com', role: 'USER', advertising_ids: [1] });
+		expect(get.execute).toHaveBeenCalledWith(1, [1]);
+	});
+
+	it('get은 ADMIN이면 스코핑 면제로 undefined를 넘긴다', async () => {
+		(get.execute as jest.Mock).mockResolvedValue({});
+		await controller.get({ id: 1 }, { sub: 2, email: 'ops@test.com', role: 'ADMIN', advertising_ids: [] });
+		expect(get.execute).toHaveBeenCalledWith(1, undefined);
 	});
 
 	it('update는 수정 use-case에 id와 body를 위임한다', async () => {

@@ -21,15 +21,27 @@ model user {
   created_at DateTime @default(now()) @db.Timestamp(0)
   updated_at DateTime @default(now()) @updatedAt @db.Timestamp(0)
 
-  advertiser    advertiser? @relation(fields: [advertiser_id], references: [id])
-  advertiser_id Int?        @unique @db.Integer
+  user_advertising user_advertising[]
+}
+
+// 유저가 볼 수 있는 광고 허용 목록(M:N). 행이 없으면 아무 광고도 보이지 않는다(전체 허용 아님).
+// 가입 승인 시 PATCH /users/:id의 advertising_ids로 통째 교체한다. DEVELOPER·ADMIN은 스코핑 면제라 행을 두지 않는다.
+model user_advertising {
+  user           user        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id        Int         @db.Integer
+  advertising    advertising @relation(fields: [advertising_id], references: [id], onDelete: Cascade)
+  advertising_id Int         @db.Integer
+
+  @@id([user_id, advertising_id])
+  // 복합 PK 인덱스는 선두 컬럼(user_id)만 커버하고 PostgreSQL은 FK 인덱스를 자동 생성하지 않는다.
+  // advertising 삭제 시 cascade가 이 인덱스를 탄다.
+  @@index([advertising_id])
 }
 
 model advertiser {
   id   Int    @id @default(autoincrement())
   name String @unique @db.VarChar(30)
 
-  user        user?
   advertising advertising[]
 }
 
@@ -53,7 +65,8 @@ model advertising {
   tracker       tracker    @relation(fields: [tracker_id], references: [id], onUpdate: Cascade)
   tracker_id    Int        @db.Integer
 
-  campaign campaign[]
+  campaign         campaign[]
+  user_advertising user_advertising[]
 }
 
 model campaign {

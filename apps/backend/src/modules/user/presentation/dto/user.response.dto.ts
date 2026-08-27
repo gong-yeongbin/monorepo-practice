@@ -16,5 +16,6 @@ export class UserResponse implements User {
 
 	updated_at: Date;
 
-	advertiser_id: number | null;
+	@ApiProperty({ type: [Number], description: '볼 수 있는 광고 id 목록(비어 있으면 아무 광고도 안 보임)' })
+	advertising_ids: number[];
 }

@@ -43,7 +43,7 @@ export class UserController {
 	}
 
 	@Patch(':id')
-	@ApiOperation({ summary: 'user 수정 (role·approved 부분 수정)' })
+	@ApiOperation({ summary: 'user 수정 (role·approved·advertising_ids 부분 수정 — approved: true가 곧 가입 승인)' })
 	@ApiWrappedResponse({ status: 200, description: '수정 성공', type: UserResponse })
 	@ApiResponse({ status: 400, description: '요청 값 검증 실패' })
 	@ApiResponse({ status: 404, description: 'user 없음' })

@@ -26,6 +26,7 @@
 - enum은 파일 하단에 모아 둔다(`Role`, `Type`). enum 값은 대문자.
 - 집계 카운터(`daily_report`의 click/install/…)는 `Int @default(0)`. upsert의 `increment`로 누산한다(`prisma-daily-report.repository.ts`).
 - 복합 unique는 `@@unique([...])`. 예: `daily_report`의 `[view_code, created_date]`(일자별 유일), `campaign_config`의 `[campaign_id, admin_event_name]`.
+- M:N 조인 테이블은 **명시적 모델 + 복합 PK**(`@@id([a_id, b_id])`)로 만든다. 예: `user_advertising`. Prisma 암묵적 M:N(`@relation`만 선언)은 테이블·컬럼명을 Prisma가 정해 이 저장소의 snake_case 규칙과 어긋난다. 복합 PK는 선두 컬럼만 인덱스를 커버하므로 반대편 FK에는 `@@index`를 따로 붙인다.
 
 ## 의도적 설계 (결함처럼 보이지만 그대로 둘 것)
 

@@ -24,6 +24,7 @@ describe('ListEventPostbacksUseCase', () => {
 
 	it('admin 이벤트명을 campaign_config로 트래커 이벤트명으로 변환해 조회한다', async () => {
 		campaignRepository.findByToken.mockResolvedValue({
+			advertising_id: 1,
 			campaign_config: [
 				{ admin_event_name: 'purchase', tracker_event_name: 'af_purchase' },
 				{ admin_event_name: 'purchase', tracker_event_name: 'af_subscribe' },
@@ -33,7 +34,7 @@ describe('ListEventPostbacksUseCase', () => {
 		const rows = [{ event_name: 'af_purchase' }];
 		postbackRepository.findEvents.mockResolvedValue(rows);
 
-		expect(await useCase.execute({ ...dto, view_code: 'vc1' })).toBe(rows);
+		expect(await useCase.execute({ ...dto, view_code: 'vc1' }, [1])).toBe(rows);
 		expect(postbackRepository.findEvents).toHaveBeenCalledWith(
 			{
 				token: 'tok',
@@ -48,14 +49,24 @@ describe('ListEventPostbacksUseCase', () => {
 	it('캠페인이 없으면 빈 배열을 반환한다', async () => {
 		campaignRepository.findByToken.mockResolvedValue(null);
 
-		expect(await useCase.execute(dto)).toEqual([]);
+		expect(await useCase.execute(dto, undefined)).toEqual([]);
 		expect(postbackRepository.findEvents).not.toHaveBeenCalled();
 	});
 
 	it('admin 이벤트명에 매핑된 config가 없으면 빈 배열을 반환한다', async () => {
-		campaignRepository.findByToken.mockResolvedValue({ campaign_config: [{ admin_event_name: 'install', tracker_event_name: 'install' }] });
+		campaignRepository.findByToken.mockResolvedValue({ advertising_id: 1, campaign_config: [{ admin_event_name: 'install', tracker_event_name: 'install' }] });
 
-		expect(await useCase.execute(dto)).toEqual([]);
+		expect(await useCase.execute(dto, undefined)).toEqual([]);
+		expect(postbackRepository.findEvents).not.toHaveBeenCalled();
+	});
+
+	it('캠페인이 허용 광고 밖이면 빈 배열을 반환한다', async () => {
+		campaignRepository.findByToken.mockResolvedValue({
+			advertising_id: 2,
+			campaign_config: [{ admin_event_name: 'purchase', tracker_event_name: 'af_purchase' }],
+		});
+
+		expect(await useCase.execute(dto, [1])).toEqual([]);
 		expect(postbackRepository.findEvents).not.toHaveBeenCalled();
 	});
 });

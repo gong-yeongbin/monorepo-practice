@@ -9,7 +9,14 @@ import { CounterSort, DashboardRepository, DateRange } from '@dashboard/domain/d
 export class PrismaDashboardRepository implements DashboardRepository {
 	constructor(private readonly prismaService: PrismaService) {}
 
-	async dashboard(date: Date): Promise<DashboardRow[]> {
+	async dashboard(date: Date, advertising_ids?: number[]): Promise<DashboardRow[]> {
+		// 허용 목록이 비면 볼 수 있는 광고가 없다. Prisma.join([])은 예외를 던지고 IN ()은 SQL 문법 오류라 쿼리 자체를 보내지 않는다.
+		// undefined(면제)일 때는 undefined === 0이 false라 이 분기에 걸리지 않는다.
+		if (advertising_ids?.length === 0) {
+			return [];
+		}
+		const scopeFilter = advertising_ids ? Prisma.sql`AND a.id IN (${Prisma.join(advertising_ids)})` : Prisma.empty;
+
 		// 특정 일자, advertising별 카운터 합산. daily_report → campaign(token) → advertising 조인.
 		const rows = await this.prismaService.$queryRaw<DashboardRow[]>`
 			SELECT a.id AS advertising_id, a.name AS advertising_name,
@@ -21,17 +28,24 @@ export class PrismaDashboardRepository implements DashboardRepository {
 			FROM daily_report d
 			JOIN campaign c ON d.token = c.token
 			JOIN advertising a ON a.id = c.advertising_id
-			WHERE d.created_date = ${date}
+			WHERE d.created_date = ${date} ${scopeFilter}
 			GROUP BY a.id, a.name`;
 
 		return rows.map(toNumberRow);
 	}
 
-	// 날짜별 카운터 합산. token이 주어지면 해당 캠페인으로 한정, 없으면 전체 합산.
-	async daily(range: DateRange, token?: string): Promise<DailyRow[]> {
+	// 날짜별 카운터 합산. token이 주어지면 해당 캠페인으로 한정, 없으면 (스코프 안에서) 전체 합산.
+	async daily(range: DateRange, token?: string, advertising_ids?: number[]): Promise<DailyRow[]> {
 		const rows = await this.prismaService.daily_report.groupBy({
 			by: ['created_date'],
-			where: { ...(token && { token }), created_date: { gte: range.start_date, lte: range.end_date } },
+			// daily_report의 FK는 campaign_id가 아니라 token이지만 relation 이름이 campaign이라 중첩 필터가 된다.
+			// token을 생략해도 여기서 걸리므로 "token 없으면 전체 합산"이 허용 목록 밖으로 새지 않는다.
+			// Prisma의 in: []은 IN ()을 만들지 않고 항상 거짓인 조건이 되어 0행을 반환한다(raw SQL과 달리 방어가 필요 없다).
+			where: {
+				...(token && { token }),
+				...(advertising_ids && { campaign: { advertising_id: { in: advertising_ids } } }),
+				created_date: { gte: range.start_date, lte: range.end_date },
+			},
 			_sum: DAILY_SUM_SELECT,
 			orderBy: { created_date: 'desc' },
 		});
@@ -40,10 +54,15 @@ export class PrismaDashboardRepository implements DashboardRepository {
 	}
 
 	// token 기준, view_code·pub_id·sub_id 단위 카운터 합산. 지정한 카운터 컬럼으로 정렬.
-	async dailyDetail(range: DateRange, token: string, sort: CounterSort): Promise<DailyDetailRow[]> {
+	async dailyDetail(range: DateRange, token: string, sort: CounterSort, advertising_ids?: number[]): Promise<DailyDetailRow[]> {
 		const rows = await this.prismaService.daily_report.groupBy({
 			by: ['view_code', 'pub_id', 'sub_id'],
-			where: { token, created_date: { gte: range.start_date, lte: range.end_date } },
+			// 이 중첩 필터가 곧 token 소유권 검증이다 — 남의 token을 넣어도 campaign의 advertising이 스코프 밖이면 0행이다.
+			where: {
+				token,
+				...(advertising_ids && { campaign: { advertising_id: { in: advertising_ids } } }),
+				created_date: { gte: range.start_date, lte: range.end_date },
+			},
 			_sum: DAILY_SUM_SELECT,
 			orderBy: { _sum: { [sort.field]: sort.order } },
 		});

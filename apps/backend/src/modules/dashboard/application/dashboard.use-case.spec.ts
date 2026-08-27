@@ -14,11 +14,19 @@ describe('DashboardUseCase', () => {
 		useCase = module.get(DashboardUseCase);
 	});
 
-	it('date 문자열을 Date로 변환해 repository에 넘긴다', async () => {
+	it('date 문자열을 Date로 변환하고 스코프와 함께 repository에 넘긴다', async () => {
 		const rows = [{ advertising_id: 1 }];
 		dashboardRepository.dashboard.mockResolvedValue(rows);
 
-		expect(await useCase.execute({ date: '2026-07-10' })).toBe(rows);
-		expect(dashboardRepository.dashboard).toHaveBeenCalledWith(new Date('2026-07-10'));
+		expect(await useCase.execute({ date: '2026-07-10' }, [1, 2])).toBe(rows);
+		expect(dashboardRepository.dashboard).toHaveBeenCalledWith(new Date('2026-07-10'), [1, 2]);
+	});
+
+	it('면제(undefined) 스코프는 그대로 넘긴다', async () => {
+		dashboardRepository.dashboard.mockResolvedValue([]);
+
+		await useCase.execute({ date: '2026-07-10' }, undefined);
+
+		expect(dashboardRepository.dashboard).toHaveBeenCalledWith(new Date('2026-07-10'), undefined);
 	});
 });

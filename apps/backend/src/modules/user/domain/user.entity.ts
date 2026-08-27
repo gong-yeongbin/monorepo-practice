@@ -10,7 +10,8 @@ export interface User {
 	approved: boolean;
 	created_at: Date;
 	updated_at: Date;
-	advertiser_id: number | null;
+	// 볼 수 있는 광고 id 목록(user_advertising). 빈 배열이면 아무 광고도 보이지 않는다(전체 허용 아님).
+	advertising_ids: number[];
 }
 
 // signin 비밀번호 검증 전용. API 응답으로 반환 금지 — password는 bcrypt 해시.

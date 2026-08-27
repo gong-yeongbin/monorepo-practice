@@ -29,6 +29,17 @@
 - 메서드 레벨 `@Roles`가 클래스 레벨을 덮는다. 컨트롤러 대부분을 ADMIN으로 두고 특정 조회만 USER에게 여는 식으로 쓴다(`advertising.controller.ts`의 `GET /advertising/:id` 참고).
 - `@Public()`은 토큰 없이 호출되는 엔드포인트에만 쓴다 — 헬스체크, 트래킹·포스트백(외부가 호출), auth(토큰 발급 전). 공개 엔드포인트는 인증 대신 `ThrottlerGuard`로 보호한다.
 - `JwtAuthGuard`가 `request.user`에 `AccessTokenPayload`를 싣는다. 가드는 인터셉터보다 먼저 실행되므로 401·403 응답은 `ResponseInterceptor`로 감싸지지 않는다.
+- 핸들러에서 payload가 필요하면 `@CurrentUser()`(`auth/presentation/current-user.decorator.ts`)로 꺼낸다. `@Public` 라우트에는 payload가 없으므로 `@Roles`가 붙은 라우트에서만 쓴다.
+
+## 광고 스코프 (USER 데이터 제한, 주의)
+
+역할 축과 별개로 **`USER`는 `user_advertising`에 연결된 광고의 데이터만 조회**된다. `DEVELOPER`·`ADMIN`은 면제다.
+
+- 면제 판정은 `auth/application/advertising-scope.ts` **한 곳**에서만 한다. 컨트롤러가 `advertisingScopeOf(user)`로 스코프를 만들어 use-case에 넘기고, 라우트·repository는 role을 다시 보지 않는다.
+- `AdvertisingScope` 규약: `undefined` = 제한 없음(면제), `[]` = **아무 광고도 못 봄**(전체 허용이 아니다). `advertisingScopeOf`의 `?? []`를 지우면 `advertising_ids`가 없던 구 access token(최대 15분 생존)으로 스코핑이 뚫린다.
+- 적용 방식은 두 갈래다. **목록·집계**는 scope를 repository까지 넘겨 SQL에서 거르고(`prisma-dashboard.repository.ts`), **단건 키**(`:id`·token)는 use-case가 `isAdvertisingAllowed`로 조기 반환한다.
+- **스코프 위반에 403을 쓰지 않는다.** 프론트 `app.tsx`의 `QueryCache.onError`가 403을 세션 만료로 보고 로그아웃시킨다. 목록은 빈 배열, 단건은 404로 응답한다.
+- raw SQL에 스코프를 넣을 때는 빈 배열을 먼저 걸러야 한다 — `Prisma.join([])`은 예외를 던지고 `IN ()`은 SQL 문법 오류다. Prisma의 `in: []`은 안전하다(항상 거짓인 조건이 된다).
 
 ## 도메인 타입 규칙 (domain, 주의)
 

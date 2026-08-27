@@ -6,6 +6,8 @@ export type Role = (typeof ROLES)[number];
 export interface AuthUser {
 	email: string;
 	role: Role;
+	// 이 유저가 볼 수 있는 advertising id. 이 필드가 없던 시절 발급된 토큰이 남아 있어 optional이다.
+	advertising_ids?: number[];
 }
 
 // payload는 base64url이라 표준 atob 전에 문자 치환이 필요

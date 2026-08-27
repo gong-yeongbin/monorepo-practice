@@ -16,7 +16,7 @@
 
 - `home/home.tsx`는 일반 화면이 아니라 **레이아웃 셸**이다. 네비게이션·프로필·브레드크럼을 렌더하고 `<Outlet />`으로 자식 라우트(dashboard·detail·advertising 등)를 그린다.
 - `detail`은 세 갈래로 나뉜다 — `detail`(기본 상세), `change`(예약 변경), `daily`(일별 통계, 다시 `daily-detail`로).
-- `developer`는 `PrivateRoute`로 감싼 관리자 전용 화면이다(`shared/ui/private-route.tsx`).
+- `developer`는 `PrivateRoute`로 감싼 DEVELOPER 전용 화면이다(`shared/ui/private-route.tsx`). 가입 승인과 사용자별 허용 광고 목록을 관리한다 — 허용 광고(`advertising_ids`)는 backend에서 **통째 교체**라 다중 선택을 즉시 보내지 않고 행별 편집 상태로 모았다가 버튼을 눌러야 PATCH한다(`user-table.tsx`).
 
 ## 규칙
 

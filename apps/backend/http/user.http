@@ -12,7 +12,7 @@ Authorization: Bearer {{access_token}}
 GET {{host}}/users/1
 Authorization: Bearer {{access_token}}
 
-### user 수정 — role·approved만 부분 수정 가능 (email 불변). approved: true가 곧 가입 승인이다.
+### user 수정 — role·approved·advertising_ids만 부분 수정 가능 (email 불변). approved: true가 곧 가입 승인이다.
 # role: DEVELOPER | ADMIN | USER
 PATCH {{host}}/users/1
 Authorization: Bearer {{access_token}}
@@ -21,6 +21,27 @@ Content-Type: application/json
 {
 	"role": "ADMIN",
 	"approved": true
+}
+
+### 가입 승인 + 볼 수 있는 광고 지정 (USER는 여기 지정한 광고만 대시보드·포스트백 로그에서 볼 수 있다)
+# advertising_ids는 전달할 때마다 통째로 교체된다(부분 추가가 아니다). 존재하지 않는 id가 섞이면 404.
+# 변경은 access token 재발급(로그인 또는 /auth/refresh) 시점에 반영된다 — 기존 토큰은 만료(15분)까지 구 권한을 유지한다.
+PATCH {{host}}/users/4
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+	"approved": true,
+	"advertising_ids": [1]
+}
+
+### 허용 광고 비우기 — 빈 배열은 "아무 광고도 볼 수 없음"이다(전체 허용 아님)
+PATCH {{host}}/users/4
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+	"advertising_ids": []
 }
 
 ### user 삭제

@@ -276,6 +276,23 @@ export const mapAdvertiserRow = (row: { id: number; name: string }) => ({
 	name: row.name,
 });
 
+export const mapUserRow = (row: {
+	id: number;
+	email: string;
+	role: string;
+	approved: boolean;
+	created_at: string;
+	advertising_ids: number[];
+}) => ({
+	idx: String(row.id),
+	email: row.email,
+	role: row.role,
+	approved: row.approved,
+	createdAt: row.created_at,
+	// antd Select의 값은 문자열이라(SelectOptions의 idx 규약) 문자열로 맞춘다
+	advertisingIds: row.advertising_ids.map(String),
+});
+
 export const mapAdvertisingInfo = (row: {
 	advertiser: string;
 	tracker: string;
@@ -425,6 +442,27 @@ const getAdvertising = async (obj: {
 	return res.data.data.map(mapAdvertisingListItem);
 };
 
+// 승인 대기 목록은 approved=false로 조회한다(생략하면 전체)
+const getUsers = async (approved?: boolean) => {
+	const res = await axiosInstance.get(`/users${approved === undefined ? '' : `?approved=${approved}`}`);
+	return res.data.data.map(mapUserRow);
+};
+
+// 승인·역할·허용 광고를 한 번에 보낸다. advertising_ids는 통째 교체라 화면의 현재 선택 전부를 담아야 한다.
+const updateUser = async (info: { idx: string; approved?: boolean; role?: string; advertisingIds?: string[] }) => {
+	const { idx, approved, role, advertisingIds } = info;
+	const res = await axiosInstance.patch(`/users/${idx}`, {
+		...(approved !== undefined && { approved }),
+		...(role !== undefined && { role }),
+		...(advertisingIds !== undefined && { advertising_ids: advertisingIds.map(Number) }),
+	});
+	return mapUserRow(res.data.data);
+};
+
+const deleteUser = async (idx: string) => {
+	await axiosInstance.delete(`/users/${idx}`);
+};
+
 const getCampaigns = async (paramId?: string) => {
 	const res = await axiosInstance.get(`/campaigns?advertisingId=${paramId}`);
 	return res.data.data.map(mapCampaignListItem);
@@ -448,6 +486,9 @@ export const api = {
 	getPostbackUnregistered,
 	getReservations,
 	getAdvertising,
+	getUsers,
+	updateUser,
+	deleteUser,
 	getCampaigns,
 	getCampaignEvents,
 };

@@ -25,7 +25,8 @@ describe('AuthGuard (e2e)', () => {
 		await app.init();
 
 		const jwtService = app.get(JwtService);
-		sign = (role: string) => jwtService.sign({ sub: 1, email: 'e2e@test.com', role }, { secret: ACCESS_SECRET });
+		// advertising_ids는 광고 스코프용이다. 가드 판정에는 쓰이지 않지만 payload 형태를 실제와 맞춘다.
+		sign = (role: string, advertising_ids: number[] = []) => jwtService.sign({ sub: 1, email: 'e2e@test.com', role, advertising_ids }, { secret: ACCESS_SECRET });
 	});
 
 	afterAll(async () => {

@@ -24,6 +24,7 @@ describe('ListUnregisteredPostbacksUseCase', () => {
 
 	it('campaign_config의 트래커 이벤트명을 등록 목록으로 넘겨 카운트를 조회한다', async () => {
 		campaignRepository.findByToken.mockResolvedValue({
+			advertising_id: 1,
 			campaign_config: [
 				{ admin_event_name: 'install', tracker_event_name: 'install' },
 				{ admin_event_name: 'purchase', tracker_event_name: 'af_purchase' },
@@ -32,7 +33,7 @@ describe('ListUnregisteredPostbacksUseCase', () => {
 		const counts = [{ event_name: 'af_custom', count: 3 }];
 		postbackRepository.countUnregistered.mockResolvedValue(counts);
 
-		expect(await useCase.execute(dto)).toBe(counts);
+		expect(await useCase.execute(dto, [1])).toBe(counts);
 		expect(postbackRepository.countUnregistered).toHaveBeenCalledWith(
 			'tok',
 			['install', 'af_purchase'],
@@ -44,7 +45,14 @@ describe('ListUnregisteredPostbacksUseCase', () => {
 	it('캠페인이 없으면 빈 배열을 반환한다', async () => {
 		campaignRepository.findByToken.mockResolvedValue(null);
 
-		expect(await useCase.execute(dto)).toEqual([]);
+		expect(await useCase.execute(dto, undefined)).toEqual([]);
+		expect(postbackRepository.countUnregistered).not.toHaveBeenCalled();
+	});
+
+	it('캠페인이 허용 광고 밖이면 빈 배열을 반환한다', async () => {
+		campaignRepository.findByToken.mockResolvedValue({ advertising_id: 2, campaign_config: [] });
+
+		expect(await useCase.execute(dto, [1])).toEqual([]);
 		expect(postbackRepository.countUnregistered).not.toHaveBeenCalled();
 	});
 });
