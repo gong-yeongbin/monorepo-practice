@@ -8,7 +8,7 @@
 
 ### 주요 기능
 
-- **어드민 리소스 관리**: 광고주·광고·캠페인·매체·트래커·파트너 CRUD와 대시보드 조회
+- **어드민 리소스 관리**: 광고주·광고·캠페인·매체·트래커 CRUD와 대시보드 조회
 - **인증**: 이메일 인증 코드 기반 2단계 회원가입 + JWT access/refresh 토큰
 - **트래킹 처리**: 다양한 트래킹 솔루션(AppsFlyer, Adjust, Airbridge, AdbrixRemaster) 지원
 - **포스트백 전송**: 매체사로 포스트백 전송 (공개 수신 엔드포인트는 IP 기준 rate limit)
@@ -103,7 +103,6 @@ monorepo-practice/
 │   │   │   │   ├── config/        # 캠페인 설정
 │   │   │   │   ├── media/         # 매체
 │   │   │   │   ├── tracker/       # 트래커
-│   │   │   │   ├── partner/       # 파트너
 │   │   │   │   ├── dashboard/     # 대시보드·일별 리포트
 │   │   │   │   ├── tracking/      # 트래킹 처리
 │   │   │   │   ├── postback/      # 포스트백 처리
@@ -137,6 +136,11 @@ monorepo-practice/
 ├── infra/
 │   └── terraform/                 # AWS 배포 인프라 (ECS Fargate·RDS·ElastiCache·S3+CloudFront)
 │
+├── docs/
+│   └── migration/                 # admin-backend 이관 계획·체크리스트·맥락 메모
+│
+├── checklist.md                   # 진행 중 작업 체크리스트
+├── context-notes.md               # 작업 결정 사항과 그 이유
 ├── docker-compose.yml             # Docker Compose 설정
 ├── turbo.json                     # Turborepo 설정
 ├── pnpm-workspace.yaml            # pnpm 워크스페이스 설정
@@ -231,7 +235,7 @@ S3_BUCKET="my-bucket"
 VITE_API_URL=http://localhost:3001
 ```
 
-> 개발 모드에서는 MSW 목 서버가 항상 켜져 요청을 가로챕니다. 실제 backend에 붙이려면 `src/app/index.tsx`의 `import.meta.env.DEV` 분기를 우회해야 합니다. 자세한 내용은 [frontend README](./apps/frontend/README.md)를 참고하세요.
+> 개발 모드에서는 MSW 목 서버가 켜지지만 핸들러에 등록된 엔드포인트만 가로채고, 나머지 요청은 실제 backend(:3001)로 통과합니다(`onUnhandledRequest: 'bypass'`). 목킹 대상은 `apps/frontend/src/mocks/handlers.ts`를 참고하세요.
 
 ### 데이터베이스 마이그레이션
 
@@ -330,6 +334,10 @@ pnpm check-types
 pnpm docker:up
 pnpm docker:down
 ```
+
+> `pnpm check-types`는 `check-types` 스크립트가 있는 frontend만 실행합니다(`tsc --noEmit`). backend는 별도 스크립트 없이 `pnpm build`(nest build)가 타입 검사를 겸합니다.
+
+> `pnpm format`은 루트 Prettier 기본값(2칸 스페이스, `printWidth: 80`)으로 저장소 전체를 재포맷합니다. backend는 `@repo/eslint-config/prettier`(탭, `printWidth: 180`)를 따르므로 앱 안에서 `pnpm --filter=backend format`을 쓰세요.
 
 ### 필터링
 
@@ -473,7 +481,7 @@ ECS Fargate·RDS PostgreSQL·ElastiCache Valkey·S3+CloudFront 구성의 Terrafo
 ### 코드 스타일
 
 - ESLint 규칙 준수
-- Prettier 포맷팅 적용 (탭 들여쓰기, `printWidth: 180`, 세미콜론, single quote)
+- backend는 `@repo/eslint-config/prettier` 적용 (탭 들여쓰기, `printWidth: 180`, 세미콜론, single quote)
 - TypeScript strict 유지
 - 프론트엔드 파일·폴더명은 kebab-case, 컴포넌트·타입 export는 PascalCase
 
@@ -481,8 +489,8 @@ ECS Fargate·RDS PostgreSQL·ElastiCache Valkey·S3+CloudFront 구성의 Terrafo
 # 린트 확인
 pnpm lint
 
-# 포맷팅
-pnpm format
+# 포맷팅 — 수정한 앱의 설정을 따르도록 앱 단위로 실행
+pnpm --filter=backend format
 ```
 
 ## 📄 라이선스

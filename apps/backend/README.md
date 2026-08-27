@@ -17,6 +17,7 @@
 ```
 src/
 ├── main.ts                    # 진입점 (전역 ValidationPipe, PORT 바인딩)
+├── main.consumer.ts           # 컨슈머 전용 진입점 (APP_ROLE=consumer 강제)
 ├── app.module.ts              # 루트 모듈
 ├── app.controller.ts          # GET /health
 ├── common/                    # 상태 없는 순수 유틸
@@ -25,6 +26,7 @@ src/
 │   ├── cache/                 # CachePort + Redis 어댑터 (TTL은 밀리초)
 │   ├── stream/                # Redis Stream 프로듀서·컨슈머
 │   ├── mail/                  # MailPort + AWS SES 어댑터
+│   ├── http/                  # HttpPort + 외부 HTTP 어댑터 (매체 포스트백 전송)
 │   └── storage/               # StoragePort + AWS S3 어댑터 (이미지 업로드)
 ├── interceptors/              # 응답을 { statusCode, data, _meta }로 감싸는 인터셉터
 ├── modules/                   # 기능 모듈 — 클린 아키텍처 4계층
@@ -37,8 +39,8 @@ src/
 │   ├── tracker/               # 트래커 CRUD
 │   ├── campaign/              # 캠페인 CRUD
 │   ├── config/                # 캠페인별 설정 조회·수정
-│   ├── partner/               # 파트너 조회
 │   ├── dashboard/             # 대시보드·일별 리포트 조회
+│   ├── reservation/           # 트래커 URL 예약 변경 (스케줄러)
 │   ├── tracking/              # 트래킹 클릭 수신·리다이렉트
 │   └── postback/              # 트래커 포스트백 수신
 └── trackers/                  # 트래커 벤더별 파라미터 정의 레지스트리
@@ -147,7 +149,6 @@ PORT=3001
 | tracker | GET, POST `/trackers`, GET, PATCH, DELETE `/trackers/:id` |
 | campaign | GET, POST `/campaigns`, GET, PATCH, DELETE `/campaigns/:id` |
 | config | GET, PATCH `/config/:campaignId` |
-| partner | GET `/partners/:id` |
 | reservation | GET, POST `/reservations`(advertisingId 필터·campaign별 예약 행 생성), DELETE `/reservations/:id`. 스케줄러가 매시 정각·부트 시 시각 지난 예약을 campaign(name·tracker_tracking_url)에 적용 |
 | dashboard | GET `/dashboard`, `/dashboard/daily`(token 생략 시 전체 합산), `/dashboard/dailydetail`(token 기준 view_code·pub_id·sub_id 단위), `/dashboard/detail/:id` |
 | postback(로그) | GET `/postbacks/install`, `/postbacks/event`, `/postbacks/unregistered` (어드민 로그 모달용 조회) |
@@ -178,7 +179,7 @@ pnpm seed        # 로컬 테스트 데이터 생성 (prisma/seed.ts, 재실행�
 
 스키마는 `prisma/schema.prisma`에 있고, datasource URL은 `prisma.config.ts`가 `DATABASE_URL`에서 주입합니다.
 
-seed는 로그인 가능한 유저(`admin@test.com` / `test1234!`, 승인 완료 상태)와 광고주→트래커→매체→광고→캠페인→캠페인 config 그래프, 최근 7일치 daily_report 통계를 생성합니다. SES 이메일 인증 없이 바로 로그인해 어드민 화면과 대시보드를 확인할 수 있습니다.
+seed는 로그인 가능한 유저(`admin@test.com` / `test1234!`, 승인 완료 상태)와 광고주→트래커→매체→광고(2개)→캠페인(4개)→캠페인 config 그래프, 캠페인당 최근 7일치 daily_report 통계, postback 로그, reservation 2건을 생성합니다. SES 이메일 인증 없이 바로 로그인해 어드민 화면과 대시보드를 확인할 수 있습니다.
 
 ## 테스트
 

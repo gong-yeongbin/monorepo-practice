@@ -26,7 +26,7 @@
 ## 구조 (기능 기반 + FSD 유사)
 
 - `src/app` — 앱 부트스트랩. `index.tsx`(진입점), `app.tsx`(라우팅·Provider), `store.tsx`(MobX Store + Context), `global-styles.tsx`(styled-components 전역 스타일·공용 styled 컴포넌트).
-- `src/features/<기능>` — 기능별 화면. `home`/`login`/`advertising`/`detail`/`media`/`trackers`/`developer`. 중첩 라우트는 하위 폴더로(`advertising/campaigns/events`, `detail/change`, `detail/daily/daily-detail`).
+- `src/features/<기능>` — 기능별 화면. `home`/`login`/`signup`/`advertising`/`detail`/`media`/`tracker`/`developer`. 중첩 라우트는 하위 폴더로(`advertising/campaigns/events`, `detail/change`, `detail/daily/daily-detail`).
 - `src/shared` — 공용. `api`(axios 인스턴스 + `api` 객체), `lib`(get-cell·get-total 등 순수 헬퍼), `ui`(info-card·modals·private-route·select-options 등 재사용 컴포넌트).
 - `src/mocks` — MSW 목 서버(`handlers.ts`, `browser.ts`).
 - 경로 별칭 `@/*` → `src/*` (vite.config.ts + tsconfig.json 양쪽에 설정).
@@ -41,12 +41,12 @@
 ## API 연동 / 인증
 
 - `shared/api/axios.tsx`의 `axiosInstance`가 `baseURL: import.meta.env.VITE_API_URL`로 backend에 붙는다. proxy는 없다.
-- 인증은 `sessionStorage.accessToken`을 request 인터셉터가 `Bearer`로 실어 보낸다. react-query의 `QueryCache.onError`가 에러 시 세션을 비우고 `/login`으로 보낸다(`app.tsx`).
+- 인증은 `sessionStorage.accessToken`을 request 인터셉터가 `Bearer`로 실어 보낸다. 401이면 response 인터셉터가 `refreshToken`으로 `/auth/refresh`를 호출해 원 요청을 1회 재시도한다(재발급도 실패하면 세션을 비우고 `/login`).
+- react-query의 `QueryCache.onError`는 **401·403일 때만** 세션을 비우고 `/login`으로 보낸다(`app.tsx`). 네트워크·서버 오류는 세션을 유지한다.
 - 데이터 조회 함수는 `shared/api/api.tsx`의 `api` 객체에 모아 둔다. 컴포넌트는 이걸 `useQuery`로 감싼다.
 
 ## 주의 (함정)
 
 - **개발 모드에서 MSW는 backend에 없는 엔드포인트만 목킹한다.** `index.tsx`가 `worker.start({ onUnhandledRequest: 'bypass' })`로 워커를 켜고, 핸들러에 없는 요청은 실제 backend(3001)로 통과한다. 목 대상 목록은 `src/mocks/CLAUDE.md` 참고.
-- **`.env`에 `VITE_API_URL=http://localhost:3001`이 필요하다** (`.env.example` 참고, gitignore됨). 없으면 axios baseURL이 undefined가 되어 실제 backend 호출과 MSW 매칭이 모두 어긋난다.
-- `vite.config.ts` 상단 주석("React 17, 포트 3000")은 낡았다. 실제는 React 19이며 포트 3000만 맞다.
+- **`.env`에 `VITE_API_URL=http://localhost:3001`이 필요하다**(gitignore되므로 직접 만든다). 없으면 axios baseURL이 undefined가 되어 실제 backend 호출과 MSW 매칭이 모두 어긋난다.
 - react-query v5는 `useQuery`별 `onError`가 없다. 공통 에러 처리는 `app.tsx`의 `QueryCache.onError` 전역 핸들러로 한다.

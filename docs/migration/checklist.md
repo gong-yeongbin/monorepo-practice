@@ -57,17 +57,12 @@
 - [x] 테스트(신규 45개) + build/lint 통과, advertising 전 계층 4지표 100%
 - [ ] verify: e2e (사용자 검증)
 
-## 7. partner
-- [ ] Prisma 스키마 추가 + 마이그레이션 SQL(사용자가 적용)
-- [ ] 4계층 + repository + GET /partner/:idx
-- [ ] 테스트 + verify
-
-## 8. reservation
+## 7. reservation
 - [ ] Prisma 스키마 추가 + 마이그레이션 SQL(사용자가 적용)
 - [ ] 4계층 + repository + PUT/DELETE/GET on·off
 - [ ] 테스트 + verify
 
-## 9. postback 조회 API
+## 8. postback 조회 API
 - [ ] 트래커 9종 분기 install/event/unregistered (+excel)
 - [ ] 테스트 + verify
 

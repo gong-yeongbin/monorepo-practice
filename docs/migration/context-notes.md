@@ -10,7 +10,6 @@
 - advertising: `PUT`/`GET`/`PATCH :idx` + `dashboard`/`daily`/`dailydetail`/`list`/`:idx`/`detail/:idx`/`campaign/:idx`/`dailydetail/excel`
 - campaign: `PUT`/`DELETE :idx`/`PATCH :idx`/`GET :idx`/`:idx/event`(GET·PATCH)/`:idx/block`(PATCH)
 - media: `GET /media`
-- partner: `GET /partner/:idx` (?type=media 분기)
 - tracker: `GET /tracker` (인증 없음)
 - reservation: `PUT`/`DELETE :idx`/`GET off/:idx`/`GET on/:idx`
 - image-upload: `POST /fileupload/:idx` (S3, multer)
@@ -21,7 +20,7 @@
 - 컨트롤러 2개: tracking(`GET /tracking` 리다이렉트), postback.
 - **인증 전무**(Passport/JWT/가드/인터셉터 없음).
 - Prisma 모델 9개: user, advertiser, tracker, advertising, campaign, media, campaign_config, postback, daily_report.
-  - **없는 모델: reservation, partner** → 해당 도메인 이관 시 스키마 추가 필요.
+  - **없는 모델: reservation** → 해당 도메인 이관 시 스키마 추가 필요.
 
 ### 4계층 패턴(monorepo가 이미 따르는 규약, modules/CLAUDE.md)
 - domain: `*.entity.ts`는 **interface**(class 아님), 필드는 **snake_case**(DB 컬럼과 동일). repository 인터페이스 + `Symbol()` 토큰.

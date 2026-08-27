@@ -39,9 +39,8 @@
 - admin은 전역적으로 `{ statusCode, data, _meta }` 포맷으로 감쌈. monorepo 트래킹 API는 이 래핑이 없음(리다이렉트 위주).
 - **✅ 확정(2026-07-10)**: 어드민 API에만 적용(새 어드민 컨트롤러에 `@UseInterceptors`). 전역 등록 안 함. 트래킹 파이프라인 불변.
 
-### D3. reservation / partner 모델 부재
-- **정정(2026-07-10, 7단계 착수 시)**: `partner`는 사실 **테이블을 안 쓴다.** admin partner.service는 `PostbackDaily`(=daily_report)를 media/advertiser 기준으로 오늘자 집계하는 조회일 뿐 → **스키마 추가 불필요**. 6단계 통계 패턴 재사용.
-- `reservation`은 별도 테이블(`reservation`)이 실제로 필요할 수 있음. 착수 시 admin 코드로 재확인(partner처럼 통계 조회일 가능성도 있으니 추측 말 것).
+### D3. reservation 모델 부재
+- `reservation`은 별도 테이블(`reservation`)이 실제로 필요할 수 있음. 착수 시 admin 코드로 재확인(통계 조회일 가능성도 있으니 추측 말 것).
 - 스키마 추가가 진짜 필요한 경우만 마이그레이션: **에이전트가 SQL까지 작성, 적용은 사용자**(`prisma/CLAUDE.md`).
 
 ## 이관 순서 (인증 → 단순 도메인 → 복잡 도메인)
@@ -59,9 +58,8 @@
 4. tracker (GET 목록) — 이미 trackers/ 있음, 조율 → verify: 동일
 5. campaign (CRUD + 이벤트/차단)               → verify: 동일
 6. advertising (CRUD + 통계 대시보드 + 엑셀)    → verify: 동일 (엑셀·S3는 별도 판단)
-7. partner (스키마 추가 후)                     → verify: 동일
-8. reservation (스키마 추가 후)                 → verify: 동일
-9. postback 조회 API (트래커 9종 분기)          → verify: 동일
+7. reservation (스키마 추가 후)                 → verify: 동일
+8. postback 조회 API (트래커 9종 분기)          → verify: 동일
 ```
 
 > 부수 기능(엑셀 xlsx, S3 image-upload, scheduler)은 해당 도메인 도달 시점에 별도로 범위를 재확인한다. 지금 계획에 포함하지 않는다(단순함 우선).

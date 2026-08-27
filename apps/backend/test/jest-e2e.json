@@ -18,7 +18,6 @@
     "^@tracker/(.*)$": "<rootDir>/../src/modules/tracker/$1",
     "^@campaign/(.*)$": "<rootDir>/../src/modules/campaign/$1",
     "^@config/(.*)$": "<rootDir>/../src/modules/config/$1",
-    "^@partner/(.*)$": "<rootDir>/../src/modules/partner/$1",
     "^@dashboard/(.*)$": "<rootDir>/../src/modules/dashboard/$1",
     "^@interceptors/(.*)$": "<rootDir>/../src/interceptors/$1"
   },
