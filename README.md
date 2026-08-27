@@ -170,23 +170,25 @@ cd monorepo-practice
 pnpm install
 ```
 
-3. Prisma 클라이언트 생성
+3. 각 앱에 `.env` 생성 (아래 [환경 변수 설정](#환경-변수-설정) 참고)
+
+4. 개발 서버 실행
 
 ```bash
-cd apps/backend
-pnpm generate
-cd ../..
+pnpm dev
 ```
 
-### Docker Compose 실행 (선택사항)
+`pnpm dev`가 인프라 기동(`docker:up`) → 마이그레이션 적용(`db:deploy`) → Prisma 클라이언트 생성(`db:generate`) → 테스트 데이터 주입(`db:seed`) → 앱 실행까지 한 번에 처리합니다. 이미 준비된 상태면 각 단계를 즉시 통과합니다.
 
-로컬 개발을 위해 PostgreSQL, Redis를 Docker로 실행합니다.
+### Docker Compose
+
+로컬 개발용 PostgreSQL, Redis는 `pnpm dev`가 자동으로 백그라운드에 띄우고 healthcheck 통과까지 기다립니다. **dev를 종료하면(Ctrl+C) 컨테이너도 함께 내려갑니다.** 직접 다룰 때는 다음 명령을 씁니다.
 
 ```bash
-# Docker Compose로 인프라 시작
+# 인프라만 시작 (백그라운드, 준비될 때까지 대기)
 pnpm docker:up
 
-# Docker Compose 중지
+# 인프라 중지
 pnpm docker:down
 ```
 
@@ -194,6 +196,8 @@ pnpm docker:down
 
 - **PostgreSQL 17**: `localhost:5432` (DB명 `mecross`)
 - **Redis**: `localhost:6379`
+
+> `docker:down`은 컨테이너만 제거하고 named volume(`postgres_data`, `redis_data`)은 남깁니다. 따라서 매번 내렸다 올려도 DB 데이터와 seed 계정은 그대로 유지됩니다. 데이터까지 지우려면 `docker compose down -v`를 직접 실행해야 합니다.
 
 ### 환경 변수 설정
 
@@ -239,26 +243,38 @@ VITE_API_URL=http://localhost:3001
 
 ### 데이터베이스 마이그레이션
 
+일상적인 작업은 루트에서 실행합니다.
+
+```bash
+pnpm db:deploy     # 마이그레이션 적용
+pnpm db:generate   # Prisma 클라이언트 재생성
+pnpm db:seed       # 테스트 데이터 주입 (upsert 기반이라 재실행 안전)
+pnpm db:reset      # DB 초기화 후 seed 자동 실행 (데이터 삭제됨, 로컬 전용)
+```
+
+마이그레이션 **생성**은 SQL을 검토한 뒤 적용하는 2단계 작업이라 backend에서 직접 실행합니다.
+
 ```bash
 cd apps/backend
-
-# 마이그레이션 생성 (--create-only)
-pnpm migrate
-
-# 마이그레이션 적용
+pnpm migrate       # prisma migrate dev --create-only (SQL 생성만)
+# 생성된 migration.sql 검토 후
 pnpm deploy
 ```
 
 ### 개발 서버 실행
 
 ```bash
-# 전체 앱 개발 모드
+# 전체 앱 개발 모드 (인프라·스키마 준비 후 backend·frontend 동시 기동)
 pnpm dev
 
-# 특정 앱만 실행
+# 특정 앱만 실행 (준비 단계를 건너뛰고 해당 앱만 바로 실행)
 pnpm dev --filter=backend
 pnpm dev --filter=frontend
 ```
+
+`pnpm dev`는 backend(`:3001`)와 frontend(`:3000`)를 함께 띄우고, 종료하면 Docker 컨테이너까지 정리합니다. 준비 단계가 하나라도 실패하면 앱이 기동되지 않으므로, DB 문제로 막혔지만 frontend만 작업해야 한다면 `pnpm dev --filter=frontend`를 쓰면 됩니다(MSW 목 서버로 동작).
+
+> 터미널 두 개로 backend·frontend를 따로 돌리면 한쪽을 종료할 때 컨테이너가 내려가 다른 쪽 DB 연결이 끊어집니다. 이럴 때는 `pnpm docker:up`으로 인프라를 먼저 띄우고 각 앱을 `pnpm dev --filter=...`로 실행하세요.
 
 개별 애플리케이션 디렉토리에서도 실행 가능합니다.
 
