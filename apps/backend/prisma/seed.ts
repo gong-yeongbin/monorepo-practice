@@ -18,13 +18,23 @@ const BCRYPT_SALT_ROUNDS = 10;
 const DAILY_REPORT_DAYS = 7;
 
 async function main() {
-	// 1. 로그인 가능한 유저 — signup의 SES 인증과 approved 승인 절차를 우회한다
+	// 1. 로그인 가능한 유저 — signup의 SES 인증과 approved 승인 절차를 우회한다.
+	// 역할별 접근 범위(USER는 대시보드만, ADMIN은 광고 운영, DEVELOPER는 사용자 관리까지)를 바로 확인할 수 있게 계정을 나눠 둔다.
 	const password = await bcrypt.hash('test1234!', BCRYPT_SALT_ROUNDS);
-	await prisma.user.upsert({
-		where: { email: 'admin@test.com' },
-		update: { password, approved: true, role: 'DEVELOPER' },
-		create: { email: 'admin@test.com', password, approved: true, role: 'DEVELOPER' },
-	});
+	const seedUsers = [
+		{ email: 'admin@test.com', role: 'DEVELOPER' as const, approved: true },
+		{ email: 'ops@test.com', role: 'ADMIN' as const, approved: true },
+		{ email: 'viewer@test.com', role: 'USER' as const, approved: true },
+		// 승인 API(GET /users?approved=false → PATCH /users/:id) 검증용 미승인 계정
+		{ email: 'pending@test.com', role: 'USER' as const, approved: false },
+	];
+	for (const seedUser of seedUsers) {
+		await prisma.user.upsert({
+			where: { email: seedUser.email },
+			update: { password, approved: seedUser.approved, role: seedUser.role },
+			create: { ...seedUser, password },
+		});
+	}
 
 	// 2~4. FK 없는 기본 엔티티
 	const advertiser = await prisma.advertiser.upsert({
@@ -231,7 +241,7 @@ async function main() {
 	});
 
 	console.log(
-		`seed 완료: user(admin@test.com / test1234!), advertiser·tracker·media, advertising 2개·campaign 4개, daily_report 캠페인당 ${DAILY_REPORT_DAYS}일치, postback ${postbacks.length}건, reservation 2건`
+		`seed 완료: user 4개(admin=DEVELOPER / ops=ADMIN / viewer=USER / pending=미승인, 전부 @test.com · test1234!), advertiser·tracker·media, advertising 2개·campaign 4개, daily_report 캠페인당 ${DAILY_REPORT_DAYS}일치, postback ${postbacks.length}건, reservation 2건`
 	);
 }
 

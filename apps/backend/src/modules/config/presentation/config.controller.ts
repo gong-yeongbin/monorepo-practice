@@ -8,8 +8,10 @@ import { ReplaceConfigDto } from '@config/application/dto/replace-config.dto';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
 import { ConfigResponse } from '@config/presentation/dto/config.response.dto';
+import { Roles } from '@auth/presentation/roles.decorator';
 
 @ApiTags('config')
+@Roles('DEVELOPER', 'ADMIN')
 @Controller('config')
 @UseInterceptors(ResponseInterceptor)
 export class ConfigController {

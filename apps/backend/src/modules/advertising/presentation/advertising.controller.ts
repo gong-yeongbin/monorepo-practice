@@ -15,8 +15,10 @@ import { AdvertisingIdDto } from '@advertising/application/dto/advertising-id.dt
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
 import { AdvertisingImageResponse, AdvertisingInfoResponse, AdvertisingListItemResponse, AdvertisingResponse } from '@advertising/presentation/dto/advertising.response.dto';
+import { Roles } from '@auth/presentation/roles.decorator';
 
 @ApiTags('advertising')
+@Roles('DEVELOPER', 'ADMIN')
 @Controller('advertising')
 @UseInterceptors(ResponseInterceptor)
 export class AdvertisingController {
@@ -48,7 +50,10 @@ export class AdvertisingController {
 		return this.listAdvertisingUseCase.execute(query);
 	}
 
+	// 대시보드 상세 화면의 InfoCard가 호출하므로 USER에게도 연다(클래스 레벨 @Roles를 메서드 레벨이 덮는다).
+	// 생성·수정·삭제·이미지 업로드는 클래스 기본값 그대로 ADMIN 이상이다.
 	@Get(':id')
+	@Roles('DEVELOPER', 'ADMIN', 'USER')
 	@ApiOperation({ summary: 'advertising 단건 조회' })
 	@ApiWrappedResponse({ status: 200, description: '조회 성공', type: AdvertisingInfoResponse })
 	@ApiResponse({ status: 404, description: 'advertising 없음' })

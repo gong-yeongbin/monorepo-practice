@@ -32,6 +32,9 @@ async function bootstrap() {
 		.setTitle('트래킹·포스트백 API')
 		.setDescription('광고 관리 플랫폼(광고주/캠페인/매체/트래커)과 트래킹·포스트백 API 문서')
 		.setVersion('1.0')
+		// 어드민 API는 전역 JwtAuthGuard로 보호된다 — 컨트롤러마다 @ApiBearerAuth를 붙이는 대신 문서 전체에 기본 인증을 건다
+		.addBearerAuth()
+		.addSecurityRequirements('bearer')
 		.build();
 	SwaggerModule.setup('docs', app, () => SwaggerModule.createDocument(app, documentConfig));
 

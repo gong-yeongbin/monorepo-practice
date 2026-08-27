@@ -23,17 +23,8 @@ import {
 	StyledMenu,
 } from '@/features/home/home.styles';
 import { useStore } from '@/app/store';
+import { parseAccessToken } from '@/shared/lib/auth';
 import logo from '@/images/logo.png';
-
-// JWT access token payload에서 로그인 사용자 정보를 꺼낸다 — payload는 base64url이라 표준 atob 전에 문자 치환이 필요
-const parseAccessToken = (token: string | null): { email: string; role: string } | null => {
-	if (!token) return null;
-	try {
-		return JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-	} catch {
-		return null;
-	}
-};
 
 const Home = observer(() => {
 	const store = useStore();
@@ -92,16 +83,6 @@ const Home = observer(() => {
 
 	const user = parseAccessToken(accessToken);
 
-	useEffect(() => {
-		if (user) {
-			if (user.role === 'ADVERTISER' || user.role === 'MEDIA') {
-				handleLogout();
-			} else {
-				sessionStorage.setItem('userType', user.role === 'DEVELOPER' ? 'dev' : user.role.toLowerCase());
-			}
-		}
-	}, []);
-
 	const forceReload = () => {
 		navigate('/');
 		window.location.reload();
@@ -113,32 +94,36 @@ const Home = observer(() => {
 		navigate(`/${key}`);
 	};
 
-	const menuItems: MenuProps['items'] = [
-		{
-			label: '광고앱 관리',
-			key: 'advertising',
-			icon: <FontAwesomeIcon icon={faAd} />,
-		},
-		{
-			label: '트래커 관리',
-			key: 'tracker',
-			icon: <FontAwesomeIcon icon={faChartLine} />,
-		},
-		{
-			label: '매체 관리',
-			key: 'media',
-			icon: <ApartmentOutlined />,
-		},
-		...(user?.role === 'DEVELOPER'
-			? [
+	// USER는 대시보드만 접근 가능하므로 운영 메뉴를 노출하지 않는다
+	const menuItems: MenuProps['items'] =
+		!user || user.role === 'USER'
+			? []
+			: [
 					{
-						label: '개발자 메뉴',
-						key: 'developer',
-						icon: <SettingOutlined />,
+						label: '광고앱 관리',
+						key: 'advertising',
+						icon: <FontAwesomeIcon icon={faAd} />,
 					},
-				]
-			: []),
-	];
+					{
+						label: '트래커 관리',
+						key: 'tracker',
+						icon: <FontAwesomeIcon icon={faChartLine} />,
+					},
+					{
+						label: '매체 관리',
+						key: 'media',
+						icon: <ApartmentOutlined />,
+					},
+					...(user.role === 'DEVELOPER'
+						? [
+								{
+									label: '개발자 메뉴',
+									key: 'developer',
+									icon: <SettingOutlined />,
+								},
+							]
+						: []),
+				];
 
 	return (
 		<Layout className="layout">

@@ -121,16 +121,29 @@ PORT=3001
 
 ## API 엔드포인트
 
-### 인증 (`/auth`)
+### 인증·인가
+
+전역 `JwtAuthGuard` + `RolesGuard`가 모든 라우트에 적용됩니다. 어드민 API는 `Authorization: Bearer <access_token>` 헤더를 요구하며(없거나 무효면 401), 역할이 맞지 않으면 403입니다. 아래 표의 **접근** 열이 허용 역할입니다.
+
+| 역할 | 접근 범위 |
+|---|---|
+| `USER` | 대시보드 조회(`/dashboard/*`)와 그 상세 화면이 쓰는 `GET /advertising/:id`·`GET /postbacks/*`. 신규 가입자의 기본 역할 |
+| `ADMIN` | 광고 운영 API 전반 (광고주·광고·캠페인·매체·트래커·설정·예약·포스트백 로그·대시보드) |
+| `DEVELOPER` | 전부 + 사용자 관리(`/users`) — 가입 승인·역할 변경·삭제 |
+
+가입은 `POST /auth/signup/verify`로 `role=USER`, `approved=false` 상태의 user를 만듭니다. 승인 전에는 로그인이 403이며, `DEVELOPER`가 `GET /users?approved=false`로 대기 목록을 확인하고 `PATCH /users/:id`에 `{"approved": true}`를 보내 승인합니다.
+
+### 인증 (`/auth`) — 공개
 
 | 메서드 | 경로 | 설명 |
 |---|---|---|
+| GET | `/auth/email-availability` | 가입 전 이메일 사용 가능 여부 조회 |
 | POST | `/auth/signup` | 가입 신청 — 이메일로 6자리 인증 코드 발송 (user 미생성, 200) |
-| POST | `/auth/signup/verify` | 코드 검증 통과 시 가입 확정 (201) |
+| POST | `/auth/signup/verify` | 코드 검증 통과 시 가입 확정 (201, `role=USER`·`approved=false`) |
 | POST | `/auth/signin` | 로그인 — access(15분)·refresh(7일) 토큰 발급 (미승인 user는 403) |
 | POST | `/auth/refresh` | refresh token으로 access token 재발급 |
 
-### 트래킹·포스트백
+### 트래킹·포스트백 — 공개 (인증 대신 IP 기준 rate limit)
 
 | 메서드 | 경로 | 설명 |
 |---|---|---|
@@ -140,24 +153,24 @@ PORT=3001
 
 ### 어드민 리소스
 
-| 리소스 | 라우트 |
-|---|---|
-| user | GET `/users`, GET `/users/:id`, PATCH `/users/:id`, DELETE `/users/:id` |
-| advertiser | GET, POST `/advertisers`, GET, PATCH, DELETE `/advertisers/:id` |
-| advertising | GET, POST `/advertising`, GET, PUT, DELETE `/advertising/:id`, POST `/advertising/:id/image` |
-| media | GET, POST `/media`, GET, PATCH, DELETE `/media/:id` |
-| tracker | GET, POST `/trackers`, GET, PATCH, DELETE `/trackers/:id` |
-| campaign | GET, POST `/campaigns`, GET, PATCH, DELETE `/campaigns/:id` |
-| config | GET, PATCH `/config/:campaignId` |
-| reservation | GET, POST `/reservations`(advertisingId 필터·campaign별 예약 행 생성), DELETE `/reservations/:id`. 스케줄러가 매시 정각·부트 시 시각 지난 예약을 campaign(name·tracker_tracking_url)에 적용 |
-| dashboard | GET `/dashboard`, `/dashboard/daily`(token 생략 시 전체 합산), `/dashboard/dailydetail`(token 기준 view_code·pub_id·sub_id 단위), `/dashboard/detail/:id` |
-| postback(로그) | GET `/postbacks/install`, `/postbacks/event`, `/postbacks/unregistered` (어드민 로그 모달용 조회) |
+| 리소스 | 접근 | 라우트 |
+|---|---|---|
+| user | DEVELOPER | GET `/users`(`?approved=false`로 승인 대기 목록), GET `/users/:id`, PATCH `/users/:id`(role·approved 수정 = 가입 승인), DELETE `/users/:id` |
+| advertiser | ADMIN 이상 | GET, POST `/advertisers`, GET, PATCH, DELETE `/advertisers/:id` |
+| advertising | ADMIN 이상<br>(`GET /advertising/:id`만 USER 이상) | GET, POST `/advertising`, GET, PUT, DELETE `/advertising/:id`, POST `/advertising/:id/image`. 단건 조회는 대시보드 상세 화면의 InfoCard가 쓰므로 USER에게도 열려 있다 |
+| media | ADMIN 이상 | GET, POST `/media`, GET, PATCH, DELETE `/media/:id` |
+| tracker | ADMIN 이상 | GET, POST `/trackers`, GET, PATCH, DELETE `/trackers/:id` |
+| campaign | ADMIN 이상 | GET, POST `/campaigns`, GET, PATCH, DELETE `/campaigns/:id` |
+| config | ADMIN 이상 | GET, PATCH `/config/:campaignId` |
+| reservation | ADMIN 이상 | GET, POST `/reservations`(advertisingId 필터·campaign별 예약 행 생성), DELETE `/reservations/:id`. 스케줄러가 매시 정각·부트 시 시각 지난 예약을 campaign(name·tracker_tracking_url)에 적용 |
+| dashboard | USER 이상 | GET `/dashboard`, `/dashboard/daily`(token 생략 시 전체 합산), `/dashboard/dailydetail`(token 기준 view_code·pub_id·sub_id 단위), `/dashboard/detail/:id` |
+| postback(로그) | USER 이상 | GET `/postbacks/install`, `/postbacks/event`, `/postbacks/unregistered` (대시보드 상세·일별 화면의 로그 팝업용 조회) |
 
 ### 기타
 
 | 메서드 | 경로 | 설명 |
 |---|---|---|
-| GET | `/health` | 헬스체크 |
+| GET | `/health` | 헬스체크 (공개) |
 
 ## 메시지 흐름
 
@@ -179,7 +192,16 @@ pnpm seed        # 로컬 테스트 데이터 생성 (prisma/seed.ts, 재실행�
 
 스키마는 `prisma/schema.prisma`에 있고, datasource URL은 `prisma.config.ts`가 `DATABASE_URL`에서 주입합니다.
 
-seed는 로그인 가능한 유저(`admin@test.com` / `test1234!`, 승인 완료 상태)와 광고주→트래커→매체→광고(2개)→캠페인(4개)→캠페인 config 그래프, 캠페인당 최근 7일치 daily_report 통계, postback 로그, reservation 2건을 생성합니다. SES 이메일 인증 없이 바로 로그인해 어드민 화면과 대시보드를 확인할 수 있습니다.
+seed는 역할별 유저 4개와 광고주→트래커→매체→광고(2개)→캠페인(4개)→캠페인 config 그래프, 캠페인당 최근 7일치 daily_report 통계, postback 로그, reservation 2건을 생성합니다. SES 이메일 인증 없이 바로 로그인해 어드민 화면과 대시보드를 확인할 수 있습니다.
+
+| 계정 | 역할 | 승인 | 용도 |
+|---|---|---|---|
+| `admin@test.com` | DEVELOPER | ✅ | 전체 기능 + 사용자 관리 |
+| `ops@test.com` | ADMIN | ✅ | 광고 운영 (사용자 관리 불가) |
+| `viewer@test.com` | USER | ✅ | 대시보드 조회만 |
+| `pending@test.com` | USER | ❌ | 승인 대기 — 로그인 시 403, 승인 API 검증용 |
+
+비밀번호는 모두 `test1234!`입니다.
 
 ## 테스트
 

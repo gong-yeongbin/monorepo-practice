@@ -9,7 +9,7 @@
 ### 주요 기능
 
 - **어드민 리소스 관리**: 광고주·광고·캠페인·매체·트래커 CRUD와 대시보드 조회
-- **인증**: 이메일 인증 코드 기반 2단계 회원가입 + JWT access/refresh 토큰
+- **인증·인가**: 이메일 인증 코드 기반 2단계 회원가입 + 관리자 승인 + JWT access/refresh 토큰. 역할(`USER`⊂`ADMIN`⊂`DEVELOPER`) 기반으로 어드민 API 접근을 제한 (`USER`는 대시보드 조회만)
 - **트래킹 처리**: 다양한 트래킹 솔루션(AppsFlyer, Adjust, Airbridge, AdbrixRemaster) 지원
 - **포스트백 전송**: 매체사로 포스트백 전송 (공개 수신 엔드포인트는 IP 기준 rate limit)
 - **일별 집계**: `daily_report`로 클릭/설치/이벤트/매출 등을 KST 기준 일별 집계
@@ -420,7 +420,7 @@ pnpm seed
 npx prisma studio
 ```
 
-`pnpm seed`는 로그인 가능한 계정(`admin@test.com` / `test1234!`)과 광고주·트래커·매체·광고·캠페인, 최근 7일치 대시보드 통계와 포스트백 로그를 생성합니다. SES 인증 코드 수신이 어려운 로컬 환경에서 이 계정으로 바로 로그인할 수 있습니다.
+`pnpm seed`는 역할별 계정 4개(`admin`=DEVELOPER / `ops`=ADMIN / `viewer`=USER / `pending`=미승인, 전부 `@test.com` · `test1234!`)와 광고주·트래커·매체·광고·캠페인, 최근 7일치 대시보드 통계와 포스트백 로그를 생성합니다. SES 인증 코드 수신이 어려운 로컬 환경에서 이 계정으로 바로 로그인할 수 있습니다.
 
 스키마는 `apps/backend/prisma/schema.prisma`에 있고, datasource URL은 `prisma.config.ts`가 `DATABASE_URL`에서 주입합니다.
 

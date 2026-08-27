@@ -10,8 +10,10 @@ import { ReservationIdDto } from '@reservation/application/dto/reservation-id.dt
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
 import { ReservationListItemResponse } from '@reservation/presentation/dto/reservation.response.dto';
+import { Roles } from '@auth/presentation/roles.decorator';
 
 @ApiTags('reservations')
+@Roles('DEVELOPER', 'ADMIN')
 @Controller('reservations')
 @UseInterceptors(ResponseInterceptor)
 export class ReservationController {

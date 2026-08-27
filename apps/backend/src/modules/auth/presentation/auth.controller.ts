@@ -14,8 +14,11 @@ import { VerifyUseCase } from '@auth/application/verify.use-case';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
 import { EmailAvailabilityResponse, RefreshResponse, SigninResponse } from '@auth/presentation/dto/auth.response.dto';
+import { Public } from '@auth/presentation/public.decorator';
 
 @ApiTags('auth')
+// 토큰을 발급받기 전에 호출하는 엔드포인트라 전부 무인증이다
+@Public()
 @Controller('auth')
 @UseInterceptors(ResponseInterceptor)
 export class AuthController {

@@ -23,12 +23,16 @@ GET {{host}}/adbrix-remaster/install?cb_3=click-0004&cb_2=lvpo%2F4xJXLWflTJldMlw
 
 ### install 포스트백 로그 — token 기준
 GET {{host}}/postbacks/install?token=seed-token-cafe-launch&start_date=2026-08-01&end_date=2026-08-31
+Authorization: Bearer {{access_token}}
 
 ### install 포스트백 로그 — view_code 기준(일자별 상세 화면). 저장값이 percent-encoded라 한 번 더 인코딩해 보낸다
 GET {{host}}/postbacks/install?view_code=lvpo%252F4xJXLWflTJldMlwFFfAwl3R9T5KUZ9yETOdq1na7I91cPHYvcdCsi0OZuIM&start_date=2026-08-01&end_date=2026-08-31
+Authorization: Bearer {{access_token}}
 
 ### event 포스트백 로그 — admin 이벤트명을 campaign_config로 변환해 조회
 GET {{host}}/postbacks/event?token=seed-token-cafe-launch&event_name=purchase&start_date=2026-08-01&end_date=2026-08-31
+Authorization: Bearer {{access_token}}
 
 ### 미등록 이벤트 카운트 — campaign_config에 없는 이벤트명 그룹 합계
 GET {{host}}/postbacks/unregistered?token=seed-token-cafe-launch&start_date=2026-08-01&end_date=2026-08-31
+Authorization: Bearer {{access_token}}

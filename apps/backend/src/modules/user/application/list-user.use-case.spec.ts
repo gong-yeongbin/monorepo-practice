@@ -17,10 +17,19 @@ describe('ListUserUseCase', () => {
 	it('user 전체 목록을 반환한다', async () => {
 		const list = [
 			{ id: 1, email: 'admin@example.com', role: 'ADMIN', approved: true },
-			{ id: 2, email: 'adv@example.com', role: 'ADVERTISER', approved: false },
+			{ id: 2, email: 'viewer@example.com', role: 'USER', approved: false },
 		];
 		userRepository.findAll.mockResolvedValue(list);
 
 		expect(await useCase.execute()).toBe(list);
+		expect(userRepository.findAll).toHaveBeenCalledWith(undefined);
+	});
+
+	it('승인 여부 필터를 repository에 그대로 넘긴다', async () => {
+		const list = [{ id: 2, email: 'viewer@example.com', role: 'USER', approved: false }];
+		userRepository.findAll.mockResolvedValue(list);
+
+		expect(await useCase.execute({ approved: false })).toBe(list);
+		expect(userRepository.findAll).toHaveBeenCalledWith({ approved: false });
 	});
 });

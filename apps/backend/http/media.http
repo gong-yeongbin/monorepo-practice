@@ -1,11 +1,14 @@
 ### media 목록 조회
 GET {{host}}/media
+Authorization: Bearer {{access_token}}
 
 ### media 단건 조회
 GET {{host}}/media/1
+Authorization: Bearer {{access_token}}
 
 ### media 생성
 POST {{host}}/media
+Authorization: Bearer {{access_token}}
 Content-Type: application/json
 
 {
@@ -16,6 +19,7 @@ Content-Type: application/json
 
 ### media 수정 — 전체 교체 방식 (3개 필드 모두 필요)
 PATCH {{host}}/media/1
+Authorization: Bearer {{access_token}}
 Content-Type: application/json
 
 {
@@ -26,3 +30,4 @@ Content-Type: application/json
 
 ### media 삭제
 DELETE {{host}}/media/1
+Authorization: Bearer {{access_token}}

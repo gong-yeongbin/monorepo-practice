@@ -11,8 +11,10 @@ import { AdvertiserIdDto } from '@advertiser/application/dto/advertiser-id.dto';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
 import { AdvertiserResponse } from '@advertiser/presentation/dto/advertiser.response.dto';
+import { Roles } from '@auth/presentation/roles.decorator';
 
 @ApiTags('advertisers')
+@Roles('DEVELOPER', 'ADMIN')
 @Controller('advertisers')
 @UseInterceptors(ResponseInterceptor)
 export class AdvertiserController {

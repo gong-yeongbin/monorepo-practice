@@ -16,13 +16,13 @@ describe('UpdateUserUseCase', () => {
 	});
 
 	it('role·approved를 수정해 user를 반환한다', async () => {
-		userRepository.findById.mockResolvedValue({ id: 1, email: 'admin@example.com', role: 'ADMIN', approved: false });
-		const updated = { id: 1, email: 'admin@example.com', role: 'MEDIA', approved: true };
+		userRepository.findById.mockResolvedValue({ id: 1, email: 'admin@example.com', role: 'USER', approved: false });
+		const updated = { id: 1, email: 'admin@example.com', role: 'ADMIN', approved: true };
 		userRepository.update.mockResolvedValue(updated);
 
-		const result = await useCase.execute(1, { role: 'MEDIA', approved: true });
+		const result = await useCase.execute(1, { role: 'ADMIN', approved: true });
 
-		expect(userRepository.update).toHaveBeenCalledWith(1, { role: 'MEDIA', approved: true });
+		expect(userRepository.update).toHaveBeenCalledWith(1, { role: 'ADMIN', approved: true });
 		expect(result).toBe(updated);
 	});
 

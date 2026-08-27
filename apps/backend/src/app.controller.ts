@@ -1,7 +1,10 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Public } from '@auth/presentation/public.decorator';
 
 @ApiTags('health')
+// LB 헬스체크가 호출하므로 무인증으로 연다
+@Public()
 @Controller()
 export class AppController {
 	@Get('health')

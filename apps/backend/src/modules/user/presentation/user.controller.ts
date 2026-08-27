@@ -1,6 +1,7 @@
 // user 조회·수정·삭제를 처리하는 컨트롤러
-import { Body, Controller, Delete, Get, Param, Patch, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Query, UseInterceptors } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ListUserDto } from '@user/application/dto/list-user.dto';
 import { UpdateUserDto } from '@user/application/dto/update-user.dto';
 import { UserIdDto } from '@user/application/dto/user-id.dto';
 import { ListUserUseCase } from '@user/application/list-user.use-case';
@@ -10,8 +11,11 @@ import { DeleteUserUseCase } from '@user/application/delete-user.use-case';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
 import { UserResponse } from '@user/presentation/dto/user.response.dto';
+import { Roles } from '@auth/presentation/roles.decorator';
 
 @ApiTags('users')
+// 가입 승인·role 변경·삭제는 DEVELOPER 전용이다
+@Roles('DEVELOPER')
 @Controller('users')
 @UseInterceptors(ResponseInterceptor)
 export class UserController {
@@ -23,10 +27,11 @@ export class UserController {
 	) {}
 
 	@Get()
-	@ApiOperation({ summary: 'user 목록 조회' })
+	@ApiOperation({ summary: 'user 목록 조회 (승인 대기 목록은 ?approved=false)' })
 	@ApiWrappedResponse({ status: 200, description: '조회 성공', type: UserResponse, isArray: true })
-	async list() {
-		return this.listUserUseCase.execute();
+	@ApiResponse({ status: 400, description: '요청 값 검증 실패' })
+	async list(@Query() query: ListUserDto) {
+		return this.listUserUseCase.execute(query);
 	}
 
 	@Get(':id')

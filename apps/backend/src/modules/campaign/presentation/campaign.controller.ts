@@ -13,8 +13,10 @@ import { UpdateCampaignDto } from '@campaign/application/dto/update-campaign.dto
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
 import { CampaignListItemResponse, CampaignResponse } from '@campaign/presentation/dto/campaign.response.dto';
+import { Roles } from '@auth/presentation/roles.decorator';
 
 @ApiTags('campaigns')
+@Roles('DEVELOPER', 'ADMIN')
 @Controller('campaigns')
 @UseInterceptors(ResponseInterceptor)
 export class CampaignController {

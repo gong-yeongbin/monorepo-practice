@@ -1,5 +1,7 @@
 // user 도메인 타입(DB 컬럼과 동일한 snake_case)
-export type UserRole = 'ADMIN' | 'ADVERTISER' | 'MEDIA' | 'DEVELOPER';
+// Role 값의 단일 출처 — DTO의 @IsEnum·Swagger enum도 이 배열을 재사용한다(domain은 Prisma를 모르므로 Prisma enum은 쓰지 않는다)
+export const USER_ROLES = ['DEVELOPER', 'ADMIN', 'USER'] as const;
+export type UserRole = (typeof USER_ROLES)[number];
 
 export interface User {
 	id: number;

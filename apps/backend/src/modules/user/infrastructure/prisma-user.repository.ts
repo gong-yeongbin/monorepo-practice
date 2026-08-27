@@ -2,15 +2,16 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@infra/prisma/prisma.service';
 import { User, UserWithPassword } from '@user/domain/user.entity';
-import { CreateUserProps, UpdateUserProps, UserRepository } from '@user/domain/user.repository';
+import { CreateUserProps, FindAllUserFilter, UpdateUserProps, UserRepository } from '@user/domain/user.repository';
 
 @Injectable()
 export class PrismaUserRepository implements UserRepository {
 	constructor(private readonly prismaService: PrismaService) {}
 
 	// 조회·수정 결과는 password를 omit해 반환한다(도메인 User 타입에 없고 API 응답에 해시가 노출되면 안 됨)
-	async findAll(): Promise<User[]> {
-		return this.prismaService.user.findMany({ omit: { password: true } });
+	// approved가 undefined면 Prisma가 조건을 무시하므로 필터 유무를 분기하지 않는다
+	async findAll(filter?: FindAllUserFilter): Promise<User[]> {
+		return this.prismaService.user.findMany({ where: { approved: filter?.approved }, omit: { password: true } });
 	}
 
 	async findById(id: number): Promise<User | null> {

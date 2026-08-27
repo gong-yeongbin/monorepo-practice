@@ -10,8 +10,11 @@ import { AdvertisingIdDto } from '@dashboard/application/dto/advertising-id.dto'
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
 import { DailyDetailRowResponse, DailyRowResponse, DashboardRowResponse, DetailRowResponse } from '@dashboard/presentation/dto/dashboard.response.dto';
+import { Roles } from '@auth/presentation/roles.decorator';
 
 @ApiTags('dashboard')
+// USER에게 열린 유일한 API — 4개 라우트가 전부 조회(@Get)라 클래스 단위로 허용한다
+@Roles('DEVELOPER', 'ADMIN', 'USER')
 @Controller('dashboard')
 @UseInterceptors(ResponseInterceptor)
 export class DashboardController {

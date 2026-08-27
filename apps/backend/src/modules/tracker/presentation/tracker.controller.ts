@@ -12,8 +12,10 @@ import { TrackerIdDto } from '@tracker/application/dto/tracker-id.dto';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
 import { TrackerResponse } from '@tracker/presentation/dto/tracker.response.dto';
+import { Roles } from '@auth/presentation/roles.decorator';
 
 @ApiTags('trackers')
+@Roles('DEVELOPER', 'ADMIN')
 @Controller('trackers')
 @UseInterceptors(ResponseInterceptor)
 export class TrackerController {

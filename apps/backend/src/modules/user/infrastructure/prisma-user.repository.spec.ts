@@ -13,12 +13,21 @@ describe('PrismaUserRepository', () => {
 
 	beforeEach(() => jest.clearAllMocks());
 
-	it('findAll은 password를 제외한 전체 목록을 반환한다', async () => {
+	it('findAll은 필터 없이 password를 제외한 전체 목록을 반환한다', async () => {
 		const list = [{ id: 1, email: 'admin@example.com', role: 'ADMIN', approved: true }];
 		findMany.mockResolvedValue(list);
 
 		expect(await repository.findAll()).toBe(list);
-		expect(findMany).toHaveBeenCalledWith({ omit: { password: true } });
+		// approved가 undefined면 Prisma가 조건을 무시해 전체가 조회된다
+		expect(findMany).toHaveBeenCalledWith({ where: { approved: undefined }, omit: { password: true } });
+	});
+
+	it('findAll은 approved 필터를 where로 넘긴다', async () => {
+		const list = [{ id: 2, email: 'pending@example.com', role: 'USER', approved: false }];
+		findMany.mockResolvedValue(list);
+
+		expect(await repository.findAll({ approved: false })).toBe(list);
+		expect(findMany).toHaveBeenCalledWith({ where: { approved: false }, omit: { password: true } });
 	});
 
 	it('findById는 id로 password를 제외하고 조회한다', async () => {
@@ -61,11 +70,11 @@ describe('PrismaUserRepository', () => {
 	});
 
 	it('update는 id·props로 수정하고 password를 제외해 반환한다', async () => {
-		const updated = { id: 1, email: 'admin@example.com', role: 'MEDIA', approved: true };
+		const updated = { id: 1, email: 'admin@example.com', role: 'ADMIN', approved: true };
 		update.mockResolvedValue(updated);
 
-		expect(await repository.update(1, { role: 'MEDIA', approved: true })).toBe(updated);
-		expect(update).toHaveBeenCalledWith({ where: { id: 1 }, data: { role: 'MEDIA', approved: true }, omit: { password: true } });
+		expect(await repository.update(1, { role: 'ADMIN', approved: true })).toBe(updated);
+		expect(update).toHaveBeenCalledWith({ where: { id: 1 }, data: { role: 'ADMIN', approved: true }, omit: { password: true } });
 	});
 
 	it('delete는 id로 삭제한다', async () => {

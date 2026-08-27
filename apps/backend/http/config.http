@@ -1,8 +1,10 @@
 ### campaign 이벤트 매핑(config) 목록 조회
 GET {{host}}/config/1
+Authorization: Bearer {{access_token}}
 
 ### campaign 이벤트 매핑 전체 교체 — body는 배열
 PATCH {{host}}/config/1
+Authorization: Bearer {{access_token}}
 Content-Type: application/json
 
 [

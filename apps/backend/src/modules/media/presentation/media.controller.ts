@@ -12,8 +12,10 @@ import { MediaIdDto } from '@media/application/dto/media-id.dto';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
 import { MediaListItemResponse, MediaResponse } from '@media/presentation/dto/media.response.dto';
+import { Roles } from '@auth/presentation/roles.decorator';
 
 @ApiTags('media')
+@Roles('DEVELOPER', 'ADMIN')
 @Controller('media')
 @UseInterceptors(ResponseInterceptor)
 export class MediaController {

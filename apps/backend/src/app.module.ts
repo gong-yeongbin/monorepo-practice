@@ -21,8 +21,8 @@ import { ReservationModule } from '@reservation/reservation.module';
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true, envFilePath: `${process.cwd()}/.env` }),
 		ScheduleModule.forRoot(),
-		// 공개(무인증) 트래킹·포스트백 엔드포인트용 IP 기준 rate limit(60초 창).
-		// 가드는 해당 컨트롤러에만 붙이므로 어드민 API에는 적용되지 않으며, 각 컨트롤러는 자기 이름의 throttler만 쓴다(SkipThrottle로 상호 제외).
+		// 공개(@Public) 트래킹·포스트백 엔드포인트용 IP 기준 rate limit(60초 창).
+		// ThrottlerGuard는 해당 컨트롤러에만 붙으므로 인증으로 보호되는 어드민 API에는 적용되지 않으며, 각 컨트롤러는 자기 이름의 throttler만 쓴다(SkipThrottle로 상호 제외).
 		ThrottlerModule.forRootAsync({
 			inject: [ConfigService],
 			useFactory: (configService: ConfigService) => ({

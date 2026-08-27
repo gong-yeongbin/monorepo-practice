@@ -3,7 +3,7 @@ import { User, UserRole, UserWithPassword } from '@user/domain/user.entity';
 
 export const USER_REPOSITORY = Symbol('USER_REPOSITORY');
 
-// role·approved는 DB 기본값(ADMIN·false)을 쓴다. password는 bcrypt 해시 — 도메인 User 타입에 노출하지 않고 signin 검증 시에만 findByEmailWithPassword로 읽는다.
+// role·approved는 DB 기본값(USER·false)을 쓴다. password는 bcrypt 해시 — 도메인 User 타입에 노출하지 않고 signin 검증 시에만 findByEmailWithPassword로 읽는다.
 export interface CreateUserProps {
 	email: string;
 	password: string;
@@ -15,8 +15,13 @@ export interface UpdateUserProps {
 	approved?: boolean;
 }
 
+// 승인 여부 필터(생략 시 전체). 승인 대기 목록은 approved: false로 조회한다.
+export interface FindAllUserFilter {
+	approved?: boolean;
+}
+
 export interface UserRepository {
-	findAll(): Promise<User[]>;
+	findAll(filter?: FindAllUserFilter): Promise<User[]>;
 	findById(id: number): Promise<User | null>;
 	findByEmail(email: string): Promise<User | null>;
 	findByEmailWithPassword(email: string): Promise<UserWithPassword | null>;

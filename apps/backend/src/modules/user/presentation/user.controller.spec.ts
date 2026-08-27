@@ -18,7 +18,16 @@ describe('UserController', () => {
 		const list = [{ id: 1, email: 'admin@example.com', role: 'ADMIN', approved: true }];
 		(listUserUseCase.execute as jest.Mock).mockResolvedValue(list);
 
-		expect(await controller.list()).toBe(list);
+		expect(await controller.list({})).toBe(list);
+		expect(listUserUseCase.execute).toHaveBeenCalledWith({});
+	});
+
+	it('list는 approved 쿼리를 use-case에 위임한다', async () => {
+		const list = [{ id: 2, email: 'pending@example.com', role: 'USER', approved: false }];
+		(listUserUseCase.execute as jest.Mock).mockResolvedValue(list);
+
+		expect(await controller.list({ approved: false })).toBe(list);
+		expect(listUserUseCase.execute).toHaveBeenCalledWith({ approved: false });
 	});
 
 	it('get은 단건 use-case에 id를 위임한다', async () => {
@@ -30,10 +39,10 @@ describe('UserController', () => {
 	});
 
 	it('update는 수정 use-case에 id와 body를 위임한다', async () => {
-		(updateUserUseCase.execute as jest.Mock).mockResolvedValue({ id: 1, email: 'admin@example.com', role: 'MEDIA', approved: true });
+		(updateUserUseCase.execute as jest.Mock).mockResolvedValue({ id: 1, email: 'admin@example.com', role: 'ADMIN', approved: true });
 
-		await controller.update({ id: 1 }, { role: 'MEDIA', approved: true });
-		expect(updateUserUseCase.execute).toHaveBeenCalledWith(1, { role: 'MEDIA', approved: true });
+		await controller.update({ id: 1 }, { role: 'ADMIN', approved: true });
+		expect(updateUserUseCase.execute).toHaveBeenCalledWith(1, { role: 'ADMIN', approved: true });
 	});
 
 	it('delete는 삭제 use-case에 id를 위임한다', async () => {

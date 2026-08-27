@@ -1,11 +1,14 @@
 ### advertiser 목록 조회
 GET {{host}}/advertisers
+Authorization: Bearer {{access_token}}
 
 ### advertiser 단건 조회
 GET {{host}}/advertisers/1
+Authorization: Bearer {{access_token}}
 
 ### advertiser 생성
 POST {{host}}/advertisers
+Authorization: Bearer {{access_token}}
 Content-Type: application/json
 
 {
@@ -14,6 +17,7 @@ Content-Type: application/json
 
 ### advertiser 수정
 PATCH {{host}}/advertisers/1
+Authorization: Bearer {{access_token}}
 Content-Type: application/json
 
 {
@@ -22,3 +26,4 @@ Content-Type: application/json
 
 ### advertiser 삭제
 DELETE {{host}}/advertisers/1
+Authorization: Bearer {{access_token}}

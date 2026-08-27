@@ -57,19 +57,25 @@ function App() {
 							<Route path="*" element={<Navigate to="/" />} />
 							<Route path="/" element={<Home />}>
 								<Route path="/" element={<Dashboard />} />
+								{/* 대시보드에서 앱을 눌러 들어가는 통계 상세 흐름(상세 → 일별 → 일별 상세)은 USER도 본다.
+								    세 화면 모두 /dashboard/*와 InfoCard의 GET /advertising/:id만 쓰므로 USER 권한으로 동작한다. */}
 								<Route path=":id" element={<Detail />} />
-								<Route path=":id/change" element={<Change />} />
 								<Route path=":id/daily" element={<Daily />} />
 								<Route path=":id/daily/detail" element={<DailyDetail />} />
-								<Route path="advertising" element={<Advertising />} />
-								<Route path="advertising/:id" element={<Campaigns />} />
-								<Route path="advertising/:id/events/:campaignIdx" element={<Events />} />
-								<Route path="media" element={<Media />} />
-								<Route path="tracker" element={<Tracker />} />
+								{/* 운영 화면은 backend가 403을 주므로 진입 자체를 막는다
+								    (403이 뜨면 QueryCache.onError가 세션 만료로 보고 로그인으로 보낸다) */}
+								<Route element={<PrivateRoute allow={['DEVELOPER', 'ADMIN']} />}>
+									<Route path=":id/change" element={<Change />} />
+									<Route path="advertising" element={<Advertising />} />
+									<Route path="advertising/:id" element={<Campaigns />} />
+									<Route path="advertising/:id/events/:campaignIdx" element={<Events />} />
+									<Route path="media" element={<Media />} />
+									<Route path="tracker" element={<Tracker />} />
+								</Route>
 								<Route
 									path="developer"
 									element={
-										<PrivateRoute>
+										<PrivateRoute allow={['DEVELOPER']}>
 											<Developer />
 										</PrivateRoute>
 									}

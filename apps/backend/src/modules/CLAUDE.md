@@ -21,6 +21,15 @@
 - 컨트롤러 클래스·모듈·폴더명은 단수형을 유지하고 URL만 복수형으로 쓴다. 예: `OrderController` + `@Controller('orders')`. `@ApiTags`는 컨트롤러 prefix와 같은 문자열을 쓴다.
 - 엔드포인트를 추가·변경하면 관련 문서를 함께 갱신한다. 예: `.http` 호출 파일, README의 라우트 표.
 
+## 인증·인가 (필수)
+
+전역 `JwtAuthGuard` + `RolesGuard`(`auth/presentation/`, `AuthModule`에서 `APP_GUARD`로 등록)가 모든 라우트에 적용된다. **새 컨트롤러는 반드시 `@Roles(...)` 또는 `@Public()` 중 하나를 클래스에 붙인다.** 둘 다 없으면 403이다(데코레이터 누락으로 새 컨트롤러가 조용히 열리지 않게 하려는 의도).
+
+- 역할 축은 `USER`(대시보드 조회) ⊂ `ADMIN`(광고 운영) ⊂ `DEVELOPER`(+ 사용자 관리·승인). 값의 단일 출처는 `user/domain/user.entity.ts`의 `USER_ROLES`다.
+- 메서드 레벨 `@Roles`가 클래스 레벨을 덮는다. 컨트롤러 대부분을 ADMIN으로 두고 특정 조회만 USER에게 여는 식으로 쓴다(`advertising.controller.ts`의 `GET /advertising/:id` 참고).
+- `@Public()`은 토큰 없이 호출되는 엔드포인트에만 쓴다 — 헬스체크, 트래킹·포스트백(외부가 호출), auth(토큰 발급 전). 공개 엔드포인트는 인증 대신 `ThrottlerGuard`로 보호한다.
+- `JwtAuthGuard`가 `request.user`에 `AccessTokenPayload`를 싣는다. 가드는 인터셉터보다 먼저 실행되므로 401·403 응답은 `ResponseInterceptor`로 감싸지지 않는다.
+
 ## 도메인 타입 규칙 (domain, 주의)
 
 이 프로젝트는 **클린 아키텍처**다. 의존성은 안쪽(domain)으로만 향하며 **domain은 Prisma를 모른다**. repository port·application·domain 어디서도 `@prisma/client`를 import하지 않는다. Prisma는 `infrastructure/`에만 갇힌다.

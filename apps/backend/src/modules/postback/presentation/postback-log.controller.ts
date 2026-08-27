@@ -9,8 +9,11 @@ import { EventLogDto, InstallLogDto, UnregisteredLogDto } from '@postback/applic
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
 import { PostbackLogResponse, UnregisteredCountResponse } from '@postback/presentation/dto/postback-log.response.dto';
+import { Roles } from '@auth/presentation/roles.decorator';
 
 @ApiTags('postbacks')
+// 대시보드 상세·일별 화면의 install·event·미등록 팝업이 호출하므로 USER에게도 연다(조회 전용 3개뿐).
+@Roles('DEVELOPER', 'ADMIN', 'USER')
 @Controller('postbacks')
 @UseInterceptors(ResponseInterceptor)
 export class PostbackLogController {

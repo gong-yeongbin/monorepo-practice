@@ -1,10 +1,16 @@
-import { Controller, Get, Query, Res } from '@nestjs/common';
+import { Controller, Get, Query, Res, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { SkipThrottle, ThrottlerGuard } from '@nestjs/throttler';
 import { Response } from 'express';
 import { QueryDto } from '@tracking/application/dto/query.dto';
 import { TrackingUseCase } from '@tracking/application/tracking.use-case';
+import { Public } from '@auth/presentation/public.decorator';
 
 @ApiTags('tracking')
+// 광고 클릭이 직접 호출하는 공개 엔드포인트 — 인증 대신 IP 기준 rate limit으로 보호한다
+@Public()
+@UseGuards(ThrottlerGuard)
+@SkipThrottle({ postback: true })
 @Controller()
 export class TrackingController {
 	constructor(private readonly trackingUseCase: TrackingUseCase) {}
