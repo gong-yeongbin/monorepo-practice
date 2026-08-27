@@ -107,6 +107,17 @@ variable "redis_stream_group" {
   default     = "mecross-system"
 }
 
+# 사이징 근거: 일 1억 클릭(평균 ~1,157 msg/s)에서 스트림이 버텨주는 시간.
+# XADD MAXLEN ~는 소비 여부와 무관하게 트림하므로 이 길이가 곧 컨슈머 지연 허용치다.
+# 앱 기본값 100,000은 약 86초치라 배포·RDS 장애로 컨슈머가 잠깐 밀리면 미소비 클릭이 조용히 유실된다.
+# 2,000,000이면 약 29분치(피크 3배에도 ~10분)이고, tracking 엔트리 기준 ~300MB라
+# cache.t4g.medium(3.09GiB)에 여유가 충분하다.
+variable "redis_stream_maxlen" {
+  description = "REDIS_STREAM_MAXLEN 환경변수 — XADD MAXLEN ~ 상한(스트림당 보관 엔트리 수)"
+  type        = number
+  default     = 2000000
+}
+
 variable "ses_from_email" {
   description = "SES 발신 이메일 (예: no-reply@<domain>)"
   type        = string

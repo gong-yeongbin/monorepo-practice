@@ -22,3 +22,7 @@ ses_from_email = "no-reply@example.com"
 # api_subdomain         = "api"
 # backend_desired_count = 0
 # image_tag             = "latest"
+
+# 스트림 버퍼 깊이 = redis_stream_maxlen / 초당 유입량. 컨슈머가 이보다 오래 밀리면
+# 미소비 메시지가 트림된다. 유입량이 예상보다 크면 올릴 것 (variables.tf 사이징 근거 참고)
+# redis_stream_maxlen   = 2000000

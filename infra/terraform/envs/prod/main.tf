@@ -79,12 +79,13 @@ module "backend" {
   # REDIS_STREAM_CONSUMER는 주입하지 않는다 — 앱 기본값(consumer-<hostname>-<pid>)이
   # 태스크별로 유니크해야 다중 태스크에서 xautoclaim 중복 처리가 없다.
   environment = {
-    PORT               = "3001"
-    VALKEY             = "redis://${module.cache.endpoint}:6379"
-    REDIS_STREAM_GROUP = var.redis_stream_group
-    AWS_REGION         = var.aws_region
-    SES_FROM_EMAIL     = var.ses_from_email
-    S3_BUCKET          = aws_s3_bucket.app.id
+    PORT                = "3001"
+    VALKEY              = "redis://${module.cache.endpoint}:6379"
+    REDIS_STREAM_GROUP  = var.redis_stream_group
+    REDIS_STREAM_MAXLEN = tostring(var.redis_stream_maxlen)
+    AWS_REGION          = var.aws_region
+    SES_FROM_EMAIL      = var.ses_from_email
+    S3_BUCKET           = aws_s3_bucket.app.id
   }
 
   secret_arns = {
