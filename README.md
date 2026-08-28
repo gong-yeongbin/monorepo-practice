@@ -178,7 +178,7 @@ pnpm install
 pnpm dev
 ```
 
-`pnpm dev`가 인프라 기동(`docker:up`) → 마이그레이션 적용(`db:deploy`) → Prisma 클라이언트 생성(`db:generate`) → 테스트 데이터 주입(`db:seed`) → 앱 실행까지 한 번에 처리합니다. 이미 준비된 상태면 각 단계를 즉시 통과합니다.
+`pnpm dev`가 인프라 기동(`docker:up`) → 마이그레이션 적용(`db:deploy`) → Prisma 클라이언트 생성(`db:generate`) → 테스트 데이터 주입(`db:seed`) → 앱 실행까지 한 번에 처리합니다. 종료 시 볼륨까지 정리되므로 매 기동이 빈 DB에서 시작하고, 마이그레이션과 시드가 매번 처음부터 실행됩니다.
 
 ### Docker Compose
 
@@ -197,7 +197,7 @@ pnpm docker:down
 - **PostgreSQL 17**: `localhost:5432` (DB명 `mecross`)
 - **Redis**: `localhost:6379`
 
-> `docker:down`은 컨테이너만 제거하고 named volume(`postgres_data`, `redis_data`)은 남깁니다. 따라서 매번 내렸다 올려도 DB 데이터와 seed 계정은 그대로 유지됩니다. 데이터까지 지우려면 `docker compose down -v`를 직접 실행해야 합니다.
+> ⚠️ `docker:down`은 `-v`가 붙어 있어 컨테이너와 함께 named volume(`postgres_data`, `redis_data`)까지 제거합니다. **dev를 종료할 때마다(Ctrl+C·실패 포함) DB와 Redis 데이터가 사라지므로, 화면에서 만든 광고주·캠페인 같은 작업 데이터는 유지되지 않습니다.** 매번 깨끗한 시드 상태로 시작하는 것을 의도한 설정입니다. 데이터를 남기고 내리려면 `docker compose -f ./docker-compose.yml down`을 직접 실행하세요.
 
 ### 환경 변수 설정
 

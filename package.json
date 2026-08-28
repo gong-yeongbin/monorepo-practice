@@ -9,7 +9,7 @@
     "check-types": "turbo run check-types",
     "test": "turbo run test",
     "docker:up": "docker compose -f ./docker-compose.yml up -d --wait",
-    "docker:down": "docker compose -f ./docker-compose.yml down",
+    "docker:down": "docker compose -f ./docker-compose.yml down -v",
     "db:deploy": "pnpm --filter backend run deploy",
     "db:generate": "pnpm --filter backend run generate",
     "db:seed": "pnpm --filter backend run seed",
