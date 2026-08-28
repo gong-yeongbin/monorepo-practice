@@ -1,6 +1,7 @@
 // 예약 시각이 지난 예약을 campaign에 적용하는 use-case (스케줄러가 매시 정각·부트 시 호출)
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { CACHE_PORT, CachePort } from '@infra/cache/cache.port';
+import { campaignCacheKey } from '@common/utils/cache-key.util';
 import { RESERVATION_REPOSITORY, ReservationRepository } from '@reservation/domain/reservation.repository';
 
 // 락 보유 중 태스크가 죽어도 같은 시간대 안에서 재시도할 수 있도록 짧게 잡는다.
@@ -32,6 +33,10 @@ export class ApplyDueReservationsUseCase {
 		for (const reservation of due) {
 			try {
 				await this.reservationRepository.apply(reservation);
+				// 예약의 존재 이유가 "지정 시각 반영"이다. 캐시를 지우지 않으면 트래킹이 TTL 30분 동안
+				// 구 tracker_tracking_url로 리다이렉트한다(스냅샷에 담기는 필드다).
+				// 적용이 실패하면 DB가 안 바뀌었으므로 캐시도 그대로 두는 게 맞아 catch 앞에 두지 않는다.
+				await this.cache.del(campaignCacheKey(reservation.campaign_token));
 			} catch (error) {
 				this.logger.error(`예약 적용 실패 (id=${reservation.id}): ${String(error)}`);
 			}

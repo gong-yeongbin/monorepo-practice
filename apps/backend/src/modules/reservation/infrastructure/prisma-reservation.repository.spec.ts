@@ -61,7 +61,22 @@ describe('PrismaReservationRepository', () => {
 		await repository.findDue(now);
 
 		// 정렬이 빠지면 같은 캠페인에 밀린 예약 중 어느 것이 최종 값이 될지 정해지지 않는다
-		expect(reservation.findMany).toHaveBeenCalledWith({ where: { is_applied: false, reserved_at: { lte: now } }, orderBy: { reserved_at: 'asc' } });
+		expect(reservation.findMany).toHaveBeenCalledWith({
+			where: { is_applied: false, reserved_at: { lte: now } },
+			orderBy: { reserved_at: 'asc' },
+			include: { campaign: { select: { token: true } } },
+		});
+	});
+
+	it('findDue는 campaign token을 평탄화해 돌려준다 (use-case의 캐시 무효화용)', async () => {
+		const now = new Date('2026-08-16T01:00:00Z');
+		reservation.findMany.mockResolvedValue([
+			{ id: 1, campaign_id: 3, name: 'a', tracking_url: 'u1', reserved_at: now, is_applied: false, campaign: { token: 'token-a' } },
+		]);
+
+		expect(await repository.findDue(now)).toEqual([
+			{ id: 1, campaign_id: 3, name: 'a', tracking_url: 'u1', reserved_at: now, is_applied: false, campaign_token: 'token-a' },
+		]);
 	});
 
 	it('apply는 campaign 갱신과 완료 처리를 한 트랜잭션으로 묶는다', async () => {

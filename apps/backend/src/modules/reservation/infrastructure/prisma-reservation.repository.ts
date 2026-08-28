@@ -1,7 +1,7 @@
 // Prisma로 예약을 생성·조회·삭제하는 repository 구현체
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@infra/prisma/prisma.service';
-import { Reservation, ReservationListRow } from '@reservation/domain/reservation.entity';
+import { DueReservation, Reservation, ReservationListRow } from '@reservation/domain/reservation.entity';
 import { CreateReservationProps, ReservationRepository } from '@reservation/domain/reservation.repository';
 
 @Injectable()
@@ -38,8 +38,15 @@ export class PrismaReservationRepository implements ReservationRepository {
 	// 스케줄러용 — 미적용이고 예약 시각이 지난 예약 (서버 다운 중 지난 건도 걸려 소급 적용된다).
 	// 한 캠페인에 밀린 예약이 여러 건이면 나중 예약이 최종 값이어야 하므로 예약 시각 오름차순으로 돌려준다
 	// (use-case가 이 순서대로 하나씩 적용한다).
-	async findDue(now: Date): Promise<Reservation[]> {
-		return this.prismaService.reservation.findMany({ where: { is_applied: false, reserved_at: { lte: now } }, orderBy: { reserved_at: 'asc' } });
+	// campaign token은 use-case가 적용 후 캠페인 캐시를 지우는 데 쓰므로 관계에서 평탄화해 함께 싣는다.
+	async findDue(now: Date): Promise<DueReservation[]> {
+		const rows = await this.prismaService.reservation.findMany({
+			where: { is_applied: false, reserved_at: { lte: now } },
+			orderBy: { reserved_at: 'asc' },
+			include: { campaign: { select: { token: true } } },
+		});
+
+		return rows.map(({ campaign, ...reservation }) => ({ ...reservation, campaign_token: campaign.token }));
 	}
 
 	// 예약 적용 — campaign 갱신과 완료 처리를 한 트랜잭션으로 묶는다.

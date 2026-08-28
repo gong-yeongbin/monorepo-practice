@@ -5,19 +5,20 @@ import { CACHE_PORT } from '@infra/cache/cache.port';
 
 describe('ApplyDueReservationsUseCase', () => {
 	const reservationRepository = { findDue: jest.fn(), apply: jest.fn() };
-	const cache = { setIfAbsent: jest.fn() };
+	const cache = { setIfAbsent: jest.fn(), del: jest.fn() };
 	let useCase: ApplyDueReservationsUseCase;
 
 	const now = new Date('2026-08-16T01:00:00Z');
 	const due = [
-		{ id: 1, campaign_id: 1, name: 'a', tracking_url: 'u1', reserved_at: now, is_applied: false },
-		{ id: 2, campaign_id: 2, name: 'b', tracking_url: 'u2', reserved_at: now, is_applied: false },
+		{ id: 1, campaign_id: 1, campaign_token: 'token-a', name: 'a', tracking_url: 'u1', reserved_at: now, is_applied: false },
+		{ id: 2, campaign_id: 2, campaign_token: 'token-b', name: 'b', tracking_url: 'u2', reserved_at: now, is_applied: false },
 	];
 
 	beforeEach(async () => {
 		jest.clearAllMocks();
 		// 기본은 락 획득 성공 — 락을 못 얻는 경우만 개별 케이스에서 뒤집는다
 		cache.setIfAbsent.mockResolvedValue(true);
+		cache.del.mockResolvedValue(undefined);
 		const module = await Test.createTestingModule({
 			providers: [
 				ApplyDueReservationsUseCase,
@@ -60,12 +61,32 @@ describe('ApplyDueReservationsUseCase', () => {
 		expect(reservationRepository.apply).toHaveBeenCalledTimes(2);
 	});
 
+	it('적용한 캠페인의 캐시를 지운다 (지정 시각에 새 tracking_url이 반영되도록)', async () => {
+		reservationRepository.findDue.mockResolvedValue(due);
+		reservationRepository.apply.mockResolvedValue(undefined);
+
+		await useCase.execute(now);
+
+		expect(cache.del).toHaveBeenCalledWith('campaign:token-a');
+		expect(cache.del).toHaveBeenCalledWith('campaign:token-b');
+	});
+
 	it('한 건 적용 실패가 나머지 적용을 막지 않는다', async () => {
 		reservationRepository.findDue.mockResolvedValue(due);
 		reservationRepository.apply.mockRejectedValueOnce(new Error('db down')).mockResolvedValueOnce(undefined);
 
 		await expect(useCase.execute(now)).resolves.toBeUndefined();
 		expect(reservationRepository.apply).toHaveBeenCalledTimes(2);
+	});
+
+	it('적용에 실패한 캠페인의 캐시는 지우지 않는다 (DB가 안 바뀌었으므로)', async () => {
+		reservationRepository.findDue.mockResolvedValue(due);
+		reservationRepository.apply.mockRejectedValueOnce(new Error('db down')).mockResolvedValueOnce(undefined);
+
+		await useCase.execute(now);
+
+		expect(cache.del).not.toHaveBeenCalledWith('campaign:token-a');
+		expect(cache.del).toHaveBeenCalledWith('campaign:token-b');
 	});
 
 	it('적용 대상이 없으면 아무것도 하지 않는다', async () => {
