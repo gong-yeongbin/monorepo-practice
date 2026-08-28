@@ -103,11 +103,13 @@ resource "aws_lb_target_group" "tracking" {
 
   # TCP 헬스체크는 포트만 열리고 앱이 죽은 상태를 못 잡는다.
   # NLB 타깃 그룹은 두 임계값이 같아야 하고 HTTP 헬스체크 간격은 10 또는 30만 허용된다.
+  # 새 태스크가 트래픽을 받으려면 2회를 통과해야 하므로 간격이 곧 증설 반영 지연이다 —
+  # 30이면 60초, 10이면 20초. 트래킹은 급증에 민감하고 헬스체크 요청 증가는 무시할 수준이라 10으로 둔다.
   health_check {
     protocol            = "HTTP"
     path                = "/health"
     matcher             = "200"
-    interval            = 30
+    interval            = 10
     healthy_threshold   = 2
     unhealthy_threshold = 2
   }
