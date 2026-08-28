@@ -117,6 +117,10 @@ JWT_REFRESH_SECRET="change-me-refresh"
 
 # 서버
 PORT=3001
+
+# 어드민 API의 CORS 허용 origin (미설정 시 http://localhost:3000)
+# 어드민 포트에만 적용된다 — 트래킹 포트는 응답 바이트 절감을 위해 CORS 헤더를 붙이지 않는다.
+CORS_ORIGIN="http://localhost:3000"
 ```
 
 ## API 엔드포인트

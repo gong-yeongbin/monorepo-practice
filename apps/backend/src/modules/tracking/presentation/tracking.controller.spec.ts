@@ -18,7 +18,7 @@ describe('TrackingController', () => {
 		await controller.tracking(query, res);
 
 		expect(trackingUseCase.execute).toHaveBeenCalledWith(query);
-		expect(res.writeHead).toHaveBeenCalledWith(302, { Location: 'https://redirect.example.com' });
+		expect(res.writeHead).toHaveBeenCalledWith(302, { Location: 'https://redirect.example.com', 'Content-Length': '0' });
 		expect(res.end).toHaveBeenCalledWith();
 	});
 });

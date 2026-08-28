@@ -5,6 +5,7 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { NextFunction, Request, Response } from 'express';
 
 // 트래킹 포트(NLB 경유)로 받을 공개 경로. NLB는 L4라 경로를 못 거르므로 ALB 리스너 규칙이 하던 일을 앱이 대신한다.
@@ -20,13 +21,21 @@ async function bootstrap() {
 	// 트래킹 응답 바이트 절감 — 모든 응답에서 X-Powered-By 헤더 제거
 	app.getHttpAdapter().getInstance().disable('x-powered-by');
 
-	// 로컬 frontend(3000)에서의 브라우저 호출 허용
-	app.enableCors({ origin: 'http://localhost:3000' });
-
 	const configService = app.get<ConfigService>(ConfigService);
 	const port = configService.get<number>('PORT');
 
 	const trackingPort = Number(configService.get('TRACKING_PORT')) || TRACKING_PORT_DEFAULT;
+
+	// 어드민 프론트의 브라우저 호출을 허용할 origin. prod는 https://admin.<도메인>(터라폼이 주입), 미설정 시 로컬 dev 서버.
+	const corsOrigin = configService.get<string>('CORS_ORIGIN') || 'http://localhost:3000';
+
+	// CORS는 어드민 포트에만 건다.
+	// 전역으로 걸면 Origin 헤더가 없는 요청에도 ACAO + Vary가 붙어 트래킹 응답이 클릭당 66바이트 늘어난다.
+	// 트래킹은 브라우저 top-level 리다이렉트라 CORS가 무의미하고 포스트백은 서버 간 호출이라 둘 다 헤더가 필요 없다.
+	// origin: false면 cors 미들웨어가 헤더를 하나도 붙이지 않고 통과시킨다(cors/lib/index.js의 middlewareWrapper).
+	app.enableCors((req: Request, callback: (error: Error | null, options: CorsOptions) => void) => {
+		callback(null, { origin: req.socket.localPort === trackingPort ? false : corsOrigin });
+	});
 
 	// L7 프록시(ALB) 뒤에서 X-Forwarded-For의 실제 클라이언트 IP를 쓰도록 한다(IP 기준 rate limit 전제).
 	// 주의: 트래킹은 NLB(L4) 경유라 XFF를 붙여주는 주체가 없다 — 켜면 클라이언트가 헤더를 위조해

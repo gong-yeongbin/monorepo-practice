@@ -83,7 +83,10 @@ module "backend" {
   # REDIS_STREAM_CONSUMER는 주입하지 않는다 — 앱 기본값(consumer-<hostname>-<pid>)이
   # 태스크별로 유니크해야 다중 태스크에서 xautoclaim 중복 처리가 없다.
   environment = {
-    PORT                = "3001"
+    PORT = "3001"
+    # 어드민 API(ALB)의 CORS 허용 origin — 프론트가 배포된 CloudFront 주소다.
+    # 트래킹 포트에는 앱이 CORS를 걸지 않는다(응답 바이트 절감, apps/backend/src/main.ts 참고).
+    CORS_ORIGIN         = "https://${local.frontend_domain}"
     VALKEY              = "redis://${module.cache.endpoint}:6379"
     REDIS_STREAM_GROUP  = var.redis_stream_group
     REDIS_STREAM_MAXLEN = tostring(var.redis_stream_maxlen)

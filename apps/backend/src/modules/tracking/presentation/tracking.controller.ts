@@ -28,7 +28,8 @@ export class TrackingController {
 		const url = await this.trackingUseCase.execute(query);
 		// res.redirect()는 HTML 바디("Found. Redirecting to...")를 붙인다.
 		// 클릭량에 곱해지는 전송 바이트라 바디 없이 헤더만 보낸다.
-		res.writeHead(302, { Location: url });
+		// Content-Length를 생략하면 Node가 Transfer-Encoding: chunked로 내보내 종결자까지 붙는다 — 0을 명시해 14바이트를 아낀다.
+		res.writeHead(302, { Location: url, 'Content-Length': '0' });
 		res.end();
 	}
 }
