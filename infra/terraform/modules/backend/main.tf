@@ -312,16 +312,19 @@ resource "aws_ecs_service" "this" {
   task_definition = aws_ecs_task_definition.this.arn
   desired_count   = var.desired_count
 
-  # 첫 1대는 항상 온디맨드, 증설분은 전부 Spot (회수돼도 base가 계속 서비스)
+  # 첫 1대는 항상 온디맨드(회수돼도 base가 계속 서비스), 증설분은 온디맨드 1 : Spot 3으로 섞는다.
+  # ECS는 Spot 용량이 없을 때 온디맨드로 자동 전환하지 않고 태스크를 PROVISIONING에 세워둔다 —
+  # 증설분을 전부 Spot으로 두면(weight = 0) 하필 트래픽이 급증한 시점에 증설이 통째로 실패할 수 있다.
+  # 가중치를 섞으면 Spot 품귀에도 증설분의 1/4은 배치된다. 대가는 월 ~$13.
   capacity_provider_strategy {
     capacity_provider = "FARGATE"
     base              = 1
-    weight            = 0
+    weight            = 1
   }
 
   capacity_provider_strategy {
     capacity_provider = "FARGATE_SPOT"
-    weight            = 1
+    weight            = 3
   }
 
   network_configuration {
