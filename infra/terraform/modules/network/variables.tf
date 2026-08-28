@@ -16,7 +16,13 @@ variable "az_count" {
 }
 
 variable "app_port" {
-  description = "백엔드 컨테이너 포트"
+  description = "백엔드 컨테이너 포트 (어드민 API — ALB 경유)"
   type        = number
   default     = 3001
+}
+
+variable "tracking_port" {
+  description = "백엔드 트래킹 포트 (트래킹·포스트백 — NLB 경유). 앱이 이 포트에서는 공개 경로만 받는다"
+  type        = number
+  default     = 3002
 }

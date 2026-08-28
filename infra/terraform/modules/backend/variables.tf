@@ -23,6 +23,11 @@ variable "alb_sg_id" {
   type        = string
 }
 
+variable "nlb_sg_id" {
+  description = "트래킹 NLB 보안그룹 ID (NLB는 생성 시점에만 SG를 지정할 수 있다)"
+  type        = string
+}
+
 variable "app_sg_id" {
   description = "Fargate 태스크 보안그룹 ID"
   type        = string
@@ -39,9 +44,15 @@ variable "container_image" {
 }
 
 variable "container_port" {
-  description = "컨테이너 포트"
+  description = "어드민 API 컨테이너 포트 (ALB 경유)"
   type        = number
   default     = 3001
+}
+
+variable "tracking_port" {
+  description = "트래킹·포스트백 컨테이너 포트 (NLB 경유). 앱에 TRACKING_PORT로 주입되며 이 포트에서는 공개 경로만 받는다"
+  type        = number
+  default     = 3002
 }
 
 variable "cpu" {
@@ -77,14 +88,6 @@ variable "secret_arns" {
 variable "app_bucket_arn" {
   description = "앱이 사용하는 S3 버킷 ARN (task role 권한 범위)"
   type        = string
-}
-
-variable "http_forward_paths" {
-  description = "HTTPS 리다이렉트 없이 80 포트에서 바로 포워드할 경로 (http:// 로 배포된 트래킹·포스트백 링크)"
-  type        = list(string)
-  # 포스트백 수신 URL은 /<트래커명>/install·event 형태 (예: /appsflyer/install) — PostbackController 참고.
-  # /postback* 은 실제 수신 URL과 매치되지 않고 어드민 API(/postbacks)만 평문으로 여는 오매치라 쓰지 않는다.
-  default = ["/tracking*", "/*/install", "/*/event"]
 }
 
 variable "enable_autoscaling" {

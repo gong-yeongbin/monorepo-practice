@@ -70,7 +70,7 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
 }
 
-# --- 보안그룹 체인: alb -> app -> rds/redis ---
+# --- 보안그룹 체인: alb/nlb -> app -> rds/redis ---
 # 순환 참조를 피하기 위해 SG는 전부 이 모듈에서 만들고 각 모듈에는 ID만 넘긴다.
 
 resource "aws_security_group" "alb" {
@@ -106,17 +106,53 @@ resource "aws_security_group" "alb" {
   }
 }
 
-resource "aws_security_group" "app" {
-  name        = "${var.project}-app"
-  description = "Fargate tasks: app port from ALB only"
+# 트래킹용 NLB. 클라이언트 IP 보존을 켜면 태스크가 보는 출발지가 NLB가 아니라 실제 클라이언트라,
+# NLB에 SG가 없으면 app SG의 트래킹 포트를 0.0.0.0/0으로 열어야 해 위 체인에 구멍이 난다.
+# 주의: NLB의 보안그룹은 생성 시점에만 지정할 수 있고 나중에 추가할 수 없다.
+resource "aws_security_group" "nlb" {
+  name        = "${var.project}-nlb"
+  description = "Tracking NLB: HTTP from anywhere"
   vpc_id      = aws_vpc.this.id
 
   ingress {
-    description     = "App port from ALB"
+    description = "HTTP"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.project}-nlb"
+  }
+}
+
+resource "aws_security_group" "app" {
+  name        = "${var.project}-app"
+  description = "Fargate tasks: admin port from ALB, tracking port from NLB"
+  vpc_id      = aws_vpc.this.id
+
+  ingress {
+    description     = "Admin port from ALB"
     from_port       = var.app_port
     to_port         = var.app_port
     protocol        = "tcp"
     security_groups = [aws_security_group.alb.id]
+  }
+
+  ingress {
+    description     = "Tracking port from NLB"
+    from_port       = var.tracking_port
+    to_port         = var.tracking_port
+    protocol        = "tcp"
+    security_groups = [aws_security_group.nlb.id]
   }
 
   # ECR pull, AWS API(SSM/S3/SES) 호출용

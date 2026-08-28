@@ -5,9 +5,23 @@ data "aws_route53_zone" "this" {
   name = var.domain_name
 }
 
+# 트래킹·포스트백 — 매체와 트래커에 배포된 http:// 링크가 이 이름을 가리킨다
 resource "aws_route53_record" "api" {
   zone_id = data.aws_route53_zone.this.zone_id
   name    = local.api_domain
+  type    = "A"
+
+  alias {
+    name                   = module.backend.nlb_dns_name
+    zone_id                = module.backend.nlb_zone_id
+    evaluate_target_health = false
+  }
+}
+
+# 어드민 API — 프론트만 호출하는 주소
+resource "aws_route53_record" "admin_api" {
+  zone_id = data.aws_route53_zone.this.zone_id
+  name    = local.admin_api_domain
   type    = "A"
 
   alias {

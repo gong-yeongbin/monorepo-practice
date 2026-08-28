@@ -16,15 +16,22 @@ variable "domain_name" {
 }
 
 variable "frontend_subdomain" {
-  description = "frontend 서브도메인. 빈 문자열이면 apex 도메인 사용"
+  description = "frontend 서브도메인 (현재 운영 중인 어드민 화면 주소). 빈 문자열이면 apex 도메인 사용"
   type        = string
-  default     = "app"
+  default     = "admin"
 }
 
+# 매체·트래커에 배포된 링크의 도메인이라 변경 불가 — NLB가 이 이름을 받는다
 variable "api_subdomain" {
-  description = "backend API 서브도메인"
+  description = "트래킹·포스트백 서브도메인 (NLB, 평문 80)"
   type        = string
   default     = "api"
+}
+
+variable "admin_api_subdomain" {
+  description = "어드민 API 서브도메인 (ALB, HTTPS). 프론트 VITE_API_URL이 가리키는 주소"
+  type        = string
+  default     = "admin-api"
 }
 
 variable "vpc_cidr" {

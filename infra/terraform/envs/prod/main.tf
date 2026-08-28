@@ -1,6 +1,9 @@
 locals {
   frontend_domain = var.frontend_subdomain == "" ? var.domain_name : "${var.frontend_subdomain}.${var.domain_name}"
-  api_domain      = "${var.api_subdomain}.${var.domain_name}"
+  # 매체·트래커에 http://로 배포된 링크의 도메인 — 바꿀 수 없어 NLB가 이 이름을 가져간다
+  api_domain = "${var.api_subdomain}.${var.domain_name}"
+  # 어드민 API는 프론트만 쓰는 주소라 새로 파고 ALB에 붙인다
+  admin_api_domain = "${var.admin_api_subdomain}.${var.domain_name}"
 }
 
 module "network" {
@@ -36,11 +39,11 @@ module "ecr" {
   name = "${var.project}-backend"
 }
 
-# ALB(서울)용 인증서
+# ALB(서울)용 인증서 — 어드민 도메인. 트래킹 도메인은 NLB의 평문 80만 쓰므로 인증서가 없다.
 module "acm_alb" {
   source = "../../modules/acm"
 
-  domain_name = local.api_domain
+  domain_name = local.admin_api_domain
   zone_id     = data.aws_route53_zone.this.zone_id
 }
 
@@ -64,6 +67,7 @@ module "backend" {
   vpc_id            = module.network.vpc_id
   public_subnet_ids = module.network.public_subnet_ids
   alb_sg_id         = module.network.alb_sg_id
+  nlb_sg_id         = module.network.nlb_sg_id
   app_sg_id         = module.network.app_sg_id
   certificate_arn   = module.acm_alb.certificate_arn
 
