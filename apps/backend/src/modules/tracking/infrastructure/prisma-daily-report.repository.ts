@@ -14,8 +14,13 @@ export class PrismaDailyReportRepository implements DailyReportRepository {
 	async upsertMany(dailyReports: DailyReport[]): Promise<void> {
 		if (dailyReports.length === 0) return;
 
+		// 잠금 순서를 문장마다 동일하게 고정해 동시 upsert 간 데드락을 막는다.
+		// PostgreSQL은 VALUES에 적힌 순서로 행 잠금을 잡으므로, 정렬이 없으면 메시지 도착 순서가
+		// 다른 두 컨슈머가 겹치는 행을 역순으로 잠글 수 있다(postback 쪽 구현과 기준이 같아야 한다).
+		const sorted = [...dailyReports].sort((a, b) => a.view_code.localeCompare(b.view_code) || +a.created_date - +b.created_date);
+
 		// created_date는 드라이버의 타임존 변환을 피하려고 UTC 기준 'YYYY-MM-DD' 문자열로 바인딩한다(@db.Date 컬럼)
-		const rows = dailyReports.map(
+		const rows = sorted.map(
 			(r) =>
 				Prisma.sql`(${r.view_code}, ${r.token}, ${r.pub_id}, ${r.sub_id}, ${r.click}, ${r.install}, ${r.registration}, ${r.retention}, ${r.purchase}, ${r.revenue}, ${r.etc1}, ${r.etc2}, ${r.etc3}, ${r.etc4}, ${r.etc5}, ${r.unregistered}, ${r.created_date.toISOString().slice(0, 10)})`
 		);

@@ -54,6 +54,15 @@ describe('PrismaDailyReportRepository (tracking)', () => {
 		expect(query.values).toContain('2026-07-10');
 	});
 
+	it('입력 순서와 무관하게 충돌 키 순으로 정렬해 바인딩한다 (데드락 방지)', async () => {
+		executeRaw.mockResolvedValue(2);
+
+		await repository.upsertMany([dailyReport({ view_code: 'vc-2' }), dailyReport({ view_code: 'vc-1' })]);
+
+		const { values } = executeRaw.mock.calls[0][0];
+		expect(values.indexOf('vc-1')).toBeLessThan(values.indexOf('vc-2'));
+	});
+
 	it('쿼리 실패는 그대로 전파한다 (배치 재전달용)', async () => {
 		const error = new Error('db down');
 		executeRaw.mockRejectedValue(error);
