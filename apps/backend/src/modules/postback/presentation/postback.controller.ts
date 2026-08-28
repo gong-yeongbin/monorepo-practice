@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { SkipThrottle, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { TRACKER_NAMES } from '@trackers/tracker.registry';
 import { Tracker } from '@postback/presentation/dto/tracker.dto';
 import { InstallPostbackUseCase } from '@postback/application/install-postback.use-case';
@@ -11,7 +11,6 @@ import { Public } from '@auth/presentation/public.decorator';
 // 트래커가 직접 호출하는 공개 엔드포인트 — 인증 대신 IP 기준 rate limit으로 보호한다
 @Public()
 @UseGuards(ThrottlerGuard)
-@SkipThrottle({ tracking: true })
 @Controller()
 export class PostbackController {
 	constructor(

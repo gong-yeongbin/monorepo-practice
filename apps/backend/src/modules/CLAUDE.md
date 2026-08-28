@@ -27,7 +27,7 @@
 
 - 역할 축은 `USER`(대시보드 조회) ⊂ `ADMIN`(광고 운영) ⊂ `DEVELOPER`(+ 사용자 관리·승인). 값의 단일 출처는 `user/domain/user.entity.ts`의 `USER_ROLES`다.
 - 메서드 레벨 `@Roles`가 클래스 레벨을 덮는다. 컨트롤러 대부분을 ADMIN으로 두고 특정 조회만 USER에게 여는 식으로 쓴다(`advertising.controller.ts`의 `GET /advertising/:id` 참고).
-- `@Public()`은 토큰 없이 호출되는 엔드포인트에만 쓴다 — 헬스체크, 트래킹·포스트백(외부가 호출), auth(토큰 발급 전). 공개 엔드포인트는 인증 대신 `ThrottlerGuard`로 보호한다.
+- `@Public()`은 토큰 없이 호출되는 엔드포인트에만 쓴다 — 헬스체크, 트래킹·포스트백(외부가 호출), auth(토큰 발급 전). 포스트백은 인증 대신 `ThrottlerGuard`로 보호한다. **트래킹에는 rate limit이 없다** — `@nestjs/throttler`의 기본 인메모리 저장소가 IP 키를 지우지 않아 카디널리티가 무한한 이 경로에서 메모리·CPU를 무한히 먹기 때문이다(근거는 `tracking/presentation/tracking.controller.ts` 주석). 되살리려면 공유 저장소(Valkey) 기반이어야 한다.
 - `JwtAuthGuard`가 `request.user`에 `AccessTokenPayload`를 싣는다. 가드는 인터셉터보다 먼저 실행되므로 401·403 응답은 `ResponseInterceptor`로 감싸지지 않는다.
 - 핸들러에서 payload가 필요하면 `@CurrentUser()`(`auth/presentation/current-user.decorator.ts`)로 꺼낸다. `@Public` 라우트에는 payload가 없으므로 `@Roles`가 붙은 라우트에서만 쓴다.
 

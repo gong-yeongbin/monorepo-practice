@@ -21,15 +21,14 @@ import { ReservationModule } from '@reservation/reservation.module';
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true, envFilePath: `${process.cwd()}/.env` }),
 		ScheduleModule.forRoot(),
-		// 공개(@Public) 트래킹·포스트백 엔드포인트용 IP 기준 rate limit(60초 창).
-		// ThrottlerGuard는 해당 컨트롤러에만 붙으므로 인증으로 보호되는 어드민 API에는 적용되지 않으며, 각 컨트롤러는 자기 이름의 throttler만 쓴다(SkipThrottle로 상호 제외).
+		// 포스트백 엔드포인트용 IP 기준 rate limit(60초 창). ThrottlerGuard는 PostbackController에만 붙는다.
+		// 트래킹에는 붙이지 않는다 — 기본 인메모리 저장소가 IP 키를 지우지 않아 메모리가 무한히 늘고,
+		// 요청량 제곱으로 CPU를 먹는다(근거는 tracking.controller.ts 주석). 포스트백은 호출자가
+		// 트래커 서버 소수라 키 카디널리티가 낮아 같은 문제가 생기지 않는다.
 		ThrottlerModule.forRootAsync({
 			inject: [ConfigService],
 			useFactory: (configService: ConfigService) => ({
-				throttlers: [
-					{ name: 'tracking', ttl: 60_000, limit: Number(configService.get('THROTTLE_TRACKING_LIMIT')) || 300 },
-					{ name: 'postback', ttl: 60_000, limit: Number(configService.get('THROTTLE_POSTBACK_LIMIT')) || 600 },
-				],
+				throttlers: [{ name: 'postback', ttl: 60_000, limit: Number(configService.get('THROTTLE_POSTBACK_LIMIT')) || 600 }],
 			}),
 		}),
 		PrismaModule,
