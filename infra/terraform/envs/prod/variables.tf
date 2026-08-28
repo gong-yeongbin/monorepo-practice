@@ -46,11 +46,19 @@ variable "db_username" {
 }
 
 # 사이징 근거: 일 1억 클릭 실트래픽. 기존 운영 사양(RDS xlarge급, 캐시 large급)이
-# 오버스펙이라는 판단에 따라 한 단계 낮춰 시작 — 부족하면 tfvars에서 올려 apply.
+# 오버스펙이라는 판단에 따라 낮춰 시작 — 부족하면 tfvars에서 올려 apply.
+
+# 운영 중인 db.m5.xlarge(4 vCPU/16GB) 실측을 근거로 medium까지 내린다.
+#   CPU 3.3%(실효 0.13 vCPU) — medium 베이스라인 0.4 vCPU의 3분의 1
+#   ReadIOPS 50~90           — gp3 기본 3,000의 3% 미만. 캐시가 줄어 읽기가 10배로 늘어도 여유가 있다
+#   커넥션 60                — 4GB의 max_connections 기본값 약 450
+# 검증되지 않은 축은 메모리 하나다. 워킹셋이 3GB(shared_buffers 1GB + 페이지 캐시)를 넘으면 t4g.large로 올린다.
+# t4g는 Unlimited 모드가 기본이라 베이스라인 초과가 스로틀링이 아니라 추가 요금으로 나타난다 —
+# 전환 후 CPUCreditBalance와 CPUSurplusCreditsCharged에 알람을 걸 것.
 variable "db_instance_class" {
-  description = "RDS 인스턴스 클래스 (버스트 계열 — 부족 시 m6g.large 이상으로)"
+  description = "RDS 인스턴스 클래스 (버스트 계열 — 부족 시 t4g.large, 버스트 자체가 부담되면 m6g.large로)"
   type        = string
-  default     = "db.t4g.large"
+  default     = "db.t4g.medium"
 }
 
 variable "cache_node_type" {

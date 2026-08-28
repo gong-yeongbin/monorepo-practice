@@ -29,7 +29,7 @@
 | ECS Fargate ARM64 (Graviton) | x86 대비 컴퓨팅 단가 ~20% 절감. **이미지는 arm64로 빌드 필수** |
 | 온디맨드 base 1 + 증설분 Spot | Spot 최대 70% 절감. base 1대는 절대 회수 안 되므로 어드민 API 안전. Spot 회수 시 2분 예고 + ALB draining으로 신규 요청은 온디맨드로 라우팅 |
 | 오토스케일링 CPU 60%, 2~10대 | 기존 EC2 5대(12 vCPU 버스트, 항상 가동)와 달리 평시 2 vCPU 전용 + 피크에만 증설. Node는 싱글 스레드라 1vCPU/태스크가 적정 단위 |
-| RDS `db.t4g.large` Single-AZ | 기존 xlarge급($373/월)이 오버스펙이라는 판단. 스토리지 20→100GB 자동확장. 부족 시 tfvars에서 m6g.large로 |
+| RDS `db.t4g.medium` Single-AZ | 기존 xlarge급($373/월)이 오버스펙. 운영 인스턴스 실측 CPU 3.3%(실효 0.13 vCPU)·ReadIOPS 50~90·커넥션 60으로, medium의 베이스라인 0.4 vCPU / gp3 3,000 IOPS / `max_connections` ~450에 모두 크게 못 미친다. 스토리지 20→100GB 자동확장. 미검증 축은 메모리뿐 — 워킹셋이 3GB를 넘으면 tfvars에서 t4g.large, 버스트 자체가 부담되면 m6g.large로 |
 | ElastiCache **Valkey** `cache.t4g.medium` | 환경변수도 `VALKEY`, ioredis 호환(Stream 포함), Redis OSS 대비 ~20% 저렴 |
 | Valkey primary + replica, 자동 페일오버 | 단일 노드면 장애 시 스트림 미처리분과 캠페인 캐시가 통째로 사라지고 `XADD` 실패로 클릭이 큐잉조차 안 된다(캐시 미스가 RDS로 몰리는 연쇄까지). 다른 AZ 레플리카로 승격. 단 복제가 비동기라 전환 직전 수 초는 유실 가능하고 전환에 1~2분 — 유실 0이 아니라 분 단위를 초 단위로 줄이는 장치. 스냅샷 3일 보관 별도(레플리카는 실수 삭제를 못 살림) |
 | `REDIS_STREAM_MAXLEN` 200만 | `XADD MAXLEN ~`는 소비 여부와 무관하게 트림하므로 스트림 길이가 곧 컨슈머 지연 허용치. 앱 기본값 10만은 ~86초치라 배포·RDS 장애만으로도 미소비 클릭이 조용히 유실된다. 200만이면 ~29분치(피크 3배에도 ~10분)이고 tracking 엔트리 기준 ~300MB로 3.1GB에 여유 |
@@ -44,13 +44,13 @@
 
 **기존 (2026-07 청구서, Onetwoad 계정): 월 $1,792** — Data Transfer $865(48%), RDS $373, EC2 $348, ElastiCache $147, VPC $37, GA $19
 
-**새 설계 예상: 월 $1,000~1,330 (기본 25~40% 절감, 전송량 최적화 성공 시 ~50%)**
+**새 설계 예상: 월 $940~1,270 (기본 30~45% 절감, 전송량 최적화 성공 시 ~50%)**
 
 | 항목 | 예상/월 |
 |---|---|
 | Fargate (온디맨드 1 + Spot 평균 2~3) | $50~80 |
 | ALB (신규 연결 ~46 LCU 가정) | $200~300 |
-| RDS db.t4g.large | ~$110 |
+| RDS db.t4g.medium | ~$55 |
 | ElastiCache cache.t4g.medium × 2 (primary + replica) | ~$96 |
 | **Data Transfer** (GA 제거 + ECDSA 반영) | **$500~700** |
 | Route53/S3/ECR/IPv4/로그 등 | ~$40 |
