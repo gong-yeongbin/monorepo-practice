@@ -22,7 +22,13 @@ export class S3StorageAdapter implements StoragePort {
 				ContentType: params.contentType,
 			})
 		);
-		// DB에 영구 저장되는 URL이므로 presigned가 아닌 public-read 버킷의 정적 URL을 쓴다
+		// DB에 영구 저장되는 URL이므로 만료되는 presigned URL은 쓸 수 없다.
+		// 운영 버킷은 완전 비공개(퍼블릭 액세스 차단)라 S3 정적 URL은 403이므로 CloudFront 도메인을 앞에 붙인다 —
+		// 터라폼이 ASSET_BASE_URL로 주입한다(infra/terraform/envs/prod/storage.tf).
+		// 미설정 시의 S3 정적 URL은 CDN 없이 공개 버킷을 쓰는 로컬 개발용 폴백이다.
+		const assetBaseUrl = this.configService.get<string>('ASSET_BASE_URL');
+		if (assetBaseUrl) return `${assetBaseUrl}/${params.key}`;
+
 		return `https://${bucket}.s3.${this.configService.get<string>('AWS_REGION')}.amazonaws.com/${params.key}`;
 	}
 }
