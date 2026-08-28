@@ -13,7 +13,8 @@ export default defineConfig({
   schema: 'prisma/schema.prisma',
   migrations: {
     path: 'prisma/migrations',
-    seed: 'ts-node prisma/seed.ts',
+    // seed.ts가 src의 트래커 매퍼를 그대로 쓰므로 경로 별칭(@trackers/* 등) 해석이 필요하다
+    seed: 'ts-node -r tsconfig-paths/register prisma/seed.ts',
   },
   datasource: {
     url: process.env.DATABASE_URL,

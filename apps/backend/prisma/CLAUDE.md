@@ -10,6 +10,10 @@
 - `pnpm reset` — DB 초기화. **데이터가 삭제되므로** 로컬에서만. 초기화 후 seed가 자동 실행된다.
 - `pnpm seed` — `seed.ts` 실행(로컬 테스트 데이터 생성). upsert 기반이라 재실행해도 안전. 역할별 유저 4개(`admin`=DEVELOPER·`ops`=ADMIN·`viewer`=USER는 `approved: true`, `pending`=USER는 승인 대기. 전부 `@test.com` / `test1234!`)와 advertiser→tracker→media→advertising→campaign→campaign_config 그래프, daily_report 7일치, 포스트백 로그 모달용 postback 7일치(인스톨·가입·구매는 daily_report 건수와 일치, 미등록 이벤트 1건/일, `click_id`가 `seed_click_` 접두사)를 만든다.
 
+`seed.ts` 상단의 `TRACKER_SEEDS`는 트래커 4곳의 실제 트래킹 링크·포스트백 URL 템플릿이다. 이름은 `TRACKERS` 레지스트리 키와 같아야 하고(레거시 `adbrixremaster` → `adbrix-remaster`), adjust만 트래킹 링크에서 콜백을 뺐다 — 클릭 치환기가 모르는 `{macro}`를 빈 문자열로 지워 콜백 안의 adjust 매크로까지 날아가기 때문이다.
+
+`postback-samples.ts`는 트래커 4곳이 실제로 보내오는 원본 쿼리(파라미터 40여 개, 중복 키, 미치환 매크로)를 보존한 install·event 8건이다. 앱 식별자는 이 프로젝트 값으로, 단말 광고 ID와 IP는 더미·문서용 주소(RFC 5737)로 치환했다. 파생 컬럼은 손으로 적지 않고 `TRACKERS` 매퍼 → `createPostback`을 태워 만들므로 매퍼가 바뀌면 시드도 따라간다. 이 8건만 `sub_id`가 `seed_sub_raw`라 view_code가 갈리고, 대응하는 daily_report 한 줄(install 4·미등록 4)을 따로 만든다. **seed.ts가 `src`의 매퍼를 import하므로 실행 커맨드에 `-r tsconfig-paths/register`가 필요하다**(`prisma.config.ts`).
+
 **이 Prisma 명령어(`migrate`/`deploy`/`generate`/`reset`/`seed`)는 에이전트가 직접 실행하지 않고 사용자가 직접 실행한다.** 실제 DB에 연결·변경을 가하고 `.env`의 `DATABASE_URL`에 의존하기 때문이다. 에이전트는 `schema.prisma` 수정과 마이그레이션 `migration.sql`을 손으로 작성하는 데까지만 하고, 적용(`deploy` 등)은 사용자에게 명령어를 안내한다. 사용자가 세션에서 직접 돌리려면 `!` 접두사로 실행하면 된다(예: `! pnpm deploy`).
 
 ## datasource url은 schema가 아니라 config/service에서 주입 (주의)

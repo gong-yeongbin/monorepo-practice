@@ -1,0 +1,369 @@
+// 트래커가 실제로 보내오는 원본 포스트백 쿼리 형태를 보존한 시드 샘플 (앱·식별자·개인정보는 이 프로젝트 값으로 치환)
+import dayjs from 'dayjs';
+
+// 이 프로젝트의 예시 앱. seed.ts의 TRACKER_SEEDS(트래커 링크 템플릿)와 같은 값이라 함께 바꿔야 한다.
+const APP_PACKAGE = 'com.example.app';
+const APP_NAME = 'cafe-rush';
+const APP_VERSION = '1.0.0';
+const ITUNES_APP_ID = '000000000';
+const APP_KEY = 'seedAppKey00000000000A';
+
+// 원본에는 실제 단말 광고 ID와 클라이언트 IP가 들어 있다. 시드는 저장소에 영구히 남으므로
+// 문서용 IP(RFC 5737)와 고정 더미 ID로 바꾼다. 길이·형식이 같아 raw_query_params 크기 감각은 유지된다.
+const GAID = '00000000-0000-4000-8000-000000000001';
+const ADJUST_ADID = 'a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5';
+const MEDIA_PUBLISHER = 'b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6';
+
+// 매체(우리 플랫폼)가 트래커 대시보드에 남기는 채널·캠페인 이름
+const CHANNEL = 'mecrosspro';
+const CAMPAIGN_NAME = 'cafe-rush-launch';
+
+// 트래커별로 다른 시각 표기. 매퍼가 값을 어떻게 해석하는지에 맞춰 만든다.
+const unixSec = (date: Date) => String(Math.floor(date.getTime() / 1000));
+const unixMs = (date: Date) => String(date.getTime());
+const plain = (date: Date) => dayjs(date).format('YYYY-MM-DD HH:mm:ss.SSS');
+// airbridge의 event_datetime·click_datetime 표기(마이크로초 + UTC 오프셋). 매퍼는 timestamp 쪽을 읽으므로 표기만 맞춘다.
+const iso = (date: Date) => date.toISOString().replace('Z', '000+00:00');
+// adbrix 매퍼는 수신값에 9시간을 더한다(UTC로 받는다는 전제). 목표 시각을 얻으려면 9시간 뺀 값을 넣어야 한다.
+const adbrix = (date: Date) => dayjs(date).subtract(9, 'hour').format('YYYY-MM-DD HH:mm:ss.SSS');
+
+// airbridge는 같은 키를 두 번 보내는 경우가 있어(click_id·sub_id·custom_param1~5) express가 배열로 파싱한다.
+// 매퍼의 Array.isArray 분기가 이 형태를 받는 경로라 시드에도 그대로 남긴다.
+export interface PostbackSample {
+	tracker: string;
+	kind: 'install' | 'event';
+	query: Record<string, string | string[]>;
+}
+
+interface SampleContext {
+	token: string;
+	// 트래커가 되돌려주는 값은 URL 디코드된 상태다(매퍼가 다시 인코딩해 view_code 컬럼에 넣는다)
+	viewCode: string;
+	baseDate: Date;
+}
+
+export const buildPostbackSamples = ({ token, viewCode, baseDate }: SampleContext): PostbackSample[] => {
+	const MINUTE = 60 * 1000;
+	const at = (minutes: number) => new Date(baseDate.getTime() + minutes * MINUTE);
+
+	const clicked = at(0);
+	const installed = at(30);
+	const evented = at(60);
+
+	const clickId = (tracker: string, kind: string) => `seed_click_${tracker}_${kind}`;
+
+	return [
+		{
+			tracker: 'adbrix-remaster',
+			kind: 'install',
+			query: {
+				a_key: 'ncpi:1761643739049:00000000-0000-4000-8000-000000000101',
+				a_cookie: 'cookie:00000000-0000-4000-8000-000000000102',
+				a_ip: '192.0.2.11',
+				a_fp: 'Android:SM-S928N:192.0.2.11',
+				a_country: 'kr',
+				a_city: 'seoul',
+				a_region: 'seoul teugbyeolsi',
+				a_appkey: APP_KEY,
+				m_publisher: MEDIA_PUBLISHER,
+				m_sub_publisher: '',
+				adid: GAID,
+				idfv: '',
+				ad_id_opt_out: 'false',
+				device_os_version: '16',
+				device_model: 'SM-S928N',
+				device_vendor: 'samsung',
+				device_resolution: '1440x3120',
+				device_portrait: 'true',
+				device_platform: '1',
+				device_network: 'mobile',
+				device_wifi: 'false',
+				device_carrier: 'SKTelecom',
+				device_language: 'KO',
+				device_country: 'KR',
+				device_build_id: 'BP2A.250605.031.A3',
+				package_name: APP_PACKAGE,
+				appkey: APP_KEY,
+				sdk_version: '2.5.0.7',
+				installer: 'com.android.vending',
+				app_version: APP_VERSION,
+				attr_type: '0',
+				event_name: 'abx:firstopen',
+				event_datetime: adbrix(installed),
+				deeplink_path: '',
+				market_install_btn_clicked: '',
+				app_install_start: '',
+				app_install_completed: '',
+				app_first_open: '',
+				seconds_gap: '492613',
+				cb_1: token,
+				cb_2: viewCode,
+				cb_3: clickId('adbrix', 'install'),
+				cb_4: '{cb_4}',
+				cb_5: '',
+				a_server_datetime: adbrix(clicked),
+			},
+		},
+		{
+			tracker: 'adbrix-remaster',
+			kind: 'event',
+			query: {
+				a_key: 'ncpi:1761644454434:00000000-0000-4000-8000-000000000103',
+				a_cookie: 'cookie:00000000-0000-4000-8000-000000000104',
+				a_ip: '192.0.2.12',
+				a_fp: 'Android:SM-F936N:192.0.2.12',
+				a_country: 'kr',
+				a_city: '',
+				a_region: '',
+				a_appkey: APP_KEY,
+				m_publisher: MEDIA_PUBLISHER,
+				m_sub_publisher: '',
+				attr_adid: GAID,
+				attr_event_datetime: adbrix(installed),
+				attr_event_timestamp: unixSec(installed),
+				attr_seconds_gap: '491411',
+				adid: GAID,
+				idfv: '',
+				ad_id_opt_out: 'false',
+				device_os_version: '15',
+				device_model: 'SM-F936N',
+				device_vendor: 'samsung',
+				device_resolution: '1812x2176',
+				device_portrait: 'true',
+				device_platform: '1',
+				device_network: 'wifi',
+				device_wifi: 'false',
+				device_carrier: 'SKTelecom',
+				device_language: 'KO',
+				device_country: 'KR',
+				device_build_id: 'AP3A.240905.015.A2',
+				package_name: APP_PACKAGE,
+				appkey: APP_KEY,
+				sdk_version: '2.5.0.7',
+				installer: 'com.android.vending',
+				app_version: APP_VERSION,
+				event_name: 'abx:sign_up',
+				event_datetime: adbrix(evented),
+				event_timestamp: unixSec(evented),
+				event_timestamp_d: `${unixSec(evented)}.074`,
+				param_json: '{"abx:session_order_no":2,"abx:sign_channel":"ETC","abx:event_order_no":2}',
+				cb_1: token,
+				cb_2: viewCode,
+				cb_3: clickId('adbrix', 'event'),
+				cb_4: '{cb_4}',
+				cb_5: '',
+			},
+		},
+		{
+			tracker: 'adjust',
+			kind: 'install',
+			query: {
+				cp_token: token,
+				publisher_id: viewCode,
+				click_id: clickId('adjust', 'install'),
+				uid: '{uid}',
+				app_id: APP_PACKAGE,
+				app_version: APP_VERSION,
+				network_name: CHANNEL,
+				campaign_name: CAMPAIGN_NAME,
+				adgroup_name: viewCode,
+				adid: ADJUST_ADID,
+				gps_adid: GAID,
+				ip_address: '192.0.2.13',
+				click_time: unixSec(clicked),
+				engagement_time: unixSec(clicked),
+				installed_at: unixSec(installed),
+				isp: 'KT',
+				country: 'kr',
+				language: 'ko',
+				device_name: 'GalaxyZFlip5',
+				device_type: 'phone',
+				os_name: 'android',
+				sdk_version: 'android4.33.3',
+				os_version: '15',
+			},
+		},
+		{
+			tracker: 'adjust',
+			kind: 'event',
+			query: {
+				event_token: '{event_token}',
+				event_type: '03_NPSN',
+				cp_token: token,
+				publisher_id: viewCode,
+				click_id: clickId('adjust', 'event'),
+				uid: '{uid}',
+				app_id: APP_PACKAGE,
+				app_version: APP_VERSION,
+				network_name: CHANNEL,
+				campaign_name: CAMPAIGN_NAME,
+				adgroup_name: viewCode,
+				adid: ADJUST_ADID,
+				gps_adid: GAID,
+				ip_address: '192.0.2.14',
+				click_time: unixSec(clicked),
+				engagement_time: unixSec(clicked),
+				installed_at: unixSec(installed),
+				created_at: unixSec(evented),
+				isp: 'KT',
+				country: 'kr',
+				language: 'ko',
+				device_name: 'GalaxyS25Ultra',
+				device_type: 'phone',
+				os_name: 'android',
+				sdk_version: 'android5.4.2',
+				os_version: '16',
+			},
+		},
+		{
+			tracker: 'airbridge',
+			kind: 'install',
+			query: {
+				// 원본이 같은 키를 두 번 보내던 자리 — express가 배열로 파싱하는 경로를 그대로 남긴다
+				click_id: [clickId('airbridge', 'install'), clickId('airbridge', 'install')],
+				sub_id: [viewCode, viewCode],
+				uuid: GAID,
+				google_aid: GAID,
+				ios_idfa: '',
+				ios_ifv: '',
+				limitAdTracking: 'false',
+				device_model: 'SM-S901N',
+				device_manufacturer: 'samsung',
+				device_type: 'mobile',
+				os: 'Android',
+				os_version: '15',
+				locale: 'ko-KR',
+				language: 'ko',
+				country: 'kr',
+				device_carrier: 'LG U+',
+				timezone: 'Asia/Seoul',
+				device_ip: '192.0.2.15',
+				packageName: APP_PACKAGE,
+				iTunesAppID: ITUNES_APP_ID,
+				appVersion: APP_VERSION,
+				appName: APP_NAME,
+				sdkVersion: 'M_A_v4.11.0',
+				isUnique: 'true',
+				event_datetime: iso(installed),
+				event_timestamp: unixMs(installed),
+				install_timestamp: unixMs(installed),
+				click_datetime: iso(clicked),
+				click_timestamp: unixMs(clicked),
+				deeplink: '',
+				googleReferrer: 'airbridge=true',
+				client_id: '00000000-0000-4000-8000-000000000105',
+				event_uuid: '00000000-0000-4000-8000-000000000106',
+				referrer_timestamp: unixMs(clicked),
+				channel: CHANNEL,
+				campaign: 'nCPI',
+				tracking_template_id: 'c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7',
+				ad_group: '{ad_group}',
+				ad_creative: '260826',
+				content: '  2608event_1',
+				sub_id_1: '{sub_id_1}',
+				routing_short_id: 'jhzz3b',
+				custom_param1: [token, token],
+				custom_param2: ['{custom_param2}', '{custom_param2}'],
+				custom_param3: ['{custom_param3}', '{custom_param3}'],
+				custom_param4: ['{custom_param4}', '{custom_param4}'],
+				custom_param5: ['{custom_param5}', '{custom_param5}'],
+				gaid_raw: GAID,
+				ad_type: 'click',
+				attributedChannel: CHANNEL,
+				attributedMatchingType: 'id',
+			},
+		},
+		{
+			tracker: 'airbridge',
+			kind: 'event',
+			query: {
+				click_id: clickId('airbridge', 'event'),
+				sub_id: viewCode,
+				uuid: GAID,
+				google_aid: GAID,
+				ios_idfa: '',
+				ios_ifv: '',
+				limitAdTracking: 'false',
+				device_model: 'SM-F766N',
+				device_manufacturer: 'samsung',
+				os: 'Android',
+				os_version: '16',
+				locale: 'ko-KR',
+				language: 'ko',
+				country: 'kr',
+				device_carrier: 'KT',
+				timezone: 'Asia/Seoul',
+				device_ip: '192.0.2.16',
+				packageName: APP_PACKAGE,
+				iTunesAppID: ITUNES_APP_ID,
+				appVersion: APP_VERSION,
+				appName: APP_NAME,
+				sdkVersion: 'M_A_v4.11.0',
+				event_type: 'install',
+				isUnique: 'false',
+				event_datetime: iso(evented),
+				event_timestamp: unixMs(evented),
+				install_timestamp: unixMs(installed),
+				click_datetime: iso(clicked),
+				click_timestamp: unixMs(clicked),
+				deeplink: '',
+				googleReferrer: '',
+				category: 'Open (App)',
+				eventName: 'open',
+				eventLabel: '',
+				eventValue: '',
+				inAppPurchased: '',
+				transactionID: '',
+				product_info: '[]',
+				attributedChannel: CHANNEL,
+				campaign: 'nCPI',
+				ad_type: 'click',
+				ad_group: '{ad_group}',
+				ad_creative: '250916',
+				attributedMatchingType: 'id',
+				custom_param1: token,
+				custom_param2: '{custom_param2}',
+				custom_param3: '{custom_param3}',
+				custom_param4: '{custom_param4}',
+				custom_param5: '{custom_param5}',
+			},
+		},
+		{
+			tracker: 'appsflyer',
+			kind: 'install',
+			query: {
+				clickid: clickId('appsflyer', 'install'),
+				af_siteid: viewCode,
+				af_c_id: token,
+				idfv: '',
+				install_time: plain(installed),
+				country_code: 'KR',
+				language: '한국어',
+				click_time: plain(clicked),
+				device_carrier: 'SKTelecom',
+				idfa: GAID,
+				device_ip: '192.0.2.17',
+			},
+		},
+		{
+			tracker: 'appsflyer',
+			kind: 'event',
+			query: {
+				clickid: clickId('appsflyer', 'event'),
+				af_siteid: viewCode,
+				af_c_id: token,
+				idfv: '',
+				install_time: plain(installed),
+				country_code: 'KR',
+				language: '한국어',
+				event_name: 'Platform_login',
+				event_revenue_currency: 'N/A',
+				event_revenue: 'N/A',
+				event_time: plain(evented),
+				device_carrier: 'SKTelecom',
+				idfa: GAID,
+				device_ip: '192.0.2.18',
+			},
+		},
+	];
+};

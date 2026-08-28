@@ -4,6 +4,9 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcrypt';
 import { viewCodeCodec } from '../src/common/utils/view-code.util';
 import { kstBaseDate } from '../src/common/utils/date.util';
+import { TRACKERS } from '../src/trackers/tracker.registry';
+import { createPostback } from '../src/modules/postback/domain/postback.entity';
+import { buildPostbackSamples } from './postback-samples';
 
 // prisma.config.ts와 동일하게 .env를 직접 로드한다(.env 없는 환경은 셸 환경변수의 DATABASE_URL 사용)
 try {
@@ -16,6 +19,52 @@ const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: proc
 
 const BCRYPT_SALT_ROUNDS = 10;
 const DAILY_REPORT_DAYS = 7;
+
+// 트래커 4곳의 링크·포스트백 템플릿 — 운영 DB(mcpro.tracker)의 값을 그대로 옮겼다(name만 아래 주석대로 맞춤).
+// 그대로 넣은 결과 클릭 치환(tracking.use-case.ts) 기준으로 두 가지가 따라온다.
+//   - {app_id}·{app_key}·{tracker_id}·{appkey}·{app_subdomain}은 광고별로 채우는 자리라 치환에서 빈 문자열이 된다.
+//   - adjust 링크는 install_callback·event_callback을 품고 있어 콜백 안의 adjust 매크로까지 함께 지워진다.
+// 레거시의 idx·type·status 컬럼은 이 스키마에 없어 옮기지 않았다.
+const TRACKER_SEEDS = [
+	{
+		name: 'appsflyer',
+		tracking_url:
+			'https://app.appsflyer.com/{app_id}?pid=mecrosspro_int&clickid={clickid}&af_siteid={af_siteid}&af_c_id={af_c_id}&af_adset_id={af_adset_id}&af_ad_id={af_ad_id}&advertising_id={advertising_id}&idfa={idfa}&af_ip={af_ip}&af_ua={af_ua}&af_lang={af_lang}',
+		install_postback_url:
+			'http://api.mecrosspro.com/appsflyer/install?clickid={clickid}&af_siteid={af_siteid}&af_c_id={af_c_id}&advertising_id={advertising_id}&idfa={idfa}&idfv={idfv}&install_time={install_time}&country_code={country_code}&language={language}&click_time={click_time}&device_carrier={device_carrier}&device_ip={device_ip}',
+		event_postback_url:
+			'http://api.mecrosspro.com/appsflyer/event?clickid={clickid}&af_siteid={af_siteid}&af_c_id={af_c_id}&advertising_id={advertising_id}&idfa={idfa}&idfv={idfv}&install_time={install_time}&country_code={country_code}&language={language}&event_name={event_name}&event_revenue_currency={event_revenue_currency}&event_revenue={event_revenue}&event_time={event_time}&device_carrier={device_carrier}&device_ip={device_ip}',
+	},
+	{
+		// 레거시 name은 adbrixremaster지만 TRACKERS 레지스트리 키에 맞춘다 — 이 값이 campaign.tracker_name이 되고
+		// 클릭 시 TRACKERS[tracker_name] 조회에 쓰인다. 원본도 포스트백 수신 경로는 /adbrix-remaster/를 쓴다.
+		name: 'adbrix-remaster',
+		tracking_url:
+			'https://{app_key}.adtouch.adbrix.io/api/v1/click/{tracker_id}?cb_1={cb_1}&cb_2={cb_2}&cb_3={cb_3}&cb_4={cb_4}&cb_5={cb_5}&m_publisher={m_publisher}&m_sub_publisher={m_sub_publisher}&m_adid={m_adid}',
+		install_postback_url:
+			'http://api.mecrosspro.com/adbrix-remaster/install?a_key={a_key}&a_cookie={a_cookie}&a_ip={a_ip}&a_fp={a_fp}&a_country={a_country}&a_city={a_city}&a_region={a_region}&a_appkey={a_appkey}&m_publisher={m_publisher}&m_sub_publisher={m_sub_publisher}&adid={req.common.identity.adid}&idfv={req.common.identity.idfv}&ad_id_opt_out={req.common.identity.ad_id_opt_out}&device_os_version={req.common.device_info.os}&device_model={req.common.device_info.model}&device_vendor={req.common.device_info.vendor}&device_resolution={req.common.device_info.resolution}&device_portrait={req.common.device_info.is_portrait}&device_platform={req.common.device_info.platform}&device_network={req.common.device_info.network}&device_wifi={req.common.device_info.is_wifi_only}&device_carrier={req.common.device_info.carrier}&device_language={req.common.device_info.language}&device_country={req.common.device_info.country}&device_build_id={req.common.build_id}&package_name={req.common.package_name}&appkey={req.common.appkey}&sdk_version={req.common.sdk_version}&installer={req.common.installer}&app_version={req.common.app_version}&attr_type={attr_type}&event_name={event_name}&event_datetime={req.evt.event_datetime}&deeplink_path={deeplink_custom_path}&market_install_btn_clicked={req.evt.param.market_install_btn_clicked}&app_install_start={req.evt.param.app_install_start}&app_install_completed={req.evt.param.app_install_completed}&app_first_open={req.evt.param.app_first_open}&seconds_gap={seconds_gap}&cb_1={cb_1}&cb_2={cb_2}&cb_3={cb_3}&cb_4={cb_4}&cb_5={cb_5}&a_server_datetime={a_adtouch_datetime}',
+		event_postback_url:
+			'http://api.mecrosspro.com/adbrix-remaster/event?a_key={first_install.a_key}&a_cookie={first_install.a_cookie}&a_ip={first_install.a_ip}&a_fp={first_install.a_fp}&a_country={first_install.a_country}&a_city={first_install.a_city}&a_region={first_install.a_region}&a_appkey={first_install.a_appkey}&m_publisher={first_install.m_publisher}&m_sub_publisher={first_install.m_sub_publisher}&attr_adid={first_install.adid}&attr_event_datetime={first_install.attribute_datetime}&attr_event_timestamp={first_install.attribute_timestamp}&attr_seconds_gap={first_install.seconds_gap}&adid={req.common.identity.adid}&idfv={req.common.identity.idfv}&ad_id_opt_out={req.common.identity.ad_id_opt_out}&device_os_version={req.common.device_info.os}&device_model={req.common.device_info.model}&device_vendor={req.common.device_info.vendor}&device_resolution={req.common.device_info.resolution}&device_portrait={req.common.device_info.is_portrait}&device_platform={req.common.device_info.platform}&device_network={req.common.device_info.network}&device_wifi={req.common.device_info.is_wifi_only}&device_carrier={req.common.device_info.carrier}&device_language={req.common.device_info.language}&device_country={req.common.device_info.country}&device_build_id={req.common.build_id}&package_name={req.common.package_name}&appkey={req.common.appkey}&sdk_version={req.common.sdk_version}&installer={req.common.installer}&app_version={req.common.app_version}&event_name={req.evt.event_name}&event_datetime={req.evt.event_datetime}&event_timestamp={req.evt.event_timestamp}&event_timestamp_d={req.evt.event_timestamp_d}&param_json={req.evt.param_json}&cb_1={first_install.cb_1}&cb_2={first_install.cb_2}&cb_3={first_install.cb_3}&cb_4={first_install.cb_4}&cb_5={first_install.cb_5}',
+	},
+	{
+		name: 'adjust',
+		tracking_url:
+			'https://app.adjust.com/{appkey}?adgroup={publisher_id}&install_callback=http://api.mecrosspro.com/adjust/install?cp_token={cp_token}&publisher_id={publisher_id}&click_id={click_id}&uid={uid}&app_id={app_id}&app_version={app_version}&network_name={network_name}&campaign_name={campaign_name}&adgroup_name={adgroup_name}&adid={adid}&idfa={idfa}&idfv={idfv}&android_id={android_id}&gps_adid={gps_adid}&ip_address={ip_address}&click_time={click_time}&engagement_time={engagement_time}&installed_at={installed_at}&isp={isp}&country={country}&language={language}&device_name={device_name}&device_type={device_type}&os_name={os_name}&sdk_version={sdk_version}&os_version={os_version}&event_callback_{event_token}=http://api.mecrosspro.com/adjust/event?event_token={event_token}&event_type={event_type}&cp_token={cp_token}&publisher_id={publisher_id}&click_id={click_id}&uid={uid}&app_id={app_id}&app_version={app_version}&network_name={network_name}&campaign_name={campaign_name}&adgroup_name={adgroup_name}&adid={adid}&idfa={idfa}&idfv={idfv}&android_id={android_id}&gps_adid={gps_adid}&ip_address={ip_address}&click_time={click_time}&engagement_time={engagement_time}&installed_at={installed_at}&created_at={created_at}&isp={isp}&country={country}&language={language}&device_name={device_name}&device_type={device_type}&os_name={os_name}&sdk_version={sdk_version}&os_version={os_version}&currency={currency}&revenue={revenue}&revenue_float={revenue_float}&revenue_usd={revenue_usd}&revenue_usd_cents={revenue_usd_cents}&reporting_revenue={reporting_revenue}&reporting_currency={reporting_currency}',
+		install_postback_url:
+			'http://api.mecrosspro.com/adjust/install?cp_token={cp_token}&publisher_id={publisher_id}&click_id={click_id}&uid={uid}&app_id={app_id}&app_version={app_version}&network_name={network_name}&campaign_name={campaign_name}&adgroup_name={adgroup_name}&adid={adid}&idfa={idfa}&idfv={idfv}&android_id={android_id}&gps_adid={gps_adid}&ip_address={ip_address}&click_time={click_time}&engagement_time={engagement_time}&installed_at={installed_at}&isp={isp}&country={country}&language={language}&device_name={device_name}&device_type={device_type}&os_name={os_name}&sdk_version={sdk_version}&os_version={os_version}',
+		event_postback_url:
+			'http://api.mecrosspro.com/adjust/event?event_token={event_token}&event_type={event_type}&cp_token={cp_token}&publisher_id={publisher_id}&click_id={click_id}&uid={uid}&app_id={app_id}&app_version={app_version}&network_name={network_name}&campaign_name={campaign_name}&adgroup_name={adgroup_name}&adid={adid}&idfa={idfa}&idfv={idfv}&android_id={android_id}&gps_adid={gps_adid}&ip_address={ip_address}&click_time={click_time}&engagement_time={engagement_time}&installed_at={installed_at}&created_at={created_at}&isp={isp}&country={country}&language={language}&device_name={device_name}&device_type={device_type}&os_name={os_name}&sdk_version={sdk_version}&os_version={os_version}&currency={currency}&revenue={revenue}&revenue_float={revenue_float}&revenue_usd={revenue_usd}&revenue_usd_cents={revenue_usd_cents}&reporting_revenue={reporting_revenue}&reporting_currency={reporting_currency}',
+	},
+	{
+		name: 'airbridge',
+		tracking_url:
+			'https://abr.ge/@{app_subdomain}/mecrosspro?click_id={click_id}&sub_id={publisher_id}&sub_id_1={sub_id_1}&gaid_raw={gaid}&ifa_raw={idfa}&custom_param1={custom_param1}&custom_param2={custom_param2}&custom_param3={custom_param3}&custom_param4={custom_param4}&custom_param5={custom_param5}&campaign={campaign}&ad_group={ad_group}&ad_creative={ad_creative}',
+		install_postback_url:
+			'http://api.mecrosspro.com/airbridge/install?click_id={attributionResult.attributedClickID}&sub_id={attributionResult.attributedSubPublisher}&uuid={device.deviceUUID}&google_aid={device.gaid}&ios_idfa={device.ifa}&ios_ifv={device.ifv}&limitAdTracking={device.limitAdTracking}&device_model={device.deviceModel}&device_manufacturer={device.manufacturer}&device_type={device.deviceType}&os={device.osName}&os_version={device.osVersion}&locale={device.locale}&language={device.language}&country={device.country}&device_carrier={device.network.carrier}&timezone={device.timezone}&device_ip={device.clientIP}&packageName={app.packageName}&iTunesAppID={app.iTunesAppID}&appVersion={app.version}&appName={app.appName}&sdkVersion={sdkVersion}&isUnique={eventData.isFirstPerDevice}&event_datetime={eventDatetime}&event_timestamp={eventTimestamp}&install_timestamp={eventData.systemInstallTimestamp}&click_datetime={attributionResult.attributedDatetime}&click_timestamp={attributionResult.attributedTimestamp}&deeplink={eventData.deeplink}&googleReferrer={eventData.googleReferrer}&attributedChannel={attributionResult.attributedChannel}&attributedMatchingType={attributionResult.attributedMatchingType}&custom_param1={@trackingLink.custom_param1}&custom_param2={@trackingLink.custom_param2}&custom_param3={@trackingLink.custom_param3}&custom_param4={@trackingLink.custom_param4}&custom_param5={@trackingLink.custom_param5}',
+		event_postback_url:
+			'http://api.mecrosspro.com/airbridge/event?click_id={attributionResult.attributedClickID}&sub_id={attributionResult.attributedSubPublisher}&uuid={device.deviceUUID}&google_aid={device.gaid}&ios_idfa={device.ifa}&ios_ifv={device.ifv}&limitAdTracking={device.limitAdTracking}&device_model={device.deviceModel}&device_manufacturer={device.manufacturer}&os={device.osName}&os_version={device.osVersion}&locale={device.locale}&language={device.language}&country={device.country}&device_carrier={device.network.carrier}&timezone={device.timezone}&device_ip={device.clientIP}&packageName={app.packageName}&iTunesAppID={app.iTunesAppID}&appVersion={app.version}&appName={app.appName}&sdkVersion={sdkVersion}&event_type={attributionResult.attributedTargetEventName}&isUnique={eventData.isFirstPerDevice}&event_datetime={eventDatetime}&event_timestamp={eventTimestamp}&install_timestamp={eventData.systemInstallTimestamp}&click_datetime={attributionResult.attributedDatetime}&click_timestamp={attributionResult.attributedTimestamp}&deeplink={eventData.deeplink}&googleReferrer={eventData.googleReferrer}&category={eventData.category}&eventName={@postback.eventName}&eventLabel={eventData.label}&eventValue={eventData.value}&inAppPurchased={eventData.goal.semanticAttributes.inAppPurchased}&transactionID={eventData.goal.semanticAttributes.transactionID}&product_info={@postback.jsonData}&attributedChannel={attributionResult.attributedChannel}&campaign={attributionResult.attributedCampaign}&ad_type={attributionResult.attributedActionType}&ad_group={attributionResult.attributedAdGroup}&ad_creative={attributionResult.attributedAdCreative}&attributedMatchingType={attributionResult.attributedMatchingType}&custom_param1={@trackingLink.custom_param1}&custom_param2={@trackingLink.custom_param2}&custom_param3={@trackingLink.custom_param3}&custom_param4={@trackingLink.custom_param4}&custom_param5={@trackingLink.custom_param5}',
+	},
+];
 
 async function main() {
 	// 1. 로그인 가능한 유저 — signup의 SES 인증과 approved 승인 절차를 우회한다.
@@ -43,16 +92,12 @@ async function main() {
 		create: { name: '테스트 광고주' },
 	});
 
-	const tracker = await prisma.tracker.upsert({
-		where: { name: 'appsflyer' },
-		update: {},
-		create: {
-			name: 'appsflyer',
-			tracking_url: 'https://app.appsflyer.com/com.example.app',
-			install_postback_url: 'https://backend.example.com/appsflyer/install',
-			event_postback_url: 'https://backend.example.com/appsflyer/event',
-		},
-	});
+	// 다른 엔티티와 달리 update에도 값을 넣어 TRACKER_SEEDS 수정이 재시드로 반영되게 한다.
+	// (이미 만들어진 campaign.tracker_tracking_url은 생성 시점 복사본이라 그대로 남는다 — 새 템플릿을 보려면 pnpm reset)
+	const trackers = await Promise.all(TRACKER_SEEDS.map((seedTracker) => prisma.tracker.upsert({ where: { name: seedTracker.name }, update: seedTracker, create: seedTracker })));
+
+	// advertising·campaign은 기존대로 appsflyer에 건다
+	const tracker = trackers.find((row) => row.name === 'appsflyer')!;
 
 	const media = await prisma.media.upsert({
 		where: { name: '테스트 매체' },
@@ -226,6 +271,42 @@ async function main() {
 			});
 		}
 	}
+
+	// 9-1. 트래커 원본 쿼리로 만든 postback 샘플 — 위 8~9번의 합성 데이터(`{ seed: true }`)와 달리
+	// 실제 수신 형태(파라미터 40여 개, 중복 키, 미치환 매크로)를 raw_query_params에 그대로 남긴다.
+	// 파생 컬럼은 손으로 적지 않고 실제 파이프라인과 같은 경로(TRACKERS 매퍼 → createPostback)로 만들어 매퍼가 바뀌면 시드도 따라간다.
+	// view_code를 sub_id로 갈라 두어(seed_sub_raw) 위 7일치의 "postback 건수 = daily_report 카운터" 정합을 건드리지 않는다.
+	const sampleViewCode = viewCodeCodec.encode(`${campaign.token}:seed_pub:seed_sub_raw`);
+	// 트래커는 URL 디코드된 값을 되돌려주고 매퍼가 다시 인코딩한다 — 쿼리에는 디코드된 형태를 넣는다
+	const samples = buildPostbackSamples({ token: campaign.token, viewCode: decodeURIComponent(sampleViewCode), baseDate });
+	for (const sample of samples) {
+		const definition = TRACKERS[sample.tracker]!;
+		// 중복 키를 배열로 넘기는 것은 express도 마찬가지다(타입만 string) — 실제 런타임과 같은 형태로 매퍼에 태운다
+		const query = sample.query as Record<string, string>;
+		// install 엔드포인트의 event_name은 트래커 값이 아니라 'install' 고정이다(InstallPostbackUseCase와 동일)
+		const mapped = sample.kind === 'install' ? { ...definition.install(query), eventName: 'install' } : definition.event(query);
+		const [, pubId, subId] = viewCodeCodec.decode(mapped.viewCode).split(':');
+		postbacks.push(
+			createPostback({
+				...mapped,
+				trackerName: sample.tracker,
+				pubId: pubId || null,
+				subId: subId || null,
+				rawQueryParams: JSON.stringify(sample.query),
+			})
+		);
+	}
+
+	// 샘플에 대응하는 daily_report 한 줄. 이벤트 4건의 이름(abx:sign_up·03_NPSN·open·Platform_login)은
+	// campaign_config에 없어 전부 미등록으로 잡히므로 install과 unregistered에만 반영된다.
+	const sampleInstalls = samples.filter((sample) => sample.kind === 'install').length;
+	const sampleCounters = { click: samples.length, install: sampleInstalls, registration: 0, purchase: 0, revenue: 0, unregistered: samples.length - sampleInstalls };
+	await prisma.daily_report.upsert({
+		where: { view_code_created_date: { view_code: sampleViewCode, created_date: baseDate } },
+		update: sampleCounters,
+		create: { view_code: sampleViewCode, token: campaign.token, pub_id: 'seed_pub', sub_id: 'seed_sub_raw', ...sampleCounters, created_date: baseDate },
+	});
+
 	await prisma.postback.createMany({ data: postbacks });
 
 	// 10. reservation — 예약 변경 화면용. 자연키가 없어 시드 접두사로 지우고 다시 만든다(9번 postback과 같은 패턴)
@@ -251,7 +332,7 @@ async function main() {
 	});
 
 	console.log(
-		`seed 완료: user 4개(admin=DEVELOPER / ops=ADMIN / viewer=USER · 카페 러시만 허용 / pending=미승인, 전부 @test.com · test1234!), advertiser·tracker·media, advertising 2개·campaign 4개, daily_report 캠페인당 ${DAILY_REPORT_DAYS}일치, postback ${postbacks.length}건, reservation 2건`
+		`seed 완료: user 4개(admin=DEVELOPER / ops=ADMIN / viewer=USER · 카페 러시만 허용 / pending=미승인, 전부 @test.com · test1234!), advertiser·media, tracker ${trackers.length}개, advertising 2개·campaign 4개, daily_report 캠페인당 ${DAILY_REPORT_DAYS}일치, postback ${postbacks.length}건(트래커 원본 쿼리 샘플 ${samples.length}건 포함), reservation 2건`
 	);
 }
 
