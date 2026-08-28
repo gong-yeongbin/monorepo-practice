@@ -113,3 +113,9 @@ variable "autoscaling_cpu_target" {
   type        = number
   default     = 60
 }
+
+variable "autoscaling_burst_cpu_threshold" {
+  description = "급증 대응 step scaling 알람 임계 CPU 사용률 (%). target tracking 목표와 간격을 두어야 평상시 변동에 끌려 나오지 않는다"
+  type        = number
+  default     = 80
+}
