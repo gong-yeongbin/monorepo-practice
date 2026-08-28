@@ -7,8 +7,10 @@ import { DeleteReservationUseCase } from '@reservation/application/delete-reserv
 import { ApplyDueReservationsUseCase } from '@reservation/application/apply-due-reservations.use-case';
 import { RESERVATION_REPOSITORY } from '@reservation/domain/reservation.repository';
 import { PrismaReservationRepository } from '@reservation/infrastructure/prisma-reservation.repository';
+import { CacheModule } from '@infra/cache/cache.module';
 
 @Module({
+	imports: [CacheModule],
 	controllers: [ReservationController],
 	providers: [
 		ReservationScheduler,

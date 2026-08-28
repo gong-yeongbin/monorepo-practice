@@ -12,6 +12,11 @@ export class RedisCacheAdapter implements CachePort {
 		await this.redis.set(key, value, 'PX', ttl);
 	}
 
+	// SET NX는 키가 없을 때만 저장하고 'OK'를, 이미 있으면 null을 반환한다
+	async setIfAbsent(key: string, value: string, ttl: number) {
+		return (await this.redis.set(key, value, 'PX', ttl, 'NX')) === 'OK';
+	}
+
 	async get(key: string) {
 		return await this.redis.get(key);
 	}

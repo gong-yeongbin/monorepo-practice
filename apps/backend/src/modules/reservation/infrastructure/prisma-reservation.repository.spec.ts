@@ -54,13 +54,14 @@ describe('PrismaReservationRepository', () => {
 		expect(campaign.count).toHaveBeenCalledWith({ where: { id: { in: [1, 2] } } });
 	});
 
-	it('findDue는 미적용이고 예약 시각이 지난 예약만 조회한다', async () => {
+	it('findDue는 미적용이고 예약 시각이 지난 예약을 예약 시각 오름차순으로 조회한다', async () => {
 		const now = new Date('2026-08-16T01:00:00Z');
 		reservation.findMany.mockResolvedValue([]);
 
 		await repository.findDue(now);
 
-		expect(reservation.findMany).toHaveBeenCalledWith({ where: { is_applied: false, reserved_at: { lte: now } } });
+		// 정렬이 빠지면 같은 캠페인에 밀린 예약 중 어느 것이 최종 값이 될지 정해지지 않는다
+		expect(reservation.findMany).toHaveBeenCalledWith({ where: { is_applied: false, reserved_at: { lte: now } }, orderBy: { reserved_at: 'asc' } });
 	});
 
 	it('apply는 campaign 갱신과 완료 처리를 한 트랜잭션으로 묶는다', async () => {
