@@ -11,7 +11,7 @@
   └─ api.<도메인>  → ALB (HTTPS, ECDSA 인증서)
                       → ECS Fargate (backend, ARM64)
                           ├─ RDS PostgreSQL (private subnet)
-                          ├─ ElastiCache Valkey (private subnet)
+                          ├─ ElastiCache Valkey (private subnet, primary + replica 2AZ)
                           ├─ S3 (앱 스토리지) / SES (task role 권한)
                           └─ CloudWatch Logs
 ```
@@ -30,7 +30,9 @@
 | 온디맨드 base 1 + 증설분 Spot | Spot 최대 70% 절감. base 1대는 절대 회수 안 되므로 어드민 API 안전. Spot 회수 시 2분 예고 + ALB draining으로 신규 요청은 온디맨드로 라우팅 |
 | 오토스케일링 CPU 60%, 2~10대 | 기존 EC2 5대(12 vCPU 버스트, 항상 가동)와 달리 평시 2 vCPU 전용 + 피크에만 증설. Node는 싱글 스레드라 1vCPU/태스크가 적정 단위 |
 | RDS `db.t4g.large` Single-AZ | 기존 xlarge급($373/월)이 오버스펙이라는 판단. 스토리지 20→100GB 자동확장. 부족 시 tfvars에서 m6g.large로 |
-| ElastiCache **Valkey** `cache.t4g.medium` | 환경변수도 `VALKEY`, ioredis 호환(Stream 포함), Redis OSS 대비 ~20% 저렴. 3.1GB = 소비자 지연 ~2시간 버퍼 |
+| ElastiCache **Valkey** `cache.t4g.medium` | 환경변수도 `VALKEY`, ioredis 호환(Stream 포함), Redis OSS 대비 ~20% 저렴 |
+| Valkey primary + replica, 자동 페일오버 | 단일 노드면 장애 시 스트림 미처리분과 캠페인 캐시가 통째로 사라지고 `XADD` 실패로 클릭이 큐잉조차 안 된다(캐시 미스가 RDS로 몰리는 연쇄까지). 다른 AZ 레플리카로 승격. 단 복제가 비동기라 전환 직전 수 초는 유실 가능하고 전환에 1~2분 — 유실 0이 아니라 분 단위를 초 단위로 줄이는 장치. 스냅샷 3일 보관 별도(레플리카는 실수 삭제를 못 살림) |
+| `REDIS_STREAM_MAXLEN` 200만 | `XADD MAXLEN ~`는 소비 여부와 무관하게 트림하므로 스트림 길이가 곧 컨슈머 지연 허용치. 앱 기본값 10만은 ~86초치라 배포·RDS 장애만으로도 미소비 클릭이 조용히 유실된다. 200만이면 ~29분치(피크 3배에도 ~10분)이고 tracking 엔트리 기준 ~300MB로 3.1GB에 여유 |
 | Global Accelerator 제거 | 고정 IP 불필요 확인 — Route53 alias(도메인→ALB)로 충분. GA 고정비 + DT 프리미엄 제거 |
 | frontend는 CloudFront 필수 | S3 정적 웹 호스팅 단독은 HTTPS 불가. 403/404→index.html로 SPA 라우팅, PriceClass_200(한국 엣지 포함) |
 | ACM 인증서 **ECDSA(P-256)** | 핸드셰이크 바이트 절감. 단, 트래킹이 HTTP로 확인되어(아래) 효과는 HTTPS를 쓰는 어드민 트래픽에 한정 |
@@ -42,14 +44,14 @@
 
 **기존 (2026-07 청구서, Onetwoad 계정): 월 $1,792** — Data Transfer $865(48%), RDS $373, EC2 $348, ElastiCache $147, VPC $37, GA $19
 
-**새 설계 예상: 월 $950~1,280 (기본 30~40% 절감, 전송량 최적화 성공 시 ~50%)**
+**새 설계 예상: 월 $1,000~1,330 (기본 25~40% 절감, 전송량 최적화 성공 시 ~50%)**
 
 | 항목 | 예상/월 |
 |---|---|
 | Fargate (온디맨드 1 + Spot 평균 2~3) | $50~80 |
 | ALB (신규 연결 ~46 LCU 가정) | $200~300 |
 | RDS db.t4g.large | ~$110 |
-| ElastiCache cache.t4g.medium | ~$48 |
+| ElastiCache cache.t4g.medium × 2 (primary + replica) | ~$96 |
 | **Data Transfer** (GA 제거 + ECDSA 반영) | **$500~700** |
 | Route53/S3/ECR/IPv4/로그 등 | ~$40 |
 
