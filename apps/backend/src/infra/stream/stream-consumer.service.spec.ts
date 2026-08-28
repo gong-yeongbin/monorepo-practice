@@ -2,7 +2,7 @@
 import { Test } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { StreamConsumer } from './stream-consumer.service';
-import { REDIS_STREAM_CLIENT } from './redis-stream.constants';
+import { REDIS_STREAM_CLIENT, STREAM_READ_COUNT } from './redis-stream.constants';
 
 describe('StreamConsumer', () => {
 	// 소비 명령은 공유 클라이언트가 아니라 duplicate된 블로킹 전용 연결로 나간다
@@ -22,12 +22,13 @@ describe('StreamConsumer', () => {
 		disconnect: jest.fn(),
 	};
 
+	// linger는 기본 200ms라 waitLoop(20ms)가 못 기다린다. 배치 병합 자체를 검증하는 케이스가 아니면 1ms로 줄인다.
 	const createConsumer = async (env: Record<string, string> = {}) => {
 		const module = await Test.createTestingModule({
 			providers: [
 				StreamConsumer,
 				{ provide: REDIS_STREAM_CLIENT, useValue: redis },
-				{ provide: ConfigService, useValue: { get: jest.fn((key: string) => env[key]) } },
+				{ provide: ConfigService, useValue: { get: jest.fn((key: string) => ({ STREAM_LINGER_MS: '1', ...env })[key]) } },
 			],
 		}).compile();
 		return module.get(StreamConsumer);
@@ -68,6 +69,47 @@ describe('StreamConsumer', () => {
 
 		expect(handler).toHaveBeenCalledWith(['m1', 'm2']);
 		expect(blocking.xack).toHaveBeenCalledWith('tracking', 'mecross-system', '1-0', '1-1');
+	});
+
+	it('첫 읽기가 COUNT 미만이면 추가로 모아 한 배치로 처리한다', async () => {
+		const consumer = await createConsumer();
+		const handler = jest.fn().mockResolvedValue(undefined);
+		consumer.register('tracking', handler);
+		blocking.xreadgroup
+			.mockResolvedValueOnce([
+				[
+					'tracking',
+					[
+						['1-0', ['data', 'm1']],
+						['1-1', ['data', 'm2']],
+					],
+				],
+			])
+			.mockResolvedValueOnce([['tracking', [['1-2', ['data', 'm3']]]]]);
+
+		await consumer.onApplicationBootstrap();
+		await waitLoop();
+		await consumer.onApplicationShutdown();
+
+		// 두 번의 읽기가 하나의 배치로 합쳐져 핸들러·ack가 각각 한 번씩만 일어난다
+		expect(handler).toHaveBeenCalledWith(['m1', 'm2', 'm3']);
+		expect(blocking.xack).toHaveBeenCalledWith('tracking', 'mecross-system', '1-0', '1-1', '1-2');
+	});
+
+	it('첫 읽기가 COUNT를 채우면 추가 읽기를 하지 않는다', async () => {
+		const consumer = await createConsumer();
+		const handler = jest.fn().mockResolvedValue(undefined);
+		consumer.register('tracking', handler);
+		const full = Array.from({ length: STREAM_READ_COUNT }, (_, index) => [`1-${index}`, ['data', `m${index}`]]);
+		blocking.xreadgroup.mockResolvedValueOnce([['tracking', full]]);
+
+		await consumer.onApplicationBootstrap();
+		await waitLoop();
+		await consumer.onApplicationShutdown();
+
+		expect(handler).toHaveBeenCalledWith(full.map((_, index) => `m${index}`));
+		// 추가 읽기는 BLOCK 없이 나가므로 그것만 골라낸다. 상한에 도달했으니 한 번도 없어야 한다.
+		expect(blocking.xreadgroup.mock.calls.filter((args: unknown[]) => !args.includes('BLOCK'))).toHaveLength(0);
 	});
 
 	it('핸들러가 실패하면 ack하지 않는다', async () => {

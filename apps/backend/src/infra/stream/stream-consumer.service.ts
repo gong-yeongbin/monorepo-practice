@@ -7,6 +7,7 @@ import {
 	REDIS_STREAM_CLIENT,
 	STREAM_BLOCK_MS,
 	STREAM_CLAIM_MIN_IDLE_MS_DEFAULT,
+	STREAM_LINGER_MS_DEFAULT,
 	STREAM_MAX_DELIVERIES,
 	STREAM_READ_COUNT,
 } from '@infra/stream/redis-stream.constants';
@@ -26,6 +27,7 @@ export class StreamConsumer implements OnApplicationBootstrap, OnApplicationShut
 	private readonly groupId: string;
 	private readonly consumerName: string;
 	private readonly claimMinIdleMs: number;
+	private readonly lingerMs: number;
 	private readonly role: string;
 	private running = false;
 	// XREADGROUP BLOCK이 연결을 점유하므로, 자동 파이프라이닝되는 공유 클라이언트와 분리한 블로킹 전용 연결
@@ -40,6 +42,7 @@ export class StreamConsumer implements OnApplicationBootstrap, OnApplicationShut
 		// 버려진 이름의 PEL은 XAUTOCLAIM이 회수한다.
 		this.consumerName = configService.get<string>('REDIS_STREAM_CONSUMER') || `consumer-${hostname()}-${process.pid}`;
 		this.claimMinIdleMs = Number(configService.get('STREAM_CLAIM_MIN_IDLE_MS')) || STREAM_CLAIM_MIN_IDLE_MS_DEFAULT;
+		this.lingerMs = Number(configService.get('STREAM_LINGER_MS')) || STREAM_LINGER_MS_DEFAULT;
 		this.role = configService.get<string>('APP_ROLE') || 'all';
 	}
 
@@ -113,12 +116,38 @@ export class StreamConsumer implements OnApplicationBootstrap, OnApplicationShut
 				const entries = streams?.[0]?.[1];
 				if (!entries?.length) continue;
 
+				await this.linger(stream, entries);
 				await this.processBatch(stream, handler, entries);
 			} catch (error) {
 				if (!this.running) break;
 				this.logger.error(`stream '${stream}' 소비 중 오류: ${String(error)}`);
 			}
 		}
+	}
+
+	// 첫 읽기가 COUNT를 못 채웠으면 잠깐 쉬었다가 그동안 쌓인 만큼을 논블로킹으로 한 번 더 걷어온다.
+	// XREADGROUP은 1건만 도착해도 즉시 반환하므로, 이 대기가 없으면 배치가 채워지지 않아
+	// 메시지 수만큼 DB 왕복이 생긴다. 늘어나는 Redis 왕복은 배치당 1회뿐이다.
+	// 유입이 없으면 첫 BLOCK이 null을 반환해 여기까지 오지 않으므로 유휴 시 비용은 0이다.
+	private async linger(stream: string, entries: StreamEntry[]) {
+		if (entries.length >= STREAM_READ_COUNT) return;
+
+		await new Promise((resolve) => setTimeout(resolve, this.lingerMs));
+		// 대기 중 셧다운이 시작되면 더 claim하지 않고 지금까지 읽은 배치만 처리한다
+		if (!this.running) return;
+
+		const response = await this.blocking!.xreadgroup(
+			'GROUP',
+			this.groupId,
+			this.consumerName,
+			'COUNT',
+			STREAM_READ_COUNT - entries.length,
+			'STREAMS',
+			stream,
+			'>'
+		);
+		const more = (response as [string, StreamEntry[]][] | null)?.[0]?.[1];
+		if (more?.length) entries.push(...more);
 	}
 
 	// 핸들러 성공 시에만 ack한다. 실패한 배치는 PEL에 남아 XAUTOCLAIM으로 재전달된다.
