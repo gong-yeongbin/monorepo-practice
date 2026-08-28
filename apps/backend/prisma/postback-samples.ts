@@ -26,6 +26,8 @@ const plain = (date: Date) => dayjs(date).format('YYYY-MM-DD HH:mm:ss.SSS');
 const iso = (date: Date) => date.toISOString().replace('Z', '000+00:00');
 // adbrix 매퍼는 수신값에 9시간을 더한다(UTC로 받는다는 전제). 목표 시각을 얻으려면 9시간 뺀 값을 넣어야 한다.
 const adbrix = (date: Date) => dayjs(date).subtract(9, 'hour').format('YYYY-MM-DD HH:mm:ss.SSS');
+// singular의 time·click_time·install_time 표기(UTC, 날짜와 시각을 _로 구분). 매퍼는 utc 계열(유닉스 초)을 읽으므로 표기만 맞춘다.
+const singular = (date: Date) => date.toISOString().slice(0, 19).replace('T', '_');
 
 // airbridge는 같은 키를 두 번 보내는 경우가 있어(click_id·sub_id·custom_param1~5) express가 배열로 파싱한다.
 // 매퍼의 Array.isArray 분기가 이 형태를 받는 경로라 시드에도 그대로 남긴다.
@@ -363,6 +365,57 @@ export const buildPostbackSamples = ({ token, viewCode, baseDate }: SampleContex
 				device_carrier: 'SKTelecom',
 				idfa: GAID,
 				device_ip: '192.0.2.18',
+			},
+		},
+		{
+			tracker: 'singular',
+			kind: 'install',
+			query: {
+				attribution_ip: '192.0.2.19',
+				os_version: '12',
+				app_version: APP_VERSION,
+				idfa: '',
+				idfv: '',
+				gaid: GAID,
+				attribution_country: 'PH',
+				platform: 'Android',
+				time: singular(installed),
+				utc: unixSec(installed),
+				click_time: singular(clicked),
+				click_utc: unixSec(clicked),
+				sub1: token,
+				sub2: viewCode,
+				sub3: clickId('singular', 'install'),
+				// 클릭에 값이 없으면 singular이 매크로를 치환하지 않고 그대로 흘려보낸다
+				sub4: '{sub4}',
+				sub5: '{sub5}',
+			},
+		},
+		{
+			tracker: 'singular',
+			kind: 'event',
+			query: {
+				attribution_ip: '192.0.2.20',
+				os_version: '15',
+				app_version: APP_VERSION,
+				idfa: '',
+				idfv: '',
+				gaid: GAID,
+				attribution_country: 'PH',
+				platform: 'Android',
+				amount: '0.00',
+				currency: 'KRW',
+				event_name: 'Complete_Registration',
+				event_attrs: '{"TitleId":"F9A4E","is_revenue_event":false,"platform":"Google","user_adid":null,"user_id":"EA00000000000001","user_name":""}',
+				time: singular(evented),
+				utc: unixSec(evented),
+				install_time: singular(installed),
+				install_utc: unixSec(installed),
+				sub1: token,
+				sub2: viewCode,
+				sub3: clickId('singular', 'event'),
+				sub4: '{sub4}',
+				sub5: '{sub5}',
 			},
 		},
 	];

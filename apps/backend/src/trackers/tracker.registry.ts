@@ -12,6 +12,9 @@ import { AdjustEvent } from '@trackers/adjust/event.mapper';
 import { AdbrixRemasterTracking } from '@trackers/adbrix-remaster/tracking.mapper';
 import { AdbrixRemasterInstall } from '@trackers/adbrix-remaster/install.mapper';
 import { AdbrixRemasterEvent } from '@trackers/adbrix-remaster/event.mapper';
+import { SingularTracking } from '@trackers/singular/tracking.mapper';
+import { SingularInstall } from '@trackers/singular/install.mapper';
+import { SingularEvent } from '@trackers/singular/event.mapper';
 
 // class-transformer 기반 매핑은 트래커 경계 안에만 두고 바깥에는 순수 함수로 노출한다
 const toTracking =
@@ -30,6 +33,7 @@ export const TRACKERS: Record<string, TrackerDefinition> = {
 	airbridge: { tracking: toTracking(AirbridgeTracking), install: toPostback(AirbridgeInstall), event: toPostback(AirbridgeEvent) },
 	adjust: { tracking: toTracking(AdjustTracking), install: toPostback(AdjustInstall), event: toPostback(AdjustEvent) },
 	'adbrix-remaster': { tracking: toTracking(AdbrixRemasterTracking), install: toPostback(AdbrixRemasterInstall), event: toPostback(AdbrixRemasterEvent) },
+	singular: { tracking: toTracking(SingularTracking), install: toPostback(SingularInstall), event: toPostback(SingularEvent) },
 };
 
 export const TRACKER_NAMES = Object.keys(TRACKERS);

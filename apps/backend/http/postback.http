@@ -19,6 +19,9 @@ GET {{host}}/airbridge/install?click_id=click-0003&sub_id=lvpo%2F4xJXLWflTJldMlw
 ### adbrix-remaster install 포스트백 (cb_3=clickId / cb_2=viewCode / cb_1=token)
 GET {{host}}/adbrix-remaster/install?cb_3=click-0004&cb_2=lvpo%2F4xJXLWflTJldMlwFFfAwl3R9T5KUZ9yETOdq1na7I91cPHYvcdCsi0OZuIM&cb_1=seed-token-cafe-launch&adid=38400000-8cf0-11bd-b23e-10b96e40000d&a_ip=1.2.3.4&device_country=KR&a_server_datetime=2026-08-17T01:00:00&event_datetime=2026-08-17T01:05:00
 
+### singular install 포스트백 (sub3=clickId / sub2=viewCode / sub1=token, 시각은 utc·click_utc 유닉스 초 — time·click_time은 표기용이라 읽지 않는다)
+GET {{host}}/singular/install?sub3=click-0005&sub2=lvpo%2F4xJXLWflTJldMlwFFfAwl3R9T5KUZ9yETOdq1na7I91cPHYvcdCsi0OZuIM&sub1=seed-token-cafe-launch&gaid=38400000-8cf0-11bd-b23e-10b96e40000d&idfa=&idfv=&attribution_ip=1.2.3.4&attribution_country=KR&platform=Android&time=2026-08-17_01:00:00&utc=1786928700&click_time=2026-08-17_00:55:00&click_utc=1786928400
+
 # 로그 조회 — seed 데이터는 실행일 기준 최근 7일에 생성되므로 날짜 범위가 오늘을 포함해야 결과가 나온다.
 
 ### install 포스트백 로그 — token 기준

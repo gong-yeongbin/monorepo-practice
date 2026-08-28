@@ -20,9 +20,9 @@ const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: proc
 const BCRYPT_SALT_ROUNDS = 10;
 const DAILY_REPORT_DAYS = 7;
 
-// 트래커 4곳의 링크·포스트백 템플릿 — 운영 DB(mcpro.tracker)의 값을 그대로 옮겼다(name만 아래 주석대로 맞춤).
+// 트래커 5곳의 링크·포스트백 템플릿 — 운영 DB(mcpro.tracker)의 값을 그대로 옮겼다(name만 아래 주석대로 맞춤).
 // 그대로 넣은 결과 클릭 치환(tracking.use-case.ts) 기준으로 두 가지가 따라온다.
-//   - {app_id}·{app_key}·{tracker_id}·{appkey}·{app_subdomain}은 광고별로 채우는 자리라 치환에서 빈 문자열이 된다.
+//   - {app_id}·{app_key}·{tracker_id}·{appkey}·{app_subdomain}·{pid}는 광고별로 채우는 자리라 치환에서 빈 문자열이 된다.
 //   - adjust 링크는 install_callback·event_callback을 품고 있어 콜백 안의 adjust 매크로까지 함께 지워진다.
 // 레거시의 idx·type·status 컬럼은 이 스키마에 없어 옮기지 않았다.
 const TRACKER_SEEDS = [
@@ -63,6 +63,17 @@ const TRACKER_SEEDS = [
 			'http://api.mecrosspro.com/airbridge/install?click_id={attributionResult.attributedClickID}&sub_id={attributionResult.attributedSubPublisher}&uuid={device.deviceUUID}&google_aid={device.gaid}&ios_idfa={device.ifa}&ios_ifv={device.ifv}&limitAdTracking={device.limitAdTracking}&device_model={device.deviceModel}&device_manufacturer={device.manufacturer}&device_type={device.deviceType}&os={device.osName}&os_version={device.osVersion}&locale={device.locale}&language={device.language}&country={device.country}&device_carrier={device.network.carrier}&timezone={device.timezone}&device_ip={device.clientIP}&packageName={app.packageName}&iTunesAppID={app.iTunesAppID}&appVersion={app.version}&appName={app.appName}&sdkVersion={sdkVersion}&isUnique={eventData.isFirstPerDevice}&event_datetime={eventDatetime}&event_timestamp={eventTimestamp}&install_timestamp={eventData.systemInstallTimestamp}&click_datetime={attributionResult.attributedDatetime}&click_timestamp={attributionResult.attributedTimestamp}&deeplink={eventData.deeplink}&googleReferrer={eventData.googleReferrer}&attributedChannel={attributionResult.attributedChannel}&attributedMatchingType={attributionResult.attributedMatchingType}&custom_param1={@trackingLink.custom_param1}&custom_param2={@trackingLink.custom_param2}&custom_param3={@trackingLink.custom_param3}&custom_param4={@trackingLink.custom_param4}&custom_param5={@trackingLink.custom_param5}',
 		event_postback_url:
 			'http://api.mecrosspro.com/airbridge/event?click_id={attributionResult.attributedClickID}&sub_id={attributionResult.attributedSubPublisher}&uuid={device.deviceUUID}&google_aid={device.gaid}&ios_idfa={device.ifa}&ios_ifv={device.ifv}&limitAdTracking={device.limitAdTracking}&device_model={device.deviceModel}&device_manufacturer={device.manufacturer}&os={device.osName}&os_version={device.osVersion}&locale={device.locale}&language={device.language}&country={device.country}&device_carrier={device.network.carrier}&timezone={device.timezone}&device_ip={device.clientIP}&packageName={app.packageName}&iTunesAppID={app.iTunesAppID}&appVersion={app.version}&appName={app.appName}&sdkVersion={sdkVersion}&event_type={attributionResult.attributedTargetEventName}&isUnique={eventData.isFirstPerDevice}&event_datetime={eventDatetime}&event_timestamp={eventTimestamp}&install_timestamp={eventData.systemInstallTimestamp}&click_datetime={attributionResult.attributedDatetime}&click_timestamp={attributionResult.attributedTimestamp}&deeplink={eventData.deeplink}&googleReferrer={eventData.googleReferrer}&category={eventData.category}&eventName={@postback.eventName}&eventLabel={eventData.label}&eventValue={eventData.value}&inAppPurchased={eventData.goal.semanticAttributes.inAppPurchased}&transactionID={eventData.goal.semanticAttributes.transactionID}&product_info={@postback.jsonData}&attributedChannel={attributionResult.attributedChannel}&campaign={attributionResult.attributedCampaign}&ad_type={attributionResult.attributedActionType}&ad_group={attributionResult.attributedAdGroup}&ad_creative={attributionResult.attributedAdCreative}&attributedMatchingType={attributionResult.attributedMatchingType}&custom_param1={@trackingLink.custom_param1}&custom_param2={@trackingLink.custom_param2}&custom_param3={@trackingLink.custom_param3}&custom_param4={@trackingLink.custom_param4}&custom_param5={@trackingLink.custom_param5}',
+	},
+	{
+		// 포스트백 URL의 sub1~sub5는 콘솔 템플릿에 없던 값이 아니라 실제 수신 URL에서 확인한 것이다
+		// (sub4·sub5만 미치환 리터럴로 돌아와 소문자 매크로 표기임을 알 수 있다).
+		name: 'singular',
+		tracking_url:
+			'https://singularassist.sng.link/{pid}/{app_id}?idfa={idfa}&aifa={gaid}&pcid={campaignId}&pscn={campaignName}&pcn={campaignName}&cl={click_id}&sub1={token}&sub2={view_code}&sub3={sub3}&sub5={sub5}',
+		install_postback_url:
+			'http://api.mecrosspro.com/singular/install?attribution_ip={ATTRIBUTION_IP}&os_version={OS_VERSION}&app_version={APP_VERSION}&idfa={IDFA}&idfv={IDFV}&gaid={AIFA}&attribution_country={ATTRIBUTION_COUNTRY}&platform={PLATFORM}&time={TIME}&utc={UTC}&click_time={CLICK_TIME}&click_utc={CLICK_UTC}&sub1={sub1}&sub2={sub2}&sub3={sub3}&sub4={sub4}&sub5={sub5}',
+		event_postback_url:
+			'http://api.mecrosspro.com/singular/event?attribution_ip={ATTRIBUTION_IP}&os_version={OS_VERSION}&app_version={APP_VERSION}&idfa={IDFA}&idfv={IDFV}&gaid={AIFA}&attribution_country={ATTRIBUTION_COUNTRY}&platform={PLATFORM}&amount={AMOUNT}&currency={CURRENCY}&event_name={EVTNAME}&event_attrs={EVTATTRS}&time={TIME}&utc={UTC}&install_time={INSTALL_TIME}&install_utc={INSTALL_UTC}&sub1={sub1}&sub2={sub2}&sub3={sub3}&sub4={sub4}&sub5={sub5}',
 	},
 ];
 
@@ -297,7 +308,7 @@ async function main() {
 		);
 	}
 
-	// 샘플에 대응하는 daily_report 한 줄. 이벤트 4건의 이름(abx:sign_up·03_NPSN·open·Platform_login)은
+	// 샘플에 대응하는 daily_report 한 줄. 이벤트 5건의 이름(abx:sign_up·03_NPSN·open·Platform_login·Complete_Registration)은
 	// campaign_config에 없어 전부 미등록으로 잡히므로 install과 unregistered에만 반영된다.
 	const sampleInstalls = samples.filter((sample) => sample.kind === 'install').length;
 	const sampleCounters = { click: samples.length, install: sampleInstalls, registration: 0, purchase: 0, revenue: 0, unregistered: samples.length - sampleInstalls };

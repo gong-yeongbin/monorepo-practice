@@ -1,6 +1,6 @@
 # trackers
 
-외부 MMP/트래커(appsflyer, airbridge, adjust, adbrix-remaster)의 서로 다른 query 파라미터를 우리 내부 표준 형태로 변환하는 anti-corruption 계층. class-transformer 매핑은 **이 경계 안에만** 두고 바깥(use-case)에는 순수 함수로만 노출한다.
+외부 MMP/트래커(appsflyer, airbridge, adjust, adbrix-remaster, singular)의 서로 다른 query 파라미터를 우리 내부 표준 형태로 변환하는 anti-corruption 계층. class-transformer 매핑은 **이 경계 안에만** 두고 바깥(use-case)에는 순수 함수로만 노출한다.
 
 ## 구조
 
