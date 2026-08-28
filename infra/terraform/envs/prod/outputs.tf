@@ -48,6 +48,16 @@ output "app_bucket_name" {
   value       = aws_s3_bucket.app.id
 }
 
+output "asset_url" {
+  description = "광고 소재 배포 주소 (backend ASSET_BASE_URL로 주입 — 업로드 URL의 접두사가 된다)"
+  value       = "https://${local.asset_domain}"
+}
+
+output "asset_distribution_id" {
+  description = "광고 소재 CloudFront 배포 id (수동 invalidation 대상)"
+  value       = aws_cloudfront_distribution.asset.id
+}
+
 output "rds_endpoint" {
   value = module.database.endpoint
 }

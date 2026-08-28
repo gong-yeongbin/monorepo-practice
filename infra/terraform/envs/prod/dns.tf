@@ -42,3 +42,16 @@ resource "aws_route53_record" "frontend" {
     evaluate_target_health = false
   }
 }
+
+# 광고 소재 — 업로드된 이미지의 저장 URL이 이 이름을 가리킨다
+resource "aws_route53_record" "asset" {
+  zone_id = data.aws_route53_zone.this.zone_id
+  name    = local.asset_domain
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.asset.domain_name
+    zone_id                = aws_cloudfront_distribution.asset.hosted_zone_id
+    evaluate_target_health = false
+  }
+}

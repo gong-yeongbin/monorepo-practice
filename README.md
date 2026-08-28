@@ -227,6 +227,11 @@ SES_FROM_EMAIL="<SES에서 검증한 발신자 이메일>"
 
 # AWS S3 — advertising 이미지 업로드 저장소 (이미지 업로드를 안 쓰면 생략 가능)
 S3_BUCKET="my-bucket"
+
+# 업로드된 이미지 URL의 접두사. 저장 시점의 절대 URL이 DB에 남으므로 배포 후 바꾸면 기존 이미지가 깨진다.
+# 운영은 터라폼이 CloudFront 도메인을 주입한다(버킷이 비공개라 S3 정적 URL은 403).
+# 미설정 시 S3 정적 URL로 폴백하므로 공개 버킷을 쓰는 로컬에서는 생략해도 된다.
+ASSET_BASE_URL="https://asset.<도메인>"
 ```
 
 > 프로세스 역할(`APP_ROLE`), rate limit, 스트림 튜닝 등 전체 환경변수 목록은 [backend README](./apps/backend/README.md)를 참고하세요.

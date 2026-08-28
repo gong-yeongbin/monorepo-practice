@@ -12,9 +12,10 @@
 관리자 브라우저                                ├→ ECS Fargate (backend, ARM64)
   │                                           │    태스크 하나가 3001·3002를 모두 listen
   ├─ admin.<도메인>     → CloudFront → S3 (frontend, private + OAC)
+  ├─ asset.<도메인>     → CloudFront → S3 (광고 소재, private + OAC)
   └─ admin-api.<도메인> → ALB (HTTPS, ECDSA) ┘    ├─ RDS PostgreSQL (private subnet)
                                                    ├─ ElastiCache Valkey (private subnet, primary + replica 2AZ)
-                                                   ├─ S3 (앱 스토리지) / SES (task role 권한)
+                                                   ├─ S3 (앱 스토리지 — 광고 소재 업로드) / SES (task role 권한)
                                                    └─ CloudWatch Logs
 ```
 
@@ -39,6 +40,9 @@
 | `REDIS_STREAM_MAXLEN` 200만 | `XADD MAXLEN ~`는 소비 여부와 무관하게 트림하므로 스트림 길이가 곧 컨슈머 지연 허용치. 앱 기본값 10만은 ~86초치라 배포·RDS 장애만으로도 미소비 클릭이 조용히 유실된다. 200만이면 ~29분치(피크 3배에도 ~10분)이고 tracking 엔트리 기준 ~300MB로 3.1GB에 여유 |
 | Global Accelerator 제거 | 고정 IP 불필요 확인 — Route53 alias(도메인→LB)로 충분. GA 고정비 + DT 프리미엄 제거 |
 | frontend는 CloudFront 필수 | S3 정적 웹 호스팅 단독은 HTTPS 불가. 403/404→index.html로 SPA 라우팅, PriceClass_200(한국 엣지 포함) |
+| **광고 소재도 CloudFront + OAC** | 업로드된 이미지를 어드민이 `<img src>`로 익명 GET하는데 앱 버킷은 퍼블릭 액세스가 전면 차단이라 S3 정적 URL이 403이다. 버킷을 여는 대신 frontend와 같은 OAC 패턴을 쓴다 — 버킷은 계속 비공개이고 버킷 정책은 `advertising/*` prefix만 CloudFront에 연다. 앱은 `ASSET_BASE_URL` 접두사만 붙이면 된다 |
+| 광고 소재는 별도 서브도메인 `asset.<domain>` | 업로드 시점의 **절대 URL이 `advertising.image` 컬럼에 영구 저장**된다. `*.cloudfront.net`을 쓰면 배포를 다시 만드는 순간 저장된 URL이 전부 깨진다. 같은 이유로 `asset_subdomain`은 배포 후 사실상 변경 불가 |
+| 광고 소재 캐시 키에 쿼리스트링 포함 | 관리형 CachingOptimized는 쿼리스트링을 캐시 키에서 뺀다. 키가 `advertising/{id}` 고정(덮어쓰기)이라 프론트의 `?{uuid}` 캐시버스터가 무시되면 이미지를 새로 올려도 옛 것이 계속 나온다. 대가는 uuid가 매번 달라 캐시 히트가 사실상 0이라는 것 — 어드민만 보는 저트래픽이라 감수한다 |
 | ACM 인증서 **ECDSA(P-256)** | 핸드셰이크 바이트 절감. 단, 트래킹이 HTTP로 확인되어(아래) 효과는 HTTPS를 쓰는 어드민 트래픽에 한정 |
 | **트래킹은 ALB가 아니라 NLB** | LCU는 4개 차원 중 최댓값 하나로만 과금되는데, 클릭은 재사용 없는 일회성 연결이라 신규 연결 차원이 홀로 지배한다. ALB는 LCU당 25/s라 1,157/s면 **46 LCU(월 ~$270)**, NLB는 NLCU당 800/s라 1.4 NLCU에 그쳐 처리 바이트 4.2가 최댓값이 된다(**월 ~$35**). 대가는 L4라 경로를 못 본다는 것 |
 | **80 포트: 트래킹·포스트백만 직접 포워드** | 매체에 배포된 링크가 `http://api.mecrosspro.com/tracking?...` — HTTPS 강제 리다이렉트를 끼우면 클릭당 왕복 2배. NLB는 경로 분기를 못 하므로 **앱이 진입 포트로 가른다**: 3002(NLB)에서는 `/tracking`, `/*/install`, `/*/event`, `/health`만 통과시키고 나머지는 404. 이게 없으면 어드민 API가 평문 80에 그대로 열린다 |

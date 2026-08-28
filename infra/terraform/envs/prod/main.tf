@@ -4,6 +4,9 @@ locals {
   api_domain = "${var.api_subdomain}.${var.domain_name}"
   # 어드민 API는 프론트만 쓰는 주소라 새로 파고 ALB에 붙인다
   admin_api_domain = "${var.admin_api_subdomain}.${var.domain_name}"
+  # 광고 소재 배포 주소. 업로드 시점의 URL이 DB에 영구 저장되므로 배포를 다시 만들어도
+  # 저장된 URL이 살아 있도록 *.cloudfront.net이 아니라 우리 도메인을 쓴다
+  asset_domain = "${var.asset_subdomain}.${var.domain_name}"
 }
 
 module "network" {
@@ -59,6 +62,18 @@ module "acm_cloudfront" {
   zone_id     = data.aws_route53_zone.this.zone_id
 }
 
+# 광고 소재 배포용 인증서 — CloudFront용이라 마찬가지로 us-east-1
+module "acm_asset" {
+  source = "../../modules/acm"
+
+  providers = {
+    aws = aws.us_east_1
+  }
+
+  domain_name = local.asset_domain
+  zone_id     = data.aws_route53_zone.this.zone_id
+}
+
 module "backend" {
   source = "../../modules/backend"
 
@@ -93,6 +108,9 @@ module "backend" {
     AWS_REGION          = var.aws_region
     SES_FROM_EMAIL      = var.ses_from_email
     S3_BUCKET           = aws_s3_bucket.app.id
+    # 업로드한 광고 이미지가 DB에 저장될 때 붙는 주소. 버킷이 비공개라 S3 정적 URL은 403이므로
+    # 반드시 CloudFront 도메인이어야 한다(storage.tf 참고)
+    ASSET_BASE_URL = "https://${local.asset_domain}"
   }
 
   secret_arns = {

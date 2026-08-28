@@ -34,6 +34,14 @@ variable "admin_api_subdomain" {
   default     = "admin-api"
 }
 
+# 업로드 시점의 절대 URL이 advertising.image 컬럼에 그대로 저장된다 —
+# 바꾸면 그 전에 올린 이미지의 저장된 URL이 전부 깨지므로 배포 후에는 사실상 고정이다
+variable "asset_subdomain" {
+  description = "광고 소재 배포 서브도메인 (CloudFront, HTTPS)"
+  type        = string
+  default     = "asset"
+}
+
 variable "vpc_cidr" {
   description = "VPC CIDR"
   type        = string
