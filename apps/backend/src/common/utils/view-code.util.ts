@@ -17,10 +17,9 @@ export const viewCodeCodec = {
 		try {
 			value = decodeURIComponent(value);
 			const decipher = crypto.createDecipheriv('aes-128-cbc', Buffer.from(key), Buffer.from(iv));
-			let decrypted = decipher.update(value, 'base64', 'binary');
-			decrypted += decipher.final('binary');
-
-			return decrypted;
+			// encode가 utf-8로 암호화하므로 복호화도 utf-8이어야 한다. 'binary'(latin1)로 받으면
+			// 한글 pub_id·sub_id가 바이트 단위로 쪼개져 깨진다(ASCII만 두 인코딩 결과가 같아 드러나지 않았다).
+			return Buffer.concat([decipher.update(value, 'base64'), decipher.final()]).toString('utf-8');
 		} catch (e) {
 			return value;
 		}
