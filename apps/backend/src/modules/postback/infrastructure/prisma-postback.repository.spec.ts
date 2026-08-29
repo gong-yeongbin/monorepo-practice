@@ -29,7 +29,7 @@ describe('PrismaPostbackRepository', () => {
 
 		await repository.updateMediaSentAt(7, sentAt);
 
-		expect(update).toHaveBeenCalledWith({ where: { id: 7 }, data: { media_sent_at: sentAt } });
+		expect(update).toHaveBeenCalledWith({ where: { id: BigInt(7) }, data: { media_sent_at: sentAt } });
 	});
 
 	it('findInstalls는 token 필터와 installed_at 범위로 event_name=install만 조회한다', async () => {
