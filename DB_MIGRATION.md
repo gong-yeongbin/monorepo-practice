@@ -93,12 +93,14 @@
 | `daily_report.id` `Int` → `BigInt` | 결정 G — 증가율상 `postback`보다 4배 빨리 참 | ✅ 적용 |
 | `postback.view_code` · `daily_report.view_code` `VarChar(255)` → **`Text`** | 재인코딩 결과 최대 326자, `postback_daily`에 **856행** 초과 (§5-3). `pub_id`·`sub_id`를 255로 넓히면 view_code 최대가 818자가 되어 고정 폭으로는 다시 막힌다 | ✅ 적용 |
 | `postback.pub_id` · `sub_id` (및 `daily_report` 동일) `VarChar(100)` → **`VarChar(255)`** | 레거시 최대 `pub_id` 19자 · `sub_id` 164자(`VarChar(100)` 초과 4,146행). 매체가 유저 단위 식별자를 실어 보내면 더 길어질 수 있어 둘 다 255로 맞춤 | ✅ 적용 |
+| `campaign_config.tracker_/admin_/media_event_name` `VarChar(30)` → **`VarChar(50)`** | 레거시 최대 39자, **337건 초과**. 자르면 `postback-consumer.use-case.ts:57`의 정확일치 매칭이 영원히 실패해 이벤트가 미등록으로 샌다 | ✅ 적용 |
 | 그 외 컬럼 폭 | **per-tracker 실측 대기** (§13) | 미정 |
 
 생성된 마이그레이션:
 
 - `prisma/migrations/20260901000000_postback_daily_report_bigint_id/migration.sql`
 - `prisma/migrations/20260901000001_widen_view_code_sub_id/migration.sql`
+- `prisma/migrations/20260901000002_widen_campaign_config_event_names/migration.sql`
 
 적용은 사용자가 직접 실행한다(`prisma/CLAUDE.md` 규칙): `pnpm --filter backend deploy`
 
@@ -334,7 +336,48 @@ flat `postback`에 **공통 필드만 추린 요약본**.
 > 참고: `click_id`는 **빈 문자열이 섞여 있어 단독 조인 키로 쓸 수 없다.**
 > 검증 중 빈 문자열 2행이 flat 쪽 빈 문자열 ~178만 건과 매칭돼 조인이 357만 행으로 폭발했다.
 
-### 8-2. 트래커별 컬럼 매핑
+### 8-2. 이관 방식 — `originalUrl`을 그대로 매퍼에 태운다
+
+**컬럼 매핑을 손으로 구현하지 않는다.** 레거시 `originalUrl`은 트래커가 보낸 인바운드 URL 원본이라,
+쿼리스트링만 파싱하면 프로덕션이 받는 것과 똑같은 입력이 나온다. 그대로 프로덕션 경로에 태운다:
+
+```
+originalUrl → 쿼리스트링 파싱 → TRACKERS[tracker].install/event(query)
+  → createPostback({ trackerName, eventName, pubId, subId, rawQueryParams: JSON.stringify(query) })
+  → INSERT
+```
+
+`install-postback.use-case.ts:13-16` / `event-postback.use-case.ts:13-16`과 같은 호출 순서다.
+매퍼가 바뀌면 이관 결과도 따라가므로 둘이 어긋날 일이 없고, 아래 §8-2-1 매핑표는
+직접 구현할 명세가 아니라 **대조용 참고표**가 된다.
+
+프로덕션 경로와 다른 곳은 넷뿐이다:
+
+| 필드 | 프로덕션 | 이관 |
+|---|---|---|
+| `token` | 매퍼가 쿼리에서 뽑음 | 레거시 `token` 컬럼 (이미 해석돼 있어 더 신뢰할 수 있음) |
+| `pub_id` / `sub_id` | `viewCodeCodec.decode(viewCode)`로 복호화 | 레거시 `pub_id` / `sub_id` 컬럼 (레거시 hex는 복호화 불가) |
+| `view_code` | 매퍼가 쿼리에서 뽑음 | `(token, pub_id, sub_id)`로 **재인코딩** (§5) |
+| `media_sent_at` | 수신 시점엔 항상 `null` | 레거시 `send_time` (이관 대상은 이미 전송이 끝난 과거 행) |
+
+`raw_query_params`는 양쪽 다 `JSON.stringify(query)`라 포맷이 자동으로 일치한다.
+
+**시각 처리**: 매퍼는 `+09:00` 오프셋이 붙은 문자열을 뱉는다(`dayjs(...).format()`).
+스크립트는 이를 `toISOString()`으로 UTC 정규화해 `Timestamp(0)` 컬럼에 넣는데,
+Prisma가 `DateTime`을 쓰는 방식과 같아 신규 행과 일치한다.
+
+**구현 메모**: 이 변환기는 표본 생성용으로 한 번 만들어 검증까지 마쳤고(트래커 10개 경로 전부 통과),
+지금은 레포에 두지 않았다. 실제 이관 때 아래 형태로 다시 만들면 된다.
+
+- 입력: 트래커 테이블별 `SELECT token, view_code, pub_id, sub_id, send_time, created_at, originalUrl`
+- 트래커·install/event 구분은 `originalUrl` 경로(`.../<트래커>/<install|event>`)에서 읽는다
+- 미등록 트래커(§1 제외 대상)는 건너뛰고, NOT NULL 빈 행과 길이 초과는 따로 보고한다
+  — **§13의 per-tracker 길이 실측을 풀스캔 없이 표본으로 대신 볼 수 있다**
+- 시각은 `toISOString()`으로 UTC 정규화한다. Prisma가 `Timestamp(0)`에 쓰는 방식과 같다
+- 레거시 `send_time`은 `timestamp`가 아니라 `varchar(255)`에 담긴 **KST 문자열**이라 오프셋이 없다.
+  그대로 `new Date()`에 넣으면 실행 머신의 로컬 타임존으로 해석되므로 `+09:00`을 명시해야 한다
+
+### 8-2-1. 트래커별 컬럼 매핑 (대조용 참고표)
 
 매핑의 정답지는 `apps/backend/src/trackers/<트래커>/{install,event}.mapper.ts`다.
 레거시 per-tracker 테이블은 그 원본 파라미터를 컬럼으로 펼쳐 놓은 것이라 매퍼를 그대로 따라가면 된다.
@@ -368,22 +411,16 @@ flat `postback`에 **공통 필드만 추린 요약본**.
 | `tracker_name` | 레지스트리 키 리터럴 (`originalUrl` 경로와 일치) |
 | `raw_query_params` | `originalUrl`의 쿼리스트링을 **JSON 객체로 변환** (§8-3) |
 
-### 8-3. 함정 4개
+### 8-3. 함정 — 대부분 §8-2 방식으로 사라진다
 
-1. **adjust event의 `evented_at`** — 매퍼는 `created_at`을 읽지만 레거시 테이블에서 그 인바운드
-   파라미터는 **`created_at2`**로 리네임돼 있다(`created_at`은 행 삽입 시각).
-   잘못 쓰면 358,819행의 이벤트 시각이 전부 틀린다.
-2. **singular event의 `installed_at`** — 매퍼는 `install_utc`를 읽는데 `postback_event_singular`에
-   그 컬럼이 없다(`time` / `utc` / `click_time` / `click_utc`뿐). **2,093,779행 NULL**
-   (nullable이라 이관 자체는 통과).
-3. **`raw_query_params` 포맷** — 새 코드는 `JSON.stringify(query)`, 즉 **쿼리 파라미터의 JSON 객체**를
-   저장한다(`install-postback.use-case.ts:16`). 레거시 `originalUrl`은
-   `http://app/airbridge/install?click_id=...` 형태의 **풀 URL 문자열**이다.
-   쿼리스트링을 파싱해 JSON으로 변환해야 신규 행과 포맷이 일치한다.
-4. **`event_name`** — install 테이블은 리터럴 `'install'`을 넣는다
-   (`install-postback.use-case.ts:16`, `campaign_config.tracker_event_name` 기본값과 일치).
+| # | 함정 | `originalUrl` 방식에서 |
+|---|---|---|
+| 1 | **adjust event의 `evented_at`** — 매퍼는 쿼리 파라미터 `created_at`을 읽는데, 레거시 테이블은 행 삽입 시각과 충돌해서 이를 `created_at2`로 리네임해 두었다. 컬럼 기준으로 짜면 358,819행의 이벤트 시각이 전부 틀린다 | ✅ **해소.** `originalUrl`에는 원본 이름 `created_at`으로 남아 있어 매퍼가 그대로 읽는다 |
+| 2 | **singular event의 `installed_at`** — 매퍼는 `install_utc`를 읽는데 `postback_event_singular`에 그 컬럼이 없다(`time`/`utc`/`click_time`/`click_utc`뿐). 컬럼 기준이면 2,093,779행이 NULL | ⚠️ **확인 필요.** `originalUrl`에 `install_utc` 파라미터가 살아 있으면 해소되고, 없으면 그대로 NULL이다(nullable이라 이관 자체는 통과) |
+| 3 | **`raw_query_params` 포맷** — 새 코드는 `JSON.stringify(query)`(쿼리 파라미터의 JSON 객체)를 저장하는데(`install-postback.use-case.ts:16`) 레거시 `originalUrl`은 풀 URL 문자열이다 | ✅ **해소.** 스크립트가 같은 `JSON.stringify(query)`를 쓴다 |
+| 4 | **`event_name`** — install 테이블은 리터럴 `'install'`을 넣어야 한다(`install-postback.use-case.ts:16`, `campaign_config.tracker_event_name` 기본값과 일치) | ✅ 스크립트가 경로의 `install`/`event`로 판별해 처리 |
 
----
+2번은 `postback_event_singular.originalUrl`에 `install_utc`가 들어 있는지 표본 한 건으로 확인하면 된다.
 
 ## 9. `campaign_config` ← `postback_registered_event`
 
@@ -433,7 +470,7 @@ ROW_NUMBER() OVER (PARTITION BY token, admin ORDER BY idx DESC) = 1
 |---|---|---:|---|
 | 1 | `advertising.name @unique` | **8건 중복** | 이름 뒤에 구분자 부여 또는 병합 |
 | 2 | `campaign.name VarChar(30)` | 2건 초과 | 절단 |
-| 3 | `campaign_config.*_event_name VarChar(30)` | **337건 초과** (최대 39자) | 절단 또는 컬럼 확대 |
+| 3 | `campaign_config.*_event_name VarChar(30)` | **337건 초과** (최대 39자) | ✅ `VarChar(50)`로 확대 (§4). **절단 불가** — 정확일치 매칭이 깨진다 |
 | 4 | `campaign_config @@unique` | 73그룹 / **91행** | 최신 `idx` 채택 (§9) |
 | 5 | `campaign_config` 고아 토큰 | **20건** | 제외 |
 | 6 | `daily_report.token` FK | 고아 토큰 **3개** | 해당 행 제외 (행 수 미측정) |
