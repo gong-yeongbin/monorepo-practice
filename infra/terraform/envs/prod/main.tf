@@ -12,8 +12,9 @@ locals {
 module "network" {
   source = "../../modules/network"
 
-  project  = var.project
-  vpc_cidr = var.vpc_cidr
+  project         = var.project
+  vpc_cidr        = var.vpc_cidr
+  bastion_enabled = var.bastion_enabled
 }
 
 module "database" {
@@ -129,4 +130,16 @@ module "frontend" {
   project         = var.project
   domain_aliases  = [local.frontend_domain]
   certificate_arn = module.acm_cloudfront.certificate_arn
+}
+
+# 사람이 DB·캐시를 들여다보거나 레거시 데이터 이관을 돌릴 때만 켠다.
+# 평상시에는 false로 두어 인스턴스를 없앤다 — 접근 경로 자체가 사라지고 비용도 0이 된다.
+module "bastion" {
+  source = "../../modules/bastion"
+
+  project = var.project
+  enabled = var.bastion_enabled
+  # RDS·Valkey와 같은 AZ여야 조회 트래픽에 AZ 간 전송료가 붙지 않는다
+  subnet_id         = module.network.app_subnet_ids[0]
+  security_group_id = module.network.bastion_sg_id
 }

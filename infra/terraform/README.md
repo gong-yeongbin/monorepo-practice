@@ -28,6 +28,7 @@
 - 보안그룹 체인: `alb(80,443) → app(3001)` / `nlb(80) → app(3002)` → `rds(5432)/redis(6379)`, 전부 network 모듈에서 생성. **NLB의 SG는 생성 시점에만 지정할 수 있다**
 - 시크릿(DB 비밀번호, JWT)은 Terraform이 생성해 SSM Parameter Store(SecureString, 무료)에만 저장 → task definition `secrets`로 주입. tfvars에 비밀 없음
 - IAM은 execution role(이미지 pull·로그·시크릿)과 task role(앱 버킷 S3 + SES) 분리 → **정적 AWS 키 불필요**
+- **SES는 Terraform이 관리하지 않는다.** 도메인 identity와 DKIM은 레거시가 같은 계정·리전에 이미 만들어 둔 것을 그대로 쓴다. Terraform이 소유하면 destroy 한 번에 레거시 메일 발송까지 끊기고, 존에 이미 있는 DKIM CNAME과 이름이 겹쳐 apply도 실패한다. 앱은 task role의 ses:SendEmail 권한과 ses_from_email 변수만으로 발송한다
 
 ## 확정된 설계 결정과 근거
 
@@ -115,9 +116,38 @@ infra/terraform/
 │   ├── ecr/          # backend 이미지 리포지토리
 │   ├── acm/          # 인증서 + DNS 검증 (ALB용 서울 / CloudFront용 us-east-1)
 │   ├── backend/      # ALB, ECS, IAM, 오토스케일링, JWT SSM
-│   └── frontend/     # S3 + CloudFront OAC
-└── envs/prod/        # 모듈 배선, Route53, SES, 앱 S3 버킷, tfvars
+│   ├── frontend/     # S3 + CloudFront OAC
+│   └── bastion/      # SSM 점프 호스트 (기본 off — 아래 접속 항목 참고)
+└── envs/prod/        # 모듈 배선, Route53, 앱 S3 버킷, 소재 CDN, tfvars
 ```
+
+## DB·캐시에 사람이 접속하는 법
+
+RDS와 Valkey는 private subnet에 있고 보안그룹이 app 태스크에서만 열려 있다. `publicly_accessible = false`이고 인터넷 경로 자체가 없으므로 **비밀번호를 알아도 로컬에서 직접 붙을 수 없다.** 접속이 필요하면 `bastion` 모듈을 켠다.
+
+```bash
+# 1. 점프 호스트를 켠다 (tfvars 또는 -var)
+terraform apply -var bastion_enabled=true
+
+# 2. 출력된 명령을 그대로 실행 — 터미널을 열어둔 채로 유지한다
+terraform output -raw bastion_db_port_forward
+# → aws ssm start-session --target i-xxxx --document-name AWS-StartPortForwardingSessionToRemoteHost ...
+
+# 3. DataGrip·psql 등에서 localhost:15432 로 접속
+#    user는 db_username(기본 app), 비밀번호는 아래에서 꺼낸다
+aws ssm get-parameter --name /mecross/prod/DATABASE_URL --with-decryption --query Parameter.Value --output text
+
+# 4. 끝나면 되돌린다 — 인스턴스가 destroy되어 접근 경로와 비용이 함께 사라진다
+terraform apply -var bastion_enabled=false
+```
+
+Valkey를 보려면 같은 명령에서 host를 캐시 엔드포인트로, port를 6379로 바꾸면 된다.
+
+- **로컬에 `session-manager-plugin`이 따로 필요하다.** AWS CLI 공식 pkg에 포함되지 않는다 — `brew install --cask session-manager-plugin`
+- 점프 호스트는 **인바운드 규칙이 하나도 없다.** SSH 키페어도 만들지 않는다. Session Manager가 아웃바운드 443으로만 통신하기 때문이며, 접근 통제는 SG가 아니라 IAM이 한다(세션 기록은 CloudTrail에 남는다).
+- `bastion_enabled = true`일 때만 RDS SG에 5432, Valkey SG에 6379가 점프 호스트 대상으로 열린다. false로 되돌리면 규칙까지 같이 사라진다.
+- 비용은 월 ~$7(t4g.nano $3.1 + 공인 IPv4 $3.6). 상시 켜둘 리소스가 아니다.
+- RDS PostgreSQL 15+ 는 기본 파라미터 그룹이 `rds.force_ssl = 1`이라 평문 연결을 거부한다. 클라이언트 SSL 모드가 `prefer` 이상이어야 한다.
 
 ## 배포 절차
 
@@ -168,4 +198,4 @@ cd envs/prod && terraform init -backend=false && terraform validate
 3. 앱 수정: CORS `localhost:3000` 하드코딩 해제(`apps/backend/src/main.ts`), 302 응답 슬림화, 트래킹 로그 억제
 4. frontend 빌드(`VITE_API_URL=https://admin-api.<도메인>` — `admin_api_url` 출력 참조) → S3 sync + CloudFront invalidation
 5. 데이터 이전(MySQL → PostgreSQL 이기종: pgloader/AWS DMS) → 기존 EC2/RDS/ElastiCache/GA 정리
-6. SES 샌드박스 해제(수동), 노출된 IAM 키 폐기
+6. 노출된 IAM 키 폐기

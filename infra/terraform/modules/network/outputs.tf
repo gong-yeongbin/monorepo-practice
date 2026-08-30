@@ -39,3 +39,7 @@ output "app_subnet_ids" {
 output "primary_az" {
   value = data.aws_availability_zones.available.names[var.primary_az_index]
 }
+
+output "bastion_sg_id" {
+  value = var.bastion_enabled ? aws_security_group.bastion[0].id : null
+}

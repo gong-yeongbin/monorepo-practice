@@ -181,6 +181,21 @@ resource "aws_security_group" "rds" {
     security_groups = [aws_security_group.app.id]
   }
 
+  # 점프 호스트를 켰을 때만 열린다. 인라인 ingress를 쓰는 보안그룹에
+  # aws_vpc_security_group_ingress_rule을 따로 붙이면 두 방식이 서로의 규칙을 지우려 들며
+  # 매 plan마다 diff가 생긴다 — 그래서 별도 리소스가 아니라 dynamic 블록으로 추가한다.
+  dynamic "ingress" {
+    for_each = var.bastion_enabled ? [1] : []
+
+    content {
+      description     = "PostgreSQL from bastion"
+      from_port       = 5432
+      to_port         = 5432
+      protocol        = "tcp"
+      security_groups = [aws_security_group.bastion[0].id]
+    }
+  }
+
   tags = {
     Name = "${var.project}-rds"
   }
@@ -199,7 +214,41 @@ resource "aws_security_group" "redis" {
     security_groups = [aws_security_group.app.id]
   }
 
+  dynamic "ingress" {
+    for_each = var.bastion_enabled ? [1] : []
+
+    content {
+      description     = "Redis from bastion"
+      from_port       = 6379
+      to_port         = 6379
+      protocol        = "tcp"
+      security_groups = [aws_security_group.bastion[0].id]
+    }
+  }
+
   tags = {
     Name = "${var.project}-redis"
+  }
+}
+
+# SSM 점프 호스트용. ingress 블록이 하나도 없다 — Session Manager는 인스턴스가 아웃바운드 443으로
+# 먼저 연결을 맺는 구조라 인바운드를 열지 않고도 접속이 된다(SSH 22번도 열지 않는다).
+resource "aws_security_group" "bastion" {
+  count = var.bastion_enabled ? 1 : 0
+
+  name        = "${var.project}-bastion"
+  description = "SSM bastion: no inbound"
+  vpc_id      = aws_vpc.this.id
+
+  # SSM 엔드포인트 호출과 DB·캐시로의 아웃바운드
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.project}-bastion"
   }
 }

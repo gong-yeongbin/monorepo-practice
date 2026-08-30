@@ -17,7 +17,8 @@
 #   api 쪽으로 어드민 경로를 부르면 앱이 404를 준다 (apps/backend/src/main.ts의 공개 경로 목록)
 #
 # 수동 작업 (Terraform 범위 밖):
-#   - SES 샌드박스 해제 신청
+#   - SES 도메인 identity·DKIM (레거시가 만들어 둔 것을 그대로 사용 — Terraform 관리 대상 아님)
+#   - SES 샌드박스 해제 신청 (이미 해제돼 있다면 불필요)
 #   - backend CORS 허용 origin에 https://admin.<domain> 추가 (apps/backend/src/main.ts)
 
 domain_name    = "example.com"
@@ -28,6 +29,9 @@ ses_from_email = "no-reply@example.com"
 # 신규 스택은 nlb_dns_name·alb_dns_name·CloudFront 도메인으로 직접 검증한다.
 # 컷오버 시점에 true로 바꿔 재-apply할 것.
 # cutover_dns_enabled = false
+
+# DB·캐시에 사람이 붙어야 할 때만 true (데이터 이관·수동 조회). 끝나면 false로 되돌릴 것.
+# bastion_enabled       = false
 
 # frontend_subdomain    = "admin"
 # api_subdomain         = "api"

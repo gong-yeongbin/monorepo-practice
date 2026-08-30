@@ -154,3 +154,9 @@ variable "ses_from_email" {
   description = "SES 발신 이메일 (예: no-reply@<domain>)"
   type        = string
 }
+
+variable "bastion_enabled" {
+  description = "SSM 점프 호스트 생성 여부. DB·캐시 수동 조회나 데이터 이관이 필요할 때만 true로 올리고 끝나면 되돌린다"
+  type        = bool
+  default     = false
+}

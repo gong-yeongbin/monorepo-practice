@@ -32,3 +32,9 @@ variable "primary_az_index" {
   type        = number
   default     = 0
 }
+
+variable "bastion_enabled" {
+  description = "SSM 점프 호스트용 보안그룹과 RDS·Valkey 접근 규칙을 만들지 여부"
+  type        = bool
+  default     = false
+}

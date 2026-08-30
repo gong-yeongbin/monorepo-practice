@@ -61,3 +61,15 @@ output "asset_distribution_id" {
 output "rds_endpoint" {
   value = module.database.endpoint
 }
+
+output "bastion_instance_id" {
+  description = "aws ssm start-session --target 에 넣을 인스턴스 id (bastion_enabled = false 면 null)"
+  value       = module.bastion.instance_id
+}
+
+# 그대로 복사해 실행하면 localhost:15432가 RDS에 연결된다 (DataGrip은 localhost:15432로 접속).
+# 로컬에 session-manager-plugin이 설치돼 있어야 한다 — AWS CLI에 포함되지 않는다.
+output "bastion_db_port_forward" {
+  description = "RDS 포트 포워딩 명령. bastion_enabled = false 면 null"
+  value       = var.bastion_enabled ? "aws ssm start-session --target ${module.bastion.instance_id} --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters '{\"host\":[\"${module.database.endpoint}\"],\"portNumber\":[\"5432\"],\"localPortNumber\":[\"15432\"]}'" : null
+}
