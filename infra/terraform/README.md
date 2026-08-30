@@ -120,10 +120,23 @@ cd ../envs/prod
 cp terraform.tfvars.example terraform.tfvars   # domain_name, ses_from_email 기입
 terraform init && terraform plan && terraform apply
 # 최초 apply는 backend_desired_count = 0 (ECR에 이미지가 아직 없음)
+# cutover_dns_enabled = false 라 api·admin 레코드는 만들지 않는다 (아래 참고)
 
 # 3. 이미지 push 후 (Dockerfile은 후속 단계)
 # backend_desired_count = 2, backend_autoscaling_enabled = true 로 재-apply
+
+# 4. 컷오버 시점에만
+# cutover_dns_enabled = true 로 재-apply → api·admin 레코드가 신규 스택을 가리킨다
 ```
+
+### ⚠️ `api.<domain>`·`admin.<domain>`은 레거시가 쓰는 이름이다
+
+두 레코드는 지금 레거시 EC2와 레거시 S3 어드민을 가리키고 있다. **레코드를 만드는 행위 자체가
+프로덕션 컷오버**라서 `cutover_dns_enabled`(기본 `false`)로 가둬 뒀다. `false`인 동안은 두 레코드를
+아예 만들지 않으므로 레거시가 그대로 트래픽을 받고, 신규 스택은 `nlb_dns_name`·`alb_dns_name`과
+CloudFront 도메인으로 직접 검증한다. `admin-api.`·`asset.`은 신규 이름이라 처음부터 만든다.
+
+컷오버 절차 전체는 `~/.claude/plans/stateless-meandering-aho.md` 참고.
 
 검증만 할 때 (자격증명 불필요):
 

@@ -5,11 +5,20 @@ data "aws_route53_zone" "this" {
   name = var.domain_name
 }
 
+# api.<domain>과 <frontend>.<domain>은 **레거시가 지금 쓰고 있는 이름**이라, 이 두 레코드를 만드는 것이
+# 곧 프로덕션 컷오버다. 그래서 cutover_dns_enabled로 가둔다 — 인프라를 먼저 다 올려 검증한 뒤
+# 컷오버 시점에만 true로 바꿔 재-apply한다. 그때까지는 LB·CloudFront 도메인으로 직접 접속해 검증한다.
+# 기존 레코드를 이어받아야 하므로 allow_overwrite가 필요하다(없으면 apply가 충돌로 실패한다).
+# admin_api·asset은 신규 이름이라 충돌이 없어 처음부터 만든다.
+
 # 트래킹·포스트백 — 매체와 트래커에 배포된 http:// 링크가 이 이름을 가리킨다
 resource "aws_route53_record" "api" {
-  zone_id = data.aws_route53_zone.this.zone_id
-  name    = local.api_domain
-  type    = "A"
+  count = var.cutover_dns_enabled ? 1 : 0
+
+  zone_id         = data.aws_route53_zone.this.zone_id
+  name            = local.api_domain
+  type            = "A"
+  allow_overwrite = true
 
   alias {
     name                   = module.backend.nlb_dns_name
@@ -32,9 +41,12 @@ resource "aws_route53_record" "admin_api" {
 }
 
 resource "aws_route53_record" "frontend" {
-  zone_id = data.aws_route53_zone.this.zone_id
-  name    = local.frontend_domain
-  type    = "A"
+  count = var.cutover_dns_enabled ? 1 : 0
+
+  zone_id         = data.aws_route53_zone.this.zone_id
+  name            = local.frontend_domain
+  type            = "A"
+  allow_overwrite = true
 
   alias {
     name                   = module.frontend.distribution_domain_name

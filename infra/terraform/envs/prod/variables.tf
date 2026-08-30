@@ -42,6 +42,15 @@ variable "asset_subdomain" {
   default     = "asset"
 }
 
+# api.<domain>·<frontend>.<domain>은 레거시가 운영 중인 이름이라 레코드 생성이 곧 컷오버다.
+# false면 두 레코드를 만들지 않아 레거시가 그대로 트래픽을 받고, 신규 스택은 LB·CloudFront
+# 도메인으로 검증한다. 컷오버 시점에 true로 바꿔 재-apply하면 레코드가 신규 스택을 가리킨다.
+variable "cutover_dns_enabled" {
+  description = "api·frontend 레코드를 신규 스택으로 전환한다 (컷오버 시점에만 true)"
+  type        = bool
+  default     = false
+}
+
 variable "vpc_cidr" {
   description = "VPC CIDR"
   type        = string
