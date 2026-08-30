@@ -160,3 +160,9 @@ variable "bastion_enabled" {
   type        = bool
   default     = false
 }
+
+variable "github_repository" {
+  description = "OIDC 신뢰를 걸 GitHub 저장소 (owner/repo). main 브랜치의 워크플로만 역할을 가져갈 수 있다"
+  type        = string
+  default     = "gong-yeongbin/monorepo-practice"
+}

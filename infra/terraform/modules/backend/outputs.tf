@@ -25,3 +25,7 @@ output "service_name" {
 output "task_definition_family" {
   value = aws_ecs_task_definition.this.family
 }
+
+output "service_arn" {
+  value = aws_ecs_service.this.id
+}

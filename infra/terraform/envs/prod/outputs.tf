@@ -73,3 +73,8 @@ output "bastion_db_port_forward" {
   description = "RDS 포트 포워딩 명령. bastion_enabled = false 면 null"
   value       = var.bastion_enabled ? "aws ssm start-session --target ${module.bastion.instance_id} --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters '{\"host\":[\"${module.database.endpoint}\"],\"portNumber\":[\"5432\"],\"localPortNumber\":[\"15432\"]}'" : null
 }
+
+output "github_actions_role_arn" {
+  description = "워크플로의 aws-actions/configure-aws-credentials에 넣을 역할 ARN"
+  value       = aws_iam_role.github_actions.arn
+}
