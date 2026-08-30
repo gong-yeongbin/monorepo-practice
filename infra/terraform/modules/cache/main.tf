@@ -19,7 +19,8 @@ resource "aws_elasticache_subnet_group" "this" {
 # 대가: multi_az(자동 AZ 페일오버)는 못 켠다. 노드 단위 장애 페일오버는 그대로 유지된다.
 resource "aws_elasticache_replication_group" "this" {
   replication_group_id = "${var.project}-valkey"
-  description          = "${var.project} 트래킹 스트림 + 캠페인 캐시"
+  # ElastiCache description은 출력 가능한 ASCII만 받는다 — 한글을 쓰면 생성이 400으로 실패한다.
+  description = "${var.project} tracking stream + campaign cache"
 
   engine         = "valkey"
   engine_version = "8.0"
