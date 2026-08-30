@@ -332,7 +332,7 @@
           <rect class="zone" x="474" y="106" width="406" height="494" rx="3"/>
           <text class="tz" x="488" y="128">ap-northeast-2a — 앱·DB·캐시 전부 여기</text>
           <rect class="zone" x="906" y="106" width="326" height="494" rx="3"/>
-          <text class="tz" x="920" y="128">ap-northeast-2c</text>
+          <text class="tz" x="920" y="128">ap-northeast-2b</text>
 
           <!-- subnets -->
           <rect class="box2" x="490" y="144" width="374" height="256" rx="2"/>
@@ -427,7 +427,7 @@
 
           <rect class="box" x="782" y="736" width="150" height="52" rx="2"/>
           <text class="tt" x="857" y="758" text-anchor="middle">SES</text>
-          <text class="ts" x="857" y="776" text-anchor="middle">도메인 identity + DKIM</text>
+          <text class="ts" x="857" y="776" text-anchor="middle">기존 identity 재사용</text>
 
           <rect class="box" x="942" y="736" width="150" height="52" rx="2"/>
           <text class="tt" x="1017" y="758" text-anchor="middle">CloudWatch Logs</text>
@@ -591,7 +591,7 @@
           <text class="ts" x="684" y="248" text-anchor="middle">primary + replica, 같은 AZ</text>
 
           <rect class="zone" x="856" y="52" width="180" height="252" rx="3"/>
-          <text class="tz" x="870" y="74">ap-northeast-2c</text>
+          <text class="tz" x="870" y="74">ap-northeast-2b</text>
           <rect class="box b-a" x="872" y="88" width="148" height="46" rx="2"/>
           <text class="tt-a" x="946" y="116" text-anchor="middle">ALB 노드만</text>
           <text class="ts" x="946" y="164" text-anchor="middle">ALB는 AZ 간 전송이</text>
@@ -616,6 +616,69 @@
 
   <section>
     <div class="sec-head">
+      <div class="eyebrow">modules/bastion · bastion_enabled</div>
+      <h2>운영자가 DB에 닿는 법</h2>
+    </div>
+    <p>RDS와 Valkey는 private subnet에 있고 보안그룹이 앱 태스크에서만 열려 있다. <strong>비밀번호를 알아도 로컬에서 직접 붙을 수 없다.</strong> 그래서 점프 호스트를 두는데, 여기에도 <strong>인바운드 규칙을 하나도 만들지 않는다</strong> — SSH 22번도 열지 않고 키페어도 만들지 않는다.</p>
+
+    <figure>
+      <div class="canvas">
+        <svg viewBox="0 0 1000 340" role="img" aria-label="운영자 로컬과 bastion이 각각 SSM Session Manager로 아웃바운드 연결을 맺고, SSM이 둘을 중계해 로컬 포트가 private subnet의 RDS와 Valkey에 연결되는 구성도">
+          <defs>
+            <marker id="ahn4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" class="ah-n"><path d="M0 0 L10 5 L0 10 z"/></marker>
+            <marker id="aha4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" class="ah-a"><path d="M0 0 L10 5 L0 10 z"/></marker>
+          </defs>
+
+          <rect class="box" x="24" y="98" width="170" height="92" rx="3"/>
+          <text class="tt" x="109" y="124" text-anchor="middle">운영자 로컬</text>
+          <text class="ts" x="109" y="143" text-anchor="middle">DataGrip · psql</text>
+          <rect class="box2" x="38" y="152" width="142" height="24" rx="2"/>
+          <text class="tm" x="109" y="168" text-anchor="middle">localhost:15432</text>
+
+          <rect class="box b-a" x="274" y="98" width="180" height="92" rx="3"/>
+          <text class="tt-a" x="364" y="132" text-anchor="middle">SSM Session Manager</text>
+          <text class="ts" x="364" y="152" text-anchor="middle">접근 통제는 IAM이 한다</text>
+          <text class="ts" x="364" y="170" text-anchor="middle">세션 기록은 CloudTrail에</text>
+
+          <rect class="zone" x="494" y="40" width="486" height="270" rx="4"/>
+          <text class="tz" x="508" y="64">VPC · 10.0.0.0/16</text>
+          <rect class="zone" x="512" y="80" width="454" height="212" rx="3"/>
+          <text class="tz" x="524" y="100">ap-northeast-2a</text>
+
+          <rect class="box2" x="526" y="112" width="426" height="66" rx="2"/>
+          <text class="tz" x="836" y="132">public subnet</text>
+          <rect class="box" x="540" y="122" width="186" height="46" rx="3"/>
+          <text class="tt" x="633" y="141" text-anchor="middle">bastion · t4g.nano</text>
+          <text class="ts" x="633" y="159" text-anchor="middle">인바운드 규칙 0개</text>
+
+          <rect class="box2" x="526" y="198" width="426" height="82" rx="2"/>
+          <text class="tz" x="836" y="218">private subnet</text>
+          <rect class="box" x="540" y="212" width="180" height="54" rx="3"/>
+          <text class="tt" x="630" y="244" text-anchor="middle">RDS PostgreSQL</text>
+          <rect class="box" x="736" y="212" width="150" height="54" rx="3"/>
+          <text class="tt" x="811" y="244" text-anchor="middle">Valkey</text>
+
+          <line class="l-a" x1="194" y1="144" x2="268" y2="144" marker-end="url(#aha4)"/>
+          <text class="ts" x="231" y="134" text-anchor="middle">start-session</text>
+
+          <line class="l-a" x1="534" y1="144" x2="460" y2="144" marker-end="url(#aha4)"/>
+          <text class="ts" x="497" y="134" text-anchor="middle">아웃바운드 443</text>
+
+          <line class="l-n" x1="590" y1="168" x2="590" y2="206" marker-end="url(#ahn4)"/>
+          <text class="tm" x="600" y="192">5432</text>
+          <polyline class="l-n" points="690,168 690,188 811,188 811,206" marker-end="url(#ahn4)"/>
+          <text class="tm" x="750" y="182" text-anchor="middle">6379</text>
+        </svg>
+      </div>
+      <div class="legend">
+        <span><i class="swatch sw-a"></i> 양쪽 모두 SSM으로 <strong>나가는</strong> 연결 — 들어오는 연결이 없다</span>
+      </div>
+      <figcaption>그림 4 — 화살표가 둘 다 SSM을 향한다. 운영자도 bastion도 각자 밖으로 연결을 맺고 SSM이 중계할 뿐이라, 열어둔 포트 없이 터널이 성립한다. <code>bastion_enabled = false</code>로 내리면 인스턴스와 보안그룹 규칙이 함께 사라져 이 경로 자체가 없어진다.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <div class="sec-head">
       <div class="eyebrow">infra/terraform</div>
       <h2>코드 구성</h2>
     </div>
@@ -628,8 +691,10 @@
 │   ├── ecr/              <i>backend 이미지 리포지토리</i>
 │   ├── acm/              <i>ECDSA 인증서 + Route53 DNS 검증</i>
 │   ├── backend/          <i>ALB · NLB · ECS · IAM · 오토스케일링 · JWT SSM</i>
-│   └── frontend/         <i>S3 + CloudFront OAC</i>
-└── <b>envs/prod/</b>          <i>모듈 배선 · Route53 · SES · 앱 버킷 · 소재 CDN</i></pre>
+│   ├── frontend/         <i>S3 + CloudFront OAC</i>
+│   └── bastion/          <i>SSM 점프 호스트 (기본 off)</i>
+└── <b>envs/prod/</b>          <i>모듈 배선 · Route53 · 앱 버킷 · 소재 CDN</i></pre>
+    <p><strong>SES는 Terraform이 관리하지 않는다.</strong> 도메인 identity와 DKIM은 레거시가 같은 계정·리전에 이미 만들어 둔 것을 그대로 쓴다. Terraform이 소유하면 <code>destroy</code> 한 번에 레거시 메일 발송까지 끊기고, 존에 이미 있는 DKIM CNAME과 이름이 겹쳐 <code>apply</code>도 실패한다. 앱은 task role의 <code>ses:SendEmail</code> 권한만으로 발송한다.</p>
     <p>보안그룹은 순환 참조를 피하려 전부 <code>network</code>에서 만들고 ID만 넘긴다. 체인은 <code>alb(80,443) → app(3001)</code> / <code>nlb(80) → app(3002)</code> → <code>rds(5432)</code> · <code>redis(6379)</code>다. DB 비밀번호와 JWT 시크릿은 Terraform이 생성해 SSM SecureString에만 기록하므로 <strong>tfvars에 비밀이 없고</strong>, 앱은 task role을 쓰므로 <strong>정적 AWS 키가 필요 없다</strong>.</p>
   </section>
 
@@ -641,8 +706,10 @@
     <ol class="steps">
       <li class="done"><span class="mark">✓</span><span><span class="what">AWS CLI 설치 · 자격증명 설정</span> <span class="why">— 공식 pkg (brew 버전은 python 링크 문제로 깨짐)</span></span></li>
       <li class="done"><span class="mark">✓</span><span><span class="what">Cost Explorer로 DT $865 구성 실측</span> <span class="why">— AZ 간 $233 규명, 단일 AZ로 반영 완료</span></span></li>
+      <li class="done"><span class="mark">✓</span><span><span class="what">plan 검증 — 70 add, 0 change, <strong>0 destroy</strong></span> <span class="why">— 레거시 레코드 무영향, SES 리소스 없음, 두 캐시 노드 모두 2a 확인</span></span></li>
       <li class="now"><span class="mark">→</span><span><span class="what">bootstrap apply → backend.tf에 버킷명 기입</span> <span class="why">— 리소스는 S3 버킷 하나, 레거시 무영향</span></span></li>
-      <li class="todo"><span class="mark">·</span><span><span class="what">envs/prod plan → apply</span> <span class="why">— desired_count 0, cutover_dns_enabled false라 레거시 트래픽 그대로</span></span></li>
+      <li class="todo"><span class="mark">·</span><span><span class="what">envs/prod apply</span> <span class="why">— desired_count 0, cutover_dns_enabled false라 레거시 트래픽 그대로</span></span></li>
+      <li class="todo"><span class="mark">·</span><span><span class="what">bastion으로 스키마 적용</span> <span class="why">— prisma migrate deploy · 레거시 MySQL 데이터 이관</span></span></li>
       <li class="todo"><span class="mark">·</span><span><span class="what">Dockerfile 작성 → ECR push</span> <span class="why">— pnpm workspace · arm64 필수</span></span></li>
       <li class="todo"><span class="mark">·</span><span><span class="what">autoscaling 활성화 후 재-apply</span> <span class="why">— NLB·ALB 도메인으로 직접 검증</span></span></li>
       <li class="todo"><span class="mark">·</span><span><span class="what">앱 수정 · 프론트 배포</span> <span class="why">— CORS, 302 슬림화, 트래킹 로그 억제</span></span></li>

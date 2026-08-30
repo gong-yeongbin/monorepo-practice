@@ -4,7 +4,9 @@
 
 ## 아키텍처
 
-> 구성도(요청 경로·정적 자산·단일 AZ 전후 비교): [architecture.html](./architecture.html) — 브라우저로 열면 된다.
+> 구성도(요청 경로·정적 자산·단일 AZ 전후 비교·운영 접속): [architecture.html](./architecture.html) — 브라우저로 열면 된다.
+
+> **plan 검증(2026-08-30)**: `70 add, 0 change, 0 destroy`. 레거시가 쓰는 `api.`·`admin.` 레코드는 생성 목록에 없고(컷오버 게이트 동작), SES 리소스도 없다. 서브넷은 `ap-northeast-2a`·`2b`에 만들어지되 RDS·Valkey·Fargate·NLB·bastion은 전부 `2a`에 잡힌다.
 
 ```
 매체 클릭 / 트래커 포스트백
@@ -72,6 +74,7 @@
 | RDS db.t4g.medium | ~$55 |
 | ElastiCache cache.t4g.medium × 2 (primary + replica) | ~$96 |
 | **Data Transfer** (GA 제거 + ECDSA 반영) | **$500~700** |
+| bastion t4g.nano (켜둔 동안만) | ~$7 |
 | Route53/S3/ECR/IPv4/로그 등 | ~$40 |
 
 트래킹을 ALB로 받았다면 이 표의 LB 항목이 $200~300이 된다. NLB 전환으로 **월 ~$220**을 덜어냈고, 남은 최대 변수는 여전히 Data Transfer다.
@@ -193,9 +196,10 @@ cd envs/prod && terraform init -backend=false && terraform validate
 
 ## 남은 작업 (순서대로)
 
-1. ✅ AWS 자격증명 설정 · **Cost Explorer 실측 완료**(2026-08-30) → ⬜ bootstrap → plan/apply
-2. Dockerfile (pnpm workspace + **arm64** + `prisma migrate deploy` 전략) + CI/CD
-3. 앱 수정: CORS `localhost:3000` 하드코딩 해제(`apps/backend/src/main.ts`), 302 응답 슬림화, 트래킹 로그 억제
-4. frontend 빌드(`VITE_API_URL=https://admin-api.<도메인>` — `admin_api_url` 출력 참조) → S3 sync + CloudFront invalidation
-5. 데이터 이전(MySQL → PostgreSQL 이기종: pgloader/AWS DMS) → 기존 EC2/RDS/ElastiCache/GA 정리
-6. 노출된 IAM 키 폐기
+1. ✅ AWS 자격증명 설정 · **Cost Explorer 실측**(2026-08-30) · **plan 검증**(70 add / 0 change / **0 destroy**) → ⬜ bootstrap → apply
+2. `bastion_enabled = true`로 DB 접속 경로 확보 → `prisma migrate deploy` → 레거시 데이터 이전(MySQL → PostgreSQL 이기종: pgloader/AWS DMS)
+3. Dockerfile (pnpm workspace + **arm64** + `prisma migrate deploy` 전략) + CI/CD
+4. 앱 수정: CORS `localhost:3000` 하드코딩 해제(`apps/backend/src/main.ts`), 302 응답 슬림화, 트래킹 로그 억제
+5. frontend 빌드(`VITE_API_URL=https://admin-api.<도메인>` — `admin_api_url` 출력 참조) → S3 sync + CloudFront invalidation
+6. DNS 컷오버(`cutover_dns_enabled = true`) → 기존 EC2/RDS/ElastiCache/GA 정리
+7. 노출된 IAM 키 폐기, `bastion_enabled = false`로 되돌리기
