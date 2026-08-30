@@ -85,14 +85,23 @@ data "aws_iam_policy_document" "github_actions" {
   # RDS가 private이라 VPC 안에서 실행해야 하고, 같은 이미지를 써야 코드와 스키마가 어긋나지 않는다.
   # 리비전마다 ARN이 바뀌므로 family 단위로 허용하고, 클러스터를 조건으로 좁힌다.
   statement {
-    sid = "EcsRunMigration"
-
-    actions = [
-      "ecs:RunTask",
-      "ecs:DescribeTasks",
-    ]
-
+    sid       = "EcsRunMigration"
+    actions   = ["ecs:RunTask"]
     resources = ["${module.backend.task_definition_arn}:*"]
+
+    condition {
+      test     = "ArnEquals"
+      variable = "ecs:cluster"
+      values   = [module.backend.cluster_arn]
+    }
+  }
+
+  # DescribeTasks의 리소스는 태스크 정의가 아니라 **태스크** ARN이다. 실행 전에는 id를 알 수 없어
+  # 클러스터 하위 전체에 걸고, 조건으로 클러스터를 다시 좁힌다.
+  statement {
+    sid       = "EcsWatchMigration"
+    actions   = ["ecs:DescribeTasks"]
+    resources = ["arn:aws:ecs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:task/${module.backend.cluster_name}/*"]
 
     condition {
       test     = "ArnEquals"
