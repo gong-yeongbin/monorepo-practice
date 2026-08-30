@@ -80,6 +80,57 @@ data "aws_iam_policy_document" "github_actions" {
 
     resources = [module.backend.service_arn]
   }
+
+  # 마이그레이션은 서비스 태스크와 같은 정의를 command override로 띄워 돌린다 —
+  # RDS가 private이라 VPC 안에서 실행해야 하고, 같은 이미지를 써야 코드와 스키마가 어긋나지 않는다.
+  # 리비전마다 ARN이 바뀌므로 family 단위로 허용하고, 클러스터를 조건으로 좁힌다.
+  statement {
+    sid = "EcsRunMigration"
+
+    actions = [
+      "ecs:RunTask",
+      "ecs:DescribeTasks",
+    ]
+
+    resources = ["${module.backend.task_definition_arn}:*"]
+
+    condition {
+      test     = "ArnEquals"
+      variable = "ecs:cluster"
+      values   = [module.backend.cluster_arn]
+    }
+  }
+
+  # RunTask가 태스크에 실행 역할·태스크 역할을 붙이려면 PassRole이 필요하다.
+  # ECS 외의 서비스로는 넘기지 못하도록 조건을 건다 — 이게 없으면 아무 서비스에나
+  # 이 역할들을 붙일 수 있어 권한 상승 경로가 된다.
+  statement {
+    sid     = "PassEcsRoles"
+    actions = ["iam:PassRole"]
+
+    resources = [
+      module.backend.execution_role_arn,
+      module.backend.task_role_arn,
+    ]
+
+    condition {
+      test     = "StringEquals"
+      variable = "iam:PassedToService"
+      values   = ["ecs-tasks.amazonaws.com"]
+    }
+  }
+
+  # 마이그레이션이 실패했을 때 워크플로 로그에 컨테이너 출력을 그대로 찍기 위한 권한.
+  # 이게 없으면 exit code만 보이고 왜 실패했는지 콘솔을 따로 열어야 한다.
+  statement {
+    sid = "ReadTaskLogs"
+
+    actions = [
+      "logs:GetLogEvents",
+    ]
+
+    resources = ["${module.backend.log_group_arn}:*"]
+  }
 }
 
 resource "aws_iam_role_policy" "github_actions" {

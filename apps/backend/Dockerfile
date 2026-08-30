@@ -35,6 +35,12 @@ RUN pnpm --filter backend deploy --prod /app
 # CLI는 dev 의존성이라 /app에 없으므로 빌드 스테이지의 바이너리를 직접 부른다.
 RUN cd /app && /repo/apps/backend/node_modules/.bin/prisma generate
 
+# CLI는 일부러 넣지 않는다. migrate deploy에 필요한 schema engine까지 딸려오면서
+# node_modules가 379MB → 609MB가 되는데, 서비스 태스크는 매 기동마다 이미지를 새로 받으므로
+# 배포당 한 번 쓰는 도구를 상시로 지고 다니는 꼴이 된다. 필요한 것만 골라 넣을 수도 없다 —
+# CLI가 studio-core(38MB)와 dev(15MB)를 기동 시점에 require해서 지우면 실행 자체가 안 된다.
+# 대신 마이그레이션 태스크가 실행 시점에 CLI를 받는다(약 11초, .github/workflows/deploy-backend.yml).
+
 FROM base AS runner
 ENV NODE_ENV=production
 WORKDIR /app
