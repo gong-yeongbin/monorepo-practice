@@ -28,3 +28,8 @@ variable "instance_class" {
   type        = string
   default     = "db.t4g.micro"
 }
+
+variable "availability_zone" {
+  description = "인스턴스를 배치할 AZ. 앱·캐시와 같은 AZ여야 AZ 간 전송료가 발생하지 않는다"
+  type        = string
+}

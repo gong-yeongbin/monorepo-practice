@@ -37,6 +37,10 @@ resource "aws_db_instance" "this" {
   publicly_accessible    = false
   multi_az               = false
 
+  # subnet group은 RDS 요구사항상 2개 AZ에 걸쳐 있어야 하지만, 인스턴스 자체는 앱·캐시와
+  # 같은 AZ에 고정한다. AZ가 갈리면 쿼리 트래픽 전량이 AZ 간 전송료 대상이 된다.
+  availability_zone = var.availability_zone
+
   backup_retention_period   = 1
   skip_final_snapshot       = false
   final_snapshot_identifier = "${var.project}-postgres-final"

@@ -18,3 +18,8 @@ variable "node_type" {
   type        = string
   default     = "cache.t4g.micro"
 }
+
+variable "availability_zone" {
+  description = "primary·replica를 함께 둘 AZ. 앱과 같은 AZ여야 AZ 간 전송료가 발생하지 않는다"
+  type        = string
+}

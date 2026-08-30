@@ -81,12 +81,12 @@ resource "aws_lb_listener" "https" {
 resource "aws_lb" "tracking" {
   name               = "${var.project}-nlb"
   load_balancer_type = "network"
-  subnets            = var.public_subnet_ids
+  subnets            = var.app_subnet_ids
   security_groups    = [var.nlb_sg_id]
 
-  # NLB는 기본이 off다. off면 타깃이 없는 AZ의 노드로 온 트래픽이 그냥 실패하는데,
-  # 트래킹 유실은 곧 매출이라 켠다. 대가는 AZ 간 전송 요금 월 ~$15.
-  enable_cross_zone_load_balancing = true
+  # 태스크와 같은 단일 AZ에만 노드를 두므로 cross-zone은 의미가 없다(켜도 넘어갈 AZ가 없다).
+  # NLB는 ALB와 달리 cross-zone 전송이 유료라, 2AZ로 펼칠 거였다면 요금이 붙었을 자리다.
+  enable_cross_zone_load_balancing = false
 }
 
 resource "aws_lb_target_group" "tracking" {
@@ -327,8 +327,10 @@ resource "aws_ecs_service" "this" {
     weight            = 3
   }
 
+  # 단일 AZ 배치. RDS·Valkey와 같은 AZ라 앱↔DB/캐시 트래픽에 AZ 간 전송료가 붙지 않는다.
+  # 대가: 해당 AZ의 Fargate Spot 용량이 마르면 다른 AZ로 흡수할 곳이 없어 증설이 온디맨드에 의존한다.
   network_configuration {
-    subnets          = var.public_subnet_ids
+    subnets          = var.app_subnet_ids
     security_groups  = [var.app_sg_id]
     assign_public_ip = true
   }

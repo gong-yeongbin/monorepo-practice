@@ -8,9 +8,15 @@ resource "aws_elasticache_subnet_group" "this" {
 }
 
 # 단일 노드였다면 장애 시 스트림 미처리분과 캠페인 캐시가 통째로 사라지고, XADD 실패로
-# 클릭이 큐잉조차 되지 않는다(캐시 미스가 RDS로 몰리는 연쇄까지). 다른 AZ의 레플리카를
-# 대기시켜 승격받는다. 다만 복제가 비동기라 페일오버 직전 수 초는 여전히 유실될 수 있고,
-# 전환에도 1~2분이 걸린다 — 유실을 0으로 만드는 장치가 아니라 분 단위를 초 단위로 줄이는 것.
+# 클릭이 큐잉조차 되지 않는다(캐시 미스가 RDS로 몰리는 연쇄까지). 레플리카를 대기시켜 승격받는다.
+# 다만 복제가 비동기라 페일오버 직전 수 초는 여전히 유실될 수 있고, 전환에도 1~2분이 걸린다
+# — 유실을 0으로 만드는 장치가 아니라 분 단위를 초 단위로 줄이는 것.
+#
+# 레플리카는 primary와 "같은 AZ"에 둔다(2026-08-30 결정). 레거시 실측에서 앱(2a)과 캐시(2b/2c)가
+# 갈려 있어 클릭마다의 XADD·캐시 조회가 전부 AZ를 넘었고, 그것만으로 월 $215~270이 나갔다.
+# AZ를 걸친 레플리카는 AZ 장애를 견디게 해주지만 RDS가 Single-AZ라 어차피 AZ 장애 시 서비스가
+# 멈춘다 — 살아남지 못하는 시나리오에 복제 전송료를 내는 셈이라 같은 AZ로 모았다.
+# 대가: multi_az(자동 AZ 페일오버)는 못 켠다. 노드 단위 장애 페일오버는 그대로 유지된다.
 resource "aws_elasticache_replication_group" "this" {
   replication_group_id = "${var.project}-valkey"
   description          = "${var.project} 트래킹 스트림 + 캠페인 캐시"
@@ -20,11 +26,12 @@ resource "aws_elasticache_replication_group" "this" {
   node_type      = var.node_type
   port           = 6379
 
-  # primary 1 + replica 1. automatic_failover는 레플리카가 최소 1대 있어야 켤 수 있고,
-  # multi_az는 subnet group이 2개 이상 AZ에 걸쳐 있어야 한다(network 모듈 az_count = 2).
-  num_cache_clusters         = 2
-  automatic_failover_enabled = true
-  multi_az_enabled           = true
+  # primary 1 + replica 1, 둘 다 같은 AZ. automatic_failover는 레플리카가 최소 1대 있으면
+  # 켤 수 있고 AZ 분산을 요구하지 않는다. multi_az_enabled만 2개 AZ를 요구하므로 끈다.
+  num_cache_clusters          = 2
+  preferred_cache_cluster_azs = [var.availability_zone, var.availability_zone]
+  automatic_failover_enabled  = true
+  multi_az_enabled            = false
 
   parameter_group_name = "default.valkey8"
   subnet_group_name    = aws_elasticache_subnet_group.this.name

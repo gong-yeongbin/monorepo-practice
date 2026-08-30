@@ -1,0 +1,656 @@
+<title>Mecross 인프라 구성도</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --ground:    #F1F4F5;
+    --surface:   #FFFFFF;
+    --surface-2: #E7ECED;
+    --ink:       #131A1E;
+    --ink-2:     #46555C;
+    --ink-3:     #79888F;
+    --rule:      #CFD8DA;
+    --rule-2:    #B9C5C8;
+    --track:     #AE3B2A;
+    --track-bg:  #F7E7E3;
+    --admin:     #1B6675;
+    --admin-bg:  #E0EDEF;
+
+    --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    --f-body: "IBM Plex Sans", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:    #0E1316;
+      --surface:   #161D21;
+      --surface-2: #1E272C;
+      --ink:       #E4EBED;
+      --ink-2:     #A3B2B8;
+      --ink-3:     #6D7E85;
+      --rule:      #2B373D;
+      --rule-2:    #3A484F;
+      --track:     #E0705B;
+      --track-bg:  #2C1B18;
+      --admin:     #5FB0C1;
+      --admin-bg:  #12262B;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:    #0E1316;
+    --surface:   #161D21;
+    --surface-2: #1E272C;
+    --ink:       #E4EBED;
+    --ink-2:     #A3B2B8;
+    --ink-3:     #6D7E85;
+    --rule:      #2B373D;
+    --rule-2:    #3A484F;
+    --track:     #E0705B;
+    --track-bg:  #2C1B18;
+    --admin:     #5FB0C1;
+    --admin-bg:  #12262B;
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 15px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 56px 28px 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 56px;
+  }
+
+  /* ---- header ---- */
+  .masthead { display: flex; flex-direction: column; gap: 18px; }
+  .eyebrow {
+    font-family: var(--f-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+  }
+  h1 {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: clamp(34px, 5vw, 52px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .thesis {
+    font-size: 17px;
+    color: var(--ink-2);
+    max-width: 62ch;
+    margin: 0;
+  }
+  .thesis strong { color: var(--ink); font-weight: 600; }
+
+  .meta { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    font-family: var(--f-mono);
+    font-size: 11.5px;
+    padding: 4px 10px;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    background: var(--surface);
+    color: var(--ink-2);
+  }
+
+  /* ---- stat strip ---- */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+  .stat { background: var(--surface); padding: 18px 20px; display: flex; flex-direction: column; gap: 2px; }
+  .stat dt { font-size: 12px; color: var(--ink-3); font-weight: 500; }
+  .stat dd {
+    margin: 0;
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 26px;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .note { font-size: 12px; color: var(--ink-2); }
+  .stat.win dd { color: var(--track); }
+
+  /* ---- sections ---- */
+  section { display: flex; flex-direction: column; gap: 20px; }
+  h2 {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 25px;
+    letter-spacing: -0.01em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .sec-head { display: flex; flex-direction: column; gap: 5px; border-top: 2px solid var(--ink); padding-top: 14px; }
+  p { margin: 0; max-width: 68ch; color: var(--ink-2); }
+  p strong { color: var(--ink); font-weight: 600; }
+  code {
+    font-family: var(--f-mono);
+    font-size: 0.88em;
+    background: var(--surface-2);
+    padding: 1px 5px;
+    border-radius: 2px;
+    color: var(--ink);
+  }
+
+  /* ---- figures ---- */
+  figure { margin: 0; display: flex; flex-direction: column; gap: 12px; }
+  .canvas {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    padding: 18px;
+    overflow-x: auto;
+  }
+  .canvas svg { display: block; max-width: 100%; height: auto; min-width: 720px; }
+  figcaption { font-size: 13px; color: var(--ink-3); max-width: 74ch; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 18px; font-size: 12.5px; color: var(--ink-2); }
+  .legend span { display: flex; align-items: center; gap: 7px; }
+  .swatch { width: 22px; height: 0; border-top-width: 2px; border-top-style: solid; }
+  .sw-t { border-color: var(--track); }
+  .sw-a { border-color: var(--admin); }
+  .sw-d { border-color: var(--ink-3); border-top-style: dashed; }
+
+  /* ---- svg primitives ---- */
+  .box   { fill: var(--surface); stroke: var(--rule-2); stroke-width: 1; }
+  .box2  { fill: var(--surface-2); stroke: var(--rule); stroke-width: 1; }
+  .zone  { fill: none; stroke: var(--rule-2); stroke-width: 1; stroke-dasharray: 5 4; }
+  .gated { stroke-dasharray: 5 4; }
+  .b-t   { stroke: var(--track); stroke-width: 1.5; }
+  .b-a   { stroke: var(--admin); stroke-width: 1.5; }
+  .l-t   { stroke: var(--track); stroke-width: 2; fill: none; }
+  .l-a   { stroke: var(--admin); stroke-width: 2; fill: none; }
+  .l-n   { stroke: var(--ink-3); stroke-width: 1.5; fill: none; }
+  .l-heavy { stroke: var(--track); stroke-width: 3.5; fill: none; }
+  .divider { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 3 4; }
+
+  .ah-n path { fill: var(--ink-3); }
+  .ah-t path { fill: var(--track); }
+  .ah-a path { fill: var(--admin); }
+
+  text { font-family: var(--f-body); fill: var(--ink); }
+  .tt   { font-size: 13px; font-weight: 600; }
+  .tt-t { font-size: 13px; font-weight: 600; fill: var(--track); }
+  .tt-a { font-size: 13px; font-weight: 600; fill: var(--admin); }
+  .tm   { font-family: var(--f-mono); font-size: 10.5px; fill: var(--ink-2); }
+  .tm-t { font-family: var(--f-mono); font-size: 10.5px; fill: var(--track); }
+  .tm-a { font-family: var(--f-mono); font-size: 10.5px; fill: var(--admin); }
+  .ts   { font-size: 10.5px; fill: var(--ink-3); }
+  .tz   { font-family: var(--f-mono); font-size: 11px; fill: var(--ink-3); letter-spacing: 0.03em; }
+  .tbig { font-family: var(--f-display); font-size: 15px; font-weight: 600; }
+  .f-t { fill: var(--track); }
+  .f-a { fill: var(--admin); }
+
+  /* ---- tables ---- */
+  .tbl-wrap { overflow-x: auto; border: 1px solid var(--rule); }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 520px; }
+  th, td { text-align: left; padding: 11px 16px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  thead th { background: var(--surface-2); font-weight: 600; font-size: 12px; color: var(--ink-2); }
+  tbody tr { background: var(--surface); }
+  tbody tr:last-child td { border-bottom: none; }
+  td.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .hl { color: var(--track); font-weight: 600; }
+
+  /* ---- tree ---- */
+  pre.tree {
+    font-family: var(--f-mono);
+    font-size: 12.5px;
+    line-height: 1.85;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    padding: 20px 22px;
+    margin: 0;
+    overflow-x: auto;
+    color: var(--ink-2);
+  }
+  pre.tree b { color: var(--ink); font-weight: 500; }
+  pre.tree i { color: var(--ink-3); font-style: normal; }
+
+  /* ---- checklist ---- */
+  ol.steps { list-style: none; counter-reset: s; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  ol.steps li { background: var(--surface); padding: 13px 18px; display: flex; gap: 14px; align-items: baseline; font-size: 14px; }
+  ol.steps .mark { font-family: var(--f-mono); font-size: 12px; flex: none; width: 2.4em; }
+  ol.steps li.done { color: var(--ink-3); }
+  ol.steps li.done .mark { color: var(--admin); }
+  ol.steps li.now { border-left: 3px solid var(--track); padding-left: 15px; }
+  ol.steps li.now .mark { color: var(--track); }
+  ol.steps li.todo .mark { color: var(--ink-3); }
+  ol.steps .what { color: var(--ink); }
+  ol.steps li.done .what { color: var(--ink-3); }
+  ol.steps .why { color: var(--ink-3); font-size: 12.5px; }
+
+  .foot { font-size: 12.5px; color: var(--ink-3); border-top: 1px solid var(--rule); padding-top: 18px; }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">infra/terraform · envs/prod</div>
+    <h1>Mecross 인프라 구성도</h1>
+    <p class="thesis">일 1억 클릭(평균 ~1,160 RPS)을 받는 광고 트래킹 플랫폼의 AWS 재구축. 설계를 지배하는 제약은 둘이다 — 매체에 이미 배포된 <strong>트래킹 링크가 <code>http://</code>라 바꿀 수 없고</strong>, 비용의 절반이 <strong>데이터 전송</strong>이다. 그래서 진입점을 NLB와 ALB로 쪼개고, 컴퓨팅과 데이터 스토어를 <strong>한 AZ에 몰았다</strong>.</p>
+    <div class="meta">
+      <span class="chip">account 478657622805</span>
+      <span class="chip">ap-northeast-2</span>
+      <span class="chip">terraform ≥ 1.10</span>
+      <span class="chip">apply 전 · 코드 검증 통과</span>
+    </div>
+  </header>
+
+  <dl class="stats">
+    <div class="stat">
+      <dt>기존 (2026-07 청구서)</dt>
+      <dd>$1,792</dd>
+      <div class="note">DT $865 · RDS $373 · EC2 $348</div>
+    </div>
+    <div class="stat">
+      <dt>신규 설계 예상</dt>
+      <dd>$795~1,025</dd>
+      <div class="note">43~56% 절감</div>
+    </div>
+    <div class="stat win">
+      <dt>AZ 간 전송</dt>
+      <dd>$233 → $0</dd>
+      <div class="note">단일 AZ 배치로 제거</div>
+    </div>
+    <div class="stat">
+      <dt>남은 최대 변수</dt>
+      <dd>5.1 TB</dd>
+      <div class="note">인터넷 egress · 월 $500~700</div>
+    </div>
+  </dl>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">modules/network · modules/backend · modules/database · modules/cache</div>
+      <h2>요청 경로와 VPC 구성</h2>
+    </div>
+    <p>태스크 하나가 포트 두 개를 열고, ECS 서비스가 타깃 그룹 둘에 동시 등록된다. NLB는 L4라 경로를 못 보므로 <strong>앱이 진입 포트를 보고 공개 경로만 통과시킨다</strong> — 3002에서는 <code>/tracking</code>, <code>/*/install</code>, <code>/*/event</code>, <code>/health</code>만 받고 나머지는 404다. 이게 없으면 어드민 API가 평문 80에 그대로 열린다.</p>
+
+    <figure>
+      <div class="canvas">
+        <svg viewBox="0 0 1280 830" role="img" aria-label="클라이언트에서 Route53을 거쳐 NLB와 ALB로 들어와 단일 AZ의 ECS Fargate 태스크에 도달하고, 같은 AZ의 RDS와 Valkey로 연결되는 VPC 구성도">
+          <defs>
+            <marker id="ahn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" class="ah-n"><path d="M0 0 L10 5 L0 10 z"/></marker>
+            <marker id="aht" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" class="ah-t"><path d="M0 0 L10 5 L0 10 z"/></marker>
+            <marker id="aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" class="ah-a"><path d="M0 0 L10 5 L0 10 z"/></marker>
+          </defs>
+
+          <!-- clients -->
+          <rect class="box" x="24" y="178" width="152" height="60" rx="3"/>
+          <text class="tt" x="100" y="203" text-anchor="middle">매체 · 트래커</text>
+          <text class="ts" x="100" y="222" text-anchor="middle">클릭 · 포스트백 (http)</text>
+
+          <rect class="box" x="24" y="330" width="152" height="60" rx="3"/>
+          <text class="tt" x="100" y="355" text-anchor="middle">관리자 브라우저</text>
+          <text class="ts" x="100" y="374" text-anchor="middle">React SPA</text>
+
+          <!-- route53 -->
+          <text class="tz" x="208" y="148">Route53 · mecrosspro.com (기존 zone)</text>
+          <rect class="zone" x="208" y="158" width="196" height="324" rx="3"/>
+
+          <rect class="box gated" x="222" y="175" width="168" height="66" rx="3"/>
+          <text class="tm" x="306" y="199" text-anchor="middle">api.mecrosspro.com</text>
+          <text class="ts" x="306" y="217" text-anchor="middle">컷오버 게이트 —</text>
+          <text class="ts" x="306" y="232" text-anchor="middle">현재 레코드 미생성</text>
+
+          <rect class="box" x="222" y="330" width="168" height="60" rx="3"/>
+          <text class="tm" x="306" y="354" text-anchor="middle">admin-api.mecrosspro.com</text>
+          <text class="ts" x="306" y="373" text-anchor="middle">신규 이름 · 지금 생성</text>
+
+          <rect class="box" x="222" y="410" width="168" height="56" rx="3"/>
+          <text class="tm" x="306" y="433" text-anchor="middle">admin. · asset.</text>
+          <text class="ts" x="306" y="452" text-anchor="middle">→ CloudFront (그림 2)</text>
+
+          <line class="l-t" x1="176" y1="208" x2="216" y2="208" marker-end="url(#aht)"/>
+          <line class="l-a" x1="176" y1="360" x2="216" y2="360" marker-end="url(#aha)"/>
+          <polyline class="l-n" points="100,390 100,438 216,438" marker-end="url(#ahn)"/>
+
+          <!-- vpc -->
+          <rect class="zone" x="450" y="60" width="806" height="600" rx="4"/>
+          <text class="tz" x="466" y="86">VPC · 10.0.0.0/16 · NAT Gateway 없음</text>
+
+          <!-- AZ containers -->
+          <rect class="zone" x="474" y="106" width="406" height="494" rx="3"/>
+          <text class="tz" x="488" y="128">ap-northeast-2a — 앱·DB·캐시 전부 여기</text>
+          <rect class="zone" x="906" y="106" width="326" height="494" rx="3"/>
+          <text class="tz" x="920" y="128">ap-northeast-2c</text>
+
+          <!-- subnets -->
+          <rect class="box2" x="490" y="144" width="374" height="256" rx="2"/>
+          <text class="tz" x="502" y="164">public subnet · 10.0.0.0/24</text>
+          <rect class="box2" x="490" y="420" width="374" height="164" rx="2"/>
+          <text class="tz" x="502" y="440">private subnet · 10.0.10.0/24</text>
+
+          <rect class="box2" x="922" y="144" width="294" height="256" rx="2"/>
+          <text class="tz" x="934" y="164">public subnet · 10.0.1.0/24</text>
+          <rect class="box2" x="922" y="420" width="294" height="164" rx="2"/>
+          <text class="tz" x="934" y="440">private subnet · 10.0.11.0/24</text>
+
+          <!-- NLB -->
+          <rect class="box b-t" x="506" y="180" width="134" height="64" rx="3"/>
+          <text class="tt-t" x="573" y="203" text-anchor="middle">NLB</text>
+          <text class="tm-t" x="573" y="221" text-anchor="middle">:80 평문 TCP</text>
+          <text class="ts" x="573" y="237" text-anchor="middle">cross-zone off</text>
+
+          <!-- ALB straddling two AZs -->
+          <rect class="box b-a" x="680" y="180" width="460" height="64" rx="3"/>
+          <text class="tt-a" x="910" y="203" text-anchor="middle">ALB</text>
+          <text class="tm-a" x="910" y="221" text-anchor="middle">:443 HTTPS · ACM ECDSA (:80 → 301)</text>
+          <text class="ts" x="910" y="237" text-anchor="middle">AWS 요구사항상 2개 AZ 필수 — 단 AZ 간 전송은 무과금</text>
+
+          <!-- ECS task -->
+          <rect class="box" x="506" y="272" width="358" height="112" rx="3"/>
+          <text class="tt" x="520" y="294">ECS Fargate · backend</text>
+          <text class="ts" x="520" y="312">ARM64 · 1 vCPU / 2 GB · 온디맨드 base 1 + Spot 3:1</text>
+          <rect class="box2 b-t" x="520" y="322" width="162" height="24" rx="2"/>
+          <text class="tm-t" x="601" y="338" text-anchor="middle">:3002 트래킹·포스트백</text>
+          <rect class="box2 b-a" x="692" y="322" width="160" height="24" rx="2"/>
+          <text class="tm-a" x="772" y="338" text-anchor="middle">:3001 어드민 API</text>
+          <text class="ts" x="520" y="368">CPU 오토스케일 2~10 · 앱이 진입 포트로 공개 경로 제한</text>
+
+          <!-- data stores -->
+          <rect class="box" x="506" y="452" width="164" height="112" rx="3"/>
+          <text class="tt" x="588" y="478" text-anchor="middle">RDS PostgreSQL 17</text>
+          <text class="tm" x="588" y="498" text-anchor="middle">db.t4g.medium</text>
+          <text class="ts" x="588" y="518" text-anchor="middle">Single-AZ · gp3</text>
+          <text class="ts" x="588" y="536" text-anchor="middle">20 → 100 GB 자동확장</text>
+
+          <rect class="box" x="690" y="452" width="174" height="112" rx="3"/>
+          <text class="tt" x="777" y="478" text-anchor="middle">ElastiCache Valkey 8</text>
+          <text class="tm" x="777" y="497" text-anchor="middle">cache.t4g.medium</text>
+          <rect class="box2" x="700" y="506" width="76" height="22" rx="2"/>
+          <text class="ts" x="738" y="521" text-anchor="middle">primary</text>
+          <rect class="box2" x="782" y="506" width="72" height="22" rx="2"/>
+          <text class="ts" x="818" y="521" text-anchor="middle">replica</text>
+          <text class="ts" x="777" y="548" text-anchor="middle">같은 AZ · 자동 페일오버 on</text>
+
+          <!-- AZ-c contents -->
+          <text class="ts" x="1069" y="296" text-anchor="middle">ALB 노드만 배치</text>
+          <text class="ts" x="1069" y="315" text-anchor="middle">타깃 태스크는 2a에만 있다</text>
+          <text class="ts" x="1069" y="486" text-anchor="middle">리소스 없음</text>
+          <text class="ts" x="1069" y="506" text-anchor="middle">RDS · ElastiCache subnet group의</text>
+          <text class="ts" x="1069" y="524" text-anchor="middle">2AZ 요구사항 충족용</text>
+
+          <!-- IGW -->
+          <rect class="box" x="474" y="612" width="126" height="36" rx="3"/>
+          <text class="ts" x="537" y="635" text-anchor="middle">Internet Gateway</text>
+
+          <!-- edges: dns -> lb -->
+          <line class="l-t" x1="390" y1="208" x2="500" y2="208" marker-end="url(#aht)"/>
+          <polyline class="l-a" points="390,360 414,360 414,44 900,44 900,174" marker-end="url(#aha)"/>
+
+          <!-- edges: lb -> task -->
+          <line class="l-t" x1="573" y1="244" x2="573" y2="266" marker-end="url(#aht)"/>
+          <line class="l-a" x1="772" y1="244" x2="772" y2="266" marker-end="url(#aha)"/>
+
+          <!-- edges: task -> stores -->
+          <line class="l-n" x1="588" y1="384" x2="588" y2="446" marker-end="url(#ahn)"/>
+          <text class="tm" x="598" y="420">5432</text>
+          <line class="l-n" x1="777" y1="384" x2="777" y2="446" marker-end="url(#ahn)"/>
+          <text class="tm" x="787" y="414">6379</text>
+          <text class="ts" x="787" y="430">XADD · 캐시</text>
+
+          <!-- edge: task -> igw -> managed -->
+          <polyline class="l-n" points="506,320 462,320 462,630 468,630" marker-end="url(#ahn)"/>
+          <line class="l-n" x1="537" y1="648" x2="537" y2="694" marker-end="url(#ahn)"/>
+
+          <!-- managed services band -->
+          <rect class="zone" x="450" y="700" width="806" height="104" rx="4"/>
+          <text class="tz" x="466" y="722">VPC 밖 관리형 서비스 — 태스크가 public IP로 직접 호출 (NAT 없음, SG로 inbound 차단)</text>
+
+          <rect class="box" x="462" y="736" width="150" height="52" rx="2"/>
+          <text class="tt" x="537" y="758" text-anchor="middle">ECR</text>
+          <text class="ts" x="537" y="776" text-anchor="middle">이미지 pull · 최근 10개</text>
+
+          <rect class="box" x="622" y="736" width="150" height="52" rx="2"/>
+          <text class="tt" x="697" y="758" text-anchor="middle">SSM Parameter</text>
+          <text class="ts" x="697" y="776" text-anchor="middle">DATABASE_URL · JWT</text>
+
+          <rect class="box" x="782" y="736" width="150" height="52" rx="2"/>
+          <text class="tt" x="857" y="758" text-anchor="middle">SES</text>
+          <text class="ts" x="857" y="776" text-anchor="middle">도메인 identity + DKIM</text>
+
+          <rect class="box" x="942" y="736" width="150" height="52" rx="2"/>
+          <text class="tt" x="1017" y="758" text-anchor="middle">CloudWatch Logs</text>
+          <text class="ts" x="1017" y="776" text-anchor="middle">7일 보관</text>
+
+          <rect class="box" x="1102" y="736" width="150" height="52" rx="2"/>
+          <text class="tt" x="1177" y="758" text-anchor="middle">S3 app storage</text>
+          <text class="ts" x="1177" y="776" text-anchor="middle">광고 소재 업로드</text>
+        </svg>
+      </div>
+      <div class="legend">
+        <span><i class="swatch sw-t"></i> 트래킹 경로 — 평문 80, NLB</span>
+        <span><i class="swatch sw-a"></i> 어드민 경로 — HTTPS, ALB</span>
+        <span><i class="swatch sw-d"></i> <code>cutover_dns_enabled = false</code> — 아직 만들지 않는 리소스</span>
+      </div>
+      <figcaption>그림 1 — 진입점이 둘로 갈리고 두 경로가 같은 태스크의 다른 포트로 수렴한다. ALB만 두 AZ에 걸쳐 있고, 트래픽을 실제로 처리하는 태스크·RDS·Valkey는 전부 <code>ap-northeast-2a</code> 안에 있다.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">modules/backend/main.tf</div>
+      <h2>왜 트래킹만 NLB인가</h2>
+    </div>
+    <p>ALB의 LCU는 네 개 차원 중 <strong>최댓값 하나로만</strong> 과금되는데, 광고 클릭은 연결 재사용이 없는 일회성 요청이라 신규 연결 차원이 홀로 지배한다. 이 한 가지 성질이 LB 선택을 갈랐다.</p>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>기준</th><th>ALB로 받았다면</th><th>NLB (선택)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>신규 연결 처리량</td><td class="num">LCU당 25/s</td><td class="num">NLCU당 800/s</td></tr>
+          <tr><td>1,157/s 환산</td><td class="num">46 LCU</td><td class="num">1.4 NLCU</td></tr>
+          <tr><td>지배 차원</td><td>신규 연결</td><td>처리 바이트 (4.2 NLCU)</td></tr>
+          <tr><td>월 비용</td><td class="num">~$270</td><td class="num hl">~$35</td></tr>
+          <tr><td>대가</td><td>—</td><td>L4라 경로 분기 불가 → 앱이 포트로 가른다</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>한 호스트명의 A 레코드는 로드밸런서 하나만 가리킬 수 있어 "80은 NLB, 443은 ALB"가 성립하지 않는다. <code>api.</code>는 매체에 배포돼 바꿀 수 없으므로, 프론트만 쓰는 어드민 쪽을 <code>admin-api.</code>로 옮겼다 — 변경 비용은 <code>VITE_API_URL</code> 한 줄이다.</p>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">modules/frontend · envs/prod/storage.tf</div>
+      <h2>정적 자산 — 버킷은 열지 않는다</h2>
+    </div>
+    <p>프론트 번들과 광고 소재 모두 <strong>버킷은 완전 비공개</strong>로 두고 CloudFront OAC로만 읽는다. 광고 소재가 별도 서브도메인을 쓰는 이유는 업로드 시점의 <strong>절대 URL이 <code>advertising.image</code> 컬럼에 영구 저장</strong>되기 때문이다 — <code>*.cloudfront.net</code>을 쓰면 배포를 다시 만드는 순간 저장된 URL이 전부 깨진다.</p>
+
+    <figure>
+      <div class="canvas">
+        <svg viewBox="0 0 1020 420" role="img" aria-label="관리자 브라우저가 admin과 asset 서브도메인을 통해 두 CloudFront 배포에 접속하고, 각 배포가 OAC로 비공개 S3 버킷을 읽는 구성도">
+          <defs>
+            <marker id="ahn2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" class="ah-n"><path d="M0 0 L10 5 L0 10 z"/></marker>
+            <marker id="aha2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" class="ah-a"><path d="M0 0 L10 5 L0 10 z"/></marker>
+          </defs>
+
+          <rect class="box" x="24" y="120" width="140" height="120" rx="3"/>
+          <text class="tt" x="94" y="172" text-anchor="middle">관리자</text>
+          <text class="tt" x="94" y="192" text-anchor="middle">브라우저</text>
+
+          <rect class="box gated" x="204" y="70" width="188" height="56" rx="3"/>
+          <text class="tm" x="298" y="94" text-anchor="middle">admin.mecrosspro.com</text>
+          <text class="ts" x="298" y="113" text-anchor="middle">컷오버 게이트 · 미생성</text>
+
+          <rect class="box" x="204" y="234" width="188" height="56" rx="3"/>
+          <text class="tm" x="298" y="258" text-anchor="middle">asset.mecrosspro.com</text>
+          <text class="ts" x="298" y="277" text-anchor="middle">신규 이름 · 지금 생성</text>
+
+          <rect class="box b-a" x="432" y="70" width="196" height="56" rx="3"/>
+          <text class="tt-a" x="530" y="93" text-anchor="middle">CloudFront</text>
+          <text class="ts" x="530" y="112" text-anchor="middle">PriceClass_200 · SPA 폴백</text>
+
+          <rect class="box b-a" x="432" y="234" width="196" height="56" rx="3"/>
+          <text class="tt-a" x="530" y="257" text-anchor="middle">CloudFront</text>
+          <text class="ts" x="530" y="276" text-anchor="middle">쿼리스트링을 캐시 키에 포함</text>
+
+          <rect class="box" x="676" y="56" width="320" height="84" rx="3"/>
+          <text class="tt" x="836" y="82" text-anchor="middle">S3 · frontend 버킷</text>
+          <text class="ts" x="836" y="102" text-anchor="middle">퍼블릭 액세스 전면 차단</text>
+          <text class="ts" x="836" y="121" text-anchor="middle">403 / 404 → /index.html (200)</text>
+
+          <rect class="box" x="676" y="220" width="320" height="84" rx="3"/>
+          <text class="tt" x="836" y="246" text-anchor="middle">S3 · app storage 버킷</text>
+          <text class="ts" x="836" y="266" text-anchor="middle">버킷 정책은 advertising/* 만 연다</text>
+          <text class="ts" x="836" y="285" text-anchor="middle">나머지 객체는 CDN에 안 나간다</text>
+
+          <rect class="box" x="432" y="336" width="196" height="52" rx="3"/>
+          <text class="tt" x="530" y="358" text-anchor="middle">ECS 태스크</text>
+          <text class="ts" x="530" y="376" text-anchor="middle">task role · 정적 키 없음</text>
+
+          <line class="l-a" x1="164" y1="140" x2="198" y2="102" marker-end="url(#aha2)"/>
+          <line class="l-a" x1="164" y1="222" x2="198" y2="258" marker-end="url(#aha2)"/>
+          <line class="l-a" x1="392" y1="98" x2="426" y2="98" marker-end="url(#aha2)"/>
+          <line class="l-a" x1="392" y1="262" x2="426" y2="262" marker-end="url(#aha2)"/>
+
+          <line class="l-n" x1="628" y1="98" x2="670" y2="98" marker-end="url(#ahn2)"/>
+          <text class="ts" x="649" y="88" text-anchor="middle">OAC</text>
+          <line class="l-n" x1="628" y1="262" x2="670" y2="262" marker-end="url(#ahn2)"/>
+          <text class="ts" x="649" y="252" text-anchor="middle">OAC</text>
+
+          <polyline class="l-n" points="628,362 836,362 836,310" marker-end="url(#ahn2)"/>
+          <text class="ts" x="742" y="352" text-anchor="middle">PutObject advertising/{id}</text>
+        </svg>
+      </div>
+      <figcaption>그림 2 — 두 배포 모두 sigv4 OAC로만 원본을 읽고, 버킷은 어느 쪽도 공개되지 않는다. 소재 배포만 캐시 키에 쿼리스트링을 포함해 프론트의 <code>?{uuid}</code> 캐시버스터가 실제로 동작하게 한다.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">2026-08-30 Cost Explorer 실측</div>
+      <h2>단일 AZ — 무엇이 달라졌나</h2>
+    </div>
+    <p>레거시는 WAS 4대와 RDS가 <code>2a</code>에 있는데 ElastiCache 두 노드만 <code>2b</code>·<code>2c</code>에 있었다. Redis Stream 기반이라 <strong>클릭마다의 <code>XADD</code>와 캠페인 캐시 조회가 전부 AZ를 넘었고</strong>, 양방향 과금이라 월 ~10.2TB의 캐시 트래픽이 23.3TB로 청구됐다. 4개월 내내 일관적이다.</p>
+
+    <figure>
+      <div class="canvas">
+        <svg viewBox="0 0 1060 400" role="img" aria-label="레거시는 앱과 캐시가 다른 AZ에 있어 캐시 트래픽이 AZ 경계를 넘어 월 233달러가 과금되지만, 신규 구성은 모두 한 AZ에 있어 경계를 넘는 데이터 트래픽이 없다">
+          <defs>
+            <marker id="aht3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse" class="ah-t"><path d="M0 0 L10 5 L0 10 z"/></marker>
+          </defs>
+
+          <!-- LEFT: legacy -->
+          <text class="tbig" x="24" y="30">레거시 — 2026-07 실측</text>
+          <rect class="zone" x="24" y="52" width="196" height="252" rx="3"/>
+          <text class="tz" x="38" y="74">ap-northeast-2a</text>
+          <rect class="box" x="40" y="92" width="164" height="52" rx="2"/>
+          <text class="tt" x="122" y="114" text-anchor="middle">WAS ×4</text>
+          <text class="ts" x="122" y="132" text-anchor="middle">t3.small ×4 / t3.xlarge</text>
+          <rect class="box" x="40" y="164" width="164" height="52" rx="2"/>
+          <text class="tt" x="122" y="186" text-anchor="middle">RDS</text>
+          <text class="ts" x="122" y="204" text-anchor="middle">db.m5.xlarge · 같은 AZ, 무료</text>
+
+          <rect class="zone" x="300" y="52" width="180" height="252" rx="3"/>
+          <text class="tz" x="314" y="74">ap-northeast-2b / 2c</text>
+          <rect class="box b-t" x="316" y="92" width="148" height="52" rx="2"/>
+          <text class="tt-t" x="390" y="114" text-anchor="middle">ElastiCache ×2</text>
+          <text class="ts" x="390" y="132" text-anchor="middle">cache.t3.medium</text>
+
+          <line class="divider" x1="260" y1="52" x2="260" y2="304"/>
+          <text class="ts" x="260" y="46" text-anchor="middle">AZ 경계</text>
+          <line class="l-heavy" x1="212" y1="230" x2="308" y2="230" marker-end="url(#aht3)" marker-start="url(#aht3)"/>
+          <text class="tm-t" x="260" y="256" text-anchor="middle">10.2 TB/월</text>
+          <text class="ts" x="260" y="272" text-anchor="middle">양방향 과금 → 23.3 TB</text>
+
+          <text class="tbig" x="24" y="352">AZ 간 전송</text>
+          <text class="tbig f-t" x="140" y="352">$233 / 월</text>
+          <text class="ts" x="24" y="372">5월 $271 → 6월 $269 → 7월 $233 → 8월 $216</text>
+
+          <!-- RIGHT: new -->
+          <text class="tbig" x="564" y="30">신규 — 단일 AZ</text>
+          <rect class="zone" x="564" y="52" width="240" height="252" rx="3"/>
+          <text class="tz" x="578" y="74">ap-northeast-2a</text>
+          <rect class="box" x="580" y="88" width="208" height="46" rx="2"/>
+          <text class="tt" x="684" y="116" text-anchor="middle">ECS Fargate</text>
+          <rect class="box" x="580" y="146" width="208" height="46" rx="2"/>
+          <text class="tt" x="684" y="174" text-anchor="middle">RDS PostgreSQL</text>
+          <rect class="box" x="580" y="204" width="208" height="60" rx="2"/>
+          <text class="tt" x="684" y="228" text-anchor="middle">Valkey</text>
+          <text class="ts" x="684" y="248" text-anchor="middle">primary + replica, 같은 AZ</text>
+
+          <rect class="zone" x="856" y="52" width="180" height="252" rx="3"/>
+          <text class="tz" x="870" y="74">ap-northeast-2c</text>
+          <rect class="box b-a" x="872" y="88" width="148" height="46" rx="2"/>
+          <text class="tt-a" x="946" y="116" text-anchor="middle">ALB 노드만</text>
+          <text class="ts" x="946" y="164" text-anchor="middle">ALB는 AZ 간 전송이</text>
+          <text class="ts" x="946" y="182" text-anchor="middle">무과금이라 무해하다</text>
+          <text class="ts" x="946" y="212" text-anchor="middle">private subnet은 비어 있다</text>
+          <text class="ts" x="946" y="230" text-anchor="middle">(subnet group 요구사항용)</text>
+
+          <line class="divider" x1="830" y1="52" x2="830" y2="304"/>
+          <text class="ts" x="830" y="46" text-anchor="middle">AZ 경계</text>
+          <text class="ts" x="830" y="248" text-anchor="middle" transform="rotate(-90 830 248)">데이터 트래픽 없음</text>
+
+          <text class="tbig" x="564" y="352">AZ 간 전송</text>
+          <text class="tbig f-a" x="680" y="352">$0</text>
+          <text class="ts" x="564" y="372">대가: 2a의 Spot 용량이 마르면 증설이 온디맨드에 의존</text>
+        </svg>
+      </div>
+      <figcaption>그림 3 — 왼쪽에서 경계를 넘던 굵은 화살표가 오른쪽에는 없다. 그것이 이 변경의 전부다.</figcaption>
+    </figure>
+
+    <p>Valkey 레플리카를 굳이 다른 AZ에 두지 않는 근거는 <strong>RDS가 Single-AZ라는 점</strong>이다. AZ 하나가 죽으면 어차피 서비스 전체가 멈추므로, 살아남지 못할 시나리오에 복제 전송료를 낼 이유가 없다. 노드 단위 장애에 대한 자동 페일오버는 그대로 유지된다 — <code>multi_az_enabled</code>만 끄고 <code>automatic_failover_enabled</code>는 켠 채로 둔다.</p>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">infra/terraform</div>
+      <h2>코드 구성</h2>
+    </div>
+    <pre class="tree">infra/terraform/
+├── <b>bootstrap/</b>          <i>state 버킷 생성 — 이 디렉토리만 로컬 state, 1회 apply</i>
+├── <b>modules/</b>
+│   ├── network/          <i>VPC · 서브넷 4 · 보안그룹 4 · primary_az_index</i>
+│   ├── database/         <i>RDS + DATABASE_URL SSM 파라미터</i>
+│   ├── cache/            <i>Valkey 복제 그룹 (같은 AZ 2노드)</i>
+│   ├── ecr/              <i>backend 이미지 리포지토리</i>
+│   ├── acm/              <i>ECDSA 인증서 + Route53 DNS 검증</i>
+│   ├── backend/          <i>ALB · NLB · ECS · IAM · 오토스케일링 · JWT SSM</i>
+│   └── frontend/         <i>S3 + CloudFront OAC</i>
+└── <b>envs/prod/</b>          <i>모듈 배선 · Route53 · SES · 앱 버킷 · 소재 CDN</i></pre>
+    <p>보안그룹은 순환 참조를 피하려 전부 <code>network</code>에서 만들고 ID만 넘긴다. 체인은 <code>alb(80,443) → app(3001)</code> / <code>nlb(80) → app(3002)</code> → <code>rds(5432)</code> · <code>redis(6379)</code>다. DB 비밀번호와 JWT 시크릿은 Terraform이 생성해 SSM SecureString에만 기록하므로 <strong>tfvars에 비밀이 없고</strong>, 앱은 task role을 쓰므로 <strong>정적 AWS 키가 필요 없다</strong>.</p>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <div class="eyebrow">현재 위치</div>
+      <h2>배포 순서</h2>
+    </div>
+    <ol class="steps">
+      <li class="done"><span class="mark">✓</span><span><span class="what">AWS CLI 설치 · 자격증명 설정</span> <span class="why">— 공식 pkg (brew 버전은 python 링크 문제로 깨짐)</span></span></li>
+      <li class="done"><span class="mark">✓</span><span><span class="what">Cost Explorer로 DT $865 구성 실측</span> <span class="why">— AZ 간 $233 규명, 단일 AZ로 반영 완료</span></span></li>
+      <li class="now"><span class="mark">→</span><span><span class="what">bootstrap apply → backend.tf에 버킷명 기입</span> <span class="why">— 리소스는 S3 버킷 하나, 레거시 무영향</span></span></li>
+      <li class="todo"><span class="mark">·</span><span><span class="what">envs/prod plan → apply</span> <span class="why">— desired_count 0, cutover_dns_enabled false라 레거시 트래픽 그대로</span></span></li>
+      <li class="todo"><span class="mark">·</span><span><span class="what">Dockerfile 작성 → ECR push</span> <span class="why">— pnpm workspace · arm64 필수</span></span></li>
+      <li class="todo"><span class="mark">·</span><span><span class="what">autoscaling 활성화 후 재-apply</span> <span class="why">— NLB·ALB 도메인으로 직접 검증</span></span></li>
+      <li class="todo"><span class="mark">·</span><span><span class="what">앱 수정 · 프론트 배포</span> <span class="why">— CORS, 302 슬림화, 트래킹 로그 억제</span></span></li>
+      <li class="todo"><span class="mark">·</span><span><span class="what">마스터 이관 → DNS 컷오버</span> <span class="why">— cutover_dns_enabled true가 곧 전환</span></span></li>
+    </ol>
+    <p><strong>주의 하나.</strong> 트래킹 경로에서 클릭당 CloudWatch 로그가 한 줄이라도 남으면 하루 20GB, <strong>월 $400+</strong>가 붙는다. 이건 Terraform이 아니라 앱에서 막아야 한다.</p>
+  </section>
+
+  <p class="foot">구성도는 <code>infra/terraform</code>의 현재 코드 기준이며 <code>fmt -check</code>·<code>validate</code>를 통과한 상태다. 아직 <code>apply</code> 전이므로 실제 생성된 리소스는 없다.</p>
+
+</div>

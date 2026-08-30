@@ -26,3 +26,9 @@ variable "tracking_port" {
   type        = number
   default     = 3002
 }
+
+variable "primary_az_index" {
+  description = "컴퓨팅·데이터 스토어를 몰아넣을 AZ의 인덱스. AZ 간 전송료를 없애기 위해 한 AZ로 고정한다"
+  type        = number
+  default     = 0
+}

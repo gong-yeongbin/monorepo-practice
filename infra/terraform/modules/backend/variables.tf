@@ -14,7 +14,12 @@ variable "vpc_id" {
 }
 
 variable "public_subnet_ids" {
-  description = "ALB와 Fargate 태스크를 배치할 public 서브넷"
+  description = "ALB를 배치할 public 서브넷. ALB는 AWS 요구사항상 2개 AZ가 필수다"
+  type        = list(string)
+}
+
+variable "app_subnet_ids" {
+  description = "Fargate 태스크와 NLB를 배치할 public 서브넷. AZ 간 전송료를 없애기 위해 단일 AZ 하나만 넘긴다"
   type        = list(string)
 }
 
