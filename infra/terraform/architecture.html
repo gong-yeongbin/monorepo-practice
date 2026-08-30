@@ -619,7 +619,8 @@
       <div class="eyebrow">modules/bastion · bastion_enabled</div>
       <h2>운영자가 DB에 닿는 법</h2>
     </div>
-    <p>RDS와 Valkey는 private subnet에 있고 보안그룹이 앱 태스크에서만 열려 있다. <strong>비밀번호를 알아도 로컬에서 직접 붙을 수 없다.</strong> 그래서 점프 호스트를 두는데, 여기에도 <strong>인바운드 규칙을 하나도 만들지 않는다</strong> — SSH 22번도 열지 않고 키페어도 만들지 않는다.</p>
+    <p>RDS와 Valkey는 private subnet에 있고 보안그룹이 앱 태스크에서만 열려 있다. <strong>비밀번호를 알아도 로컬에서 직접 붙을 수 없다.</strong> 그래서 점프 호스트를 두는데, 여기에도 <strong>인바운드 규칙을 하나도 만들지 않는다</strong> — SSH 22번도 열지 않고 키페어도 만들지 않는다. 들어올 문이 없으니 SSM이 유일한 경로이고, 누가 들어올 수 있는지는 <code>ssm:StartSession</code> 권한이 정한다.</p>
+    <p>CloudTrail에는 <strong>세션을 열었다는 사실</strong>(누가·언제·어느 인스턴스)만 남는다. 세션 안에서 오간 내용은 별도 로깅을 켜야 기록되고, 포트 포워딩은 TCP 스트림이라 애초에 남길 명령이 없다 — DB 쿼리 감사가 필요하면 RDS 쪽 로깅으로 따로 해야 한다.</p>
 
     <figure>
       <div class="canvas">
@@ -638,7 +639,7 @@
           <rect class="box b-a" x="274" y="98" width="180" height="92" rx="3"/>
           <text class="tt-a" x="364" y="132" text-anchor="middle">SSM Session Manager</text>
           <text class="ts" x="364" y="152" text-anchor="middle">접근 통제는 IAM이 한다</text>
-          <text class="ts" x="364" y="170" text-anchor="middle">세션 기록은 CloudTrail에</text>
+          <text class="ts" x="364" y="170" text-anchor="middle">누가 언제 열었는지 CloudTrail에</text>
 
           <rect class="zone" x="494" y="40" width="486" height="270" rx="4"/>
           <text class="tz" x="508" y="64">VPC · 10.0.0.0/16</text>
