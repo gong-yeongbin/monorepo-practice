@@ -25,7 +25,7 @@ export default defineConfig({
 			provider: 'v8',
 			// 커버리지 대상은 현재 테스트가 다루는 순수 로직 계층으로 한정한다.
 			// 화면 컴포넌트(antd·react-table·MobX 의존)를 포함하면 90% 임계를 만족할 수 없다.
-			include: ['src/shared/lib/get-cell.tsx', 'src/shared/lib/get-total.tsx', 'src/shared/lib/auth.ts', 'src/shared/api/api.tsx'],
+			include: ['src/shared/lib/get-cell.tsx', 'src/shared/lib/get-total.tsx', 'src/shared/lib/auth.ts', 'src/shared/lib/postback-workbook.ts', 'src/shared/api/api.tsx'],
 			thresholds: {
 				statements: 90,
 				branches: 90,

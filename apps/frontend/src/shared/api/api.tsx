@@ -428,6 +428,32 @@ const getPostbackUnregistered = async (info: {
 	return res.data.data.map(mapUnregisteredLogRow);
 };
 
+// 광고 상세 화면의 엑셀 다운로드용 — 그 광고의 모든 캠페인 포스트백을 한 번에 받는다.
+// 여러 캠페인이 섞이므로 캠페인·매체 이름을 조인할 수 있도록 token을 남긴다.
+const getPostbackExport = async (info: { paramId: string | undefined; date: (string | null)[] }) => {
+	const { paramId, date } = info;
+	const res = await axiosInstance.get(
+		`/postbacks?advertising_id=${paramId}&start_date=${date[0]}&end_date=${date[1]}`,
+	);
+	const { installs, events, unregistered } = res.data.data;
+	return {
+		installs: installs.map((row: BackendPostbackLog) => ({
+			...mapInstallLogRow(row),
+			token: row.token,
+		})),
+		events: events.map((row: BackendPostbackLog) => ({
+			...mapEventLogRow(row),
+			token: row.token,
+		})),
+		unregistered: unregistered.map(
+			(row: { token: string; event_name: string; count: number }) => ({
+				...mapUnregisteredLogRow(row),
+				token: row.token,
+			}),
+		),
+	};
+};
+
 const getReservations = async (paramId?: string) => {
 	const res = await axiosInstance.get(`/reservations?advertisingId=${paramId}`);
 	return res.data.data.map(mapReservationRow);
@@ -483,6 +509,7 @@ export const api = {
 	getPostbackInstalls,
 	getPostbackEvents,
 	getPostbackUnregistered,
+	getPostbackExport,
 	getReservations,
 	getAdvertising,
 	getUsers,
