@@ -14,6 +14,13 @@ export interface TrackerPostback {
 	eventName?: string;
 	revenueCurrency?: string;
 	revenue?: string;
+	// 디바이스 정보 — 트래커마다 내려주는 범위가 달라 원본에 없는 값은 매퍼가 매핑하지 않는다(undefined)
+	deviceModel?: string;
+	deviceManufacturer?: string;
+	deviceType?: string;
+	os?: string;
+	osVersion?: string;
+	carrier?: string;
 }
 
 export interface TrackerEventPostback extends TrackerPostback {

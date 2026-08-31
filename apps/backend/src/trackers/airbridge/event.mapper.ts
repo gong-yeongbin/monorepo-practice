@@ -60,4 +60,28 @@ export class AirbridgeEvent {
 	@Expose({ name: 'eventValue' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
 	revenue: string;
+
+	@Expose({ name: 'device_model' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	deviceModel: string;
+
+	@Expose({ name: 'device_manufacturer' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	deviceManufacturer: string;
+
+	@Expose({ name: 'device_type' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	deviceType: string;
+
+	@Expose({ name: 'os' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	os: string;
+
+	@Expose({ name: 'os_version' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	osVersion: string;
+
+	@Expose({ name: 'device_carrier' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	carrier: string;
 }

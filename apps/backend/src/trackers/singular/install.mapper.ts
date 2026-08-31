@@ -48,4 +48,12 @@ export class SingularInstall {
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
 	@Transform(({ value }) => dayjs.unix(value).utcOffset(540).format(), { toClassOnly: true })
 	installedAt: Date;
+
+	@Expose({ name: 'platform' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	os: string;
+
+	@Expose({ name: 'os_version' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	osVersion: string;
 }

@@ -39,4 +39,8 @@ export class AppsflyerInstall {
 	@Expose({ name: 'install_time' })
 	@Transform(({ value }) => (Array.isArray(value) ? dayjs(value[0]).format() : dayjs(value).format()))
 	installedAt: Date;
+
+	@Expose({ name: 'device_carrier' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	carrier: string;
 }

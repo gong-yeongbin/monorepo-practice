@@ -51,4 +51,8 @@ export class AppsflyerEvent {
 	@Expose({ name: 'event_revenue' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
 	revenue: string;
+
+	@Expose({ name: 'device_carrier' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	carrier: string;
 }

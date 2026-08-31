@@ -73,4 +73,25 @@ export class AdbrixRemasterEvent {
 		}
 	})
 	revenue: string;
+
+	@Expose({ name: 'device_model' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	deviceModel: string;
+
+	@Expose({ name: 'device_vendor' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	deviceManufacturer: string;
+
+	// OS 이름 파라미터가 따로 없고 device_platform이 숫자 코드로 내려온다
+	@Expose({ name: 'device_platform' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	os: string;
+
+	@Expose({ name: 'device_os_version' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	osVersion: string;
+
+	@Expose({ name: 'device_carrier' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	carrier: string;
 }

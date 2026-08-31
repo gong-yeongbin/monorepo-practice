@@ -60,4 +60,12 @@ export class SingularEvent {
 	@Expose({ name: 'amount' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
 	revenue: string;
+
+	@Expose({ name: 'platform' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	os: string;
+
+	@Expose({ name: 'os_version' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	osVersion: string;
 }
