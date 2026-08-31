@@ -13,6 +13,12 @@ export interface Postback {
 	idfa: string | null;
 	ip: string;
 	country_code: string;
+	device_model: string | null;
+	device_manufacturer: string | null;
+	device_type: string | null;
+	os: string | null;
+	os_version: string | null;
+	carrier: string | null;
 	clicked_at: Date | string | null;
 	installed_at: Date | string | null;
 	evented_at: Date | string | null;
@@ -22,9 +28,9 @@ export interface Postback {
 	raw_query_params: string;
 }
 
-// 어드민 로그 조회용 레코드. raw_query_params는 무겁고 화면에서 안 쓰므로 제외한다.
+// 어드민 로그 조회용 레코드. raw_query_params는 무겁고, 디바이스 정보는 화면에서 안 쓰므로 제외한다.
 // country_code는 스키마상 nullable이라 저장 타입과 달리 null 허용으로 재정의한다.
-export interface PostbackLog extends Omit<Postback, 'raw_query_params' | 'country_code'> {
+export interface PostbackLog extends Omit<Postback, 'raw_query_params' | 'country_code' | 'device_model' | 'device_manufacturer' | 'device_type' | 'os' | 'os_version' | 'carrier'> {
 	country_code: string | null;
 }
 
@@ -41,6 +47,12 @@ export const createPostback = (props: TrackerPostback & { trackerName: string; e
 	idfa: props.idfa,
 	ip: props.ip,
 	country_code: props.countryCode,
+	device_model: props.deviceModel ?? null,
+	device_manufacturer: props.deviceManufacturer ?? null,
+	device_type: props.deviceType ?? null,
+	os: props.os ?? null,
+	os_version: props.osVersion ?? null,
+	carrier: props.carrier ?? null,
 	clicked_at: props.clickedAt ?? null,
 	installed_at: props.installedAt ?? null,
 	evented_at: props.eventedAt ?? null,

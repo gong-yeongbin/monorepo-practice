@@ -47,6 +47,34 @@ describe('createPostback', () => {
 		expect(postback.revenue).toBeNull();
 	});
 
+	it('디바이스 필드가 없으면 null, 있으면 snake_case로 매핑한다', () => {
+		const empty = createPostback(base);
+		expect(empty.device_model).toBeNull();
+		expect(empty.device_manufacturer).toBeNull();
+		expect(empty.device_type).toBeNull();
+		expect(empty.os).toBeNull();
+		expect(empty.os_version).toBeNull();
+		expect(empty.carrier).toBeNull();
+
+		const filled = createPostback({
+			...base,
+			deviceModel: 'SM-S928N',
+			deviceManufacturer: 'samsung',
+			deviceType: 'phone',
+			os: 'android',
+			osVersion: '16',
+			carrier: 'SKTelecom',
+		});
+		expect(filled).toMatchObject({
+			device_model: 'SM-S928N',
+			device_manufacturer: 'samsung',
+			device_type: 'phone',
+			os: 'android',
+			os_version: '16',
+			carrier: 'SKTelecom',
+		});
+	});
+
 	it('media_sent_at은 항상 null(미전송)로 생성한다', () => {
 		expect(createPostback(base).media_sent_at).toBeNull();
 	});
