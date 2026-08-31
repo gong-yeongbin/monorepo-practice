@@ -1,6 +1,7 @@
 // 어드민 포스트백 로그 조회 쿼리 DTO들. 날짜는 KST 일자 경계로 해석한다.
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsNotEmpty, IsOptional, IsString, ValidateIf } from 'class-validator';
+import { IsDateString, IsInt, IsNotEmpty, IsOptional, IsString, ValidateIf } from 'class-validator';
+import { Type } from 'class-transformer';
 
 // install 로그: token 또는 view_code 중 하나 필수(일자별 상세 화면은 view_code로 조회)
 export class InstallLogDto {
@@ -58,6 +59,22 @@ export class UnregisteredLogDto {
 	@IsNotEmpty()
 	@IsString()
 	token: string;
+
+	@ApiProperty({ description: '시작 일자(YYYY-MM-DD)', example: '2026-07-01' })
+	@IsDateString()
+	start_date: string;
+
+	@ApiProperty({ description: '종료 일자(YYYY-MM-DD)', example: '2026-07-22' })
+	@IsDateString()
+	end_date: string;
+}
+
+// 광고 단위 일괄 조회: 해당 광고의 모든 캠페인을 한 번에 훑는다(엑셀 다운로드용)
+export class AdvertisingLogDto {
+	@ApiProperty({ description: '광고 id', example: 1 })
+	@Type(() => Number)
+	@IsInt()
+	advertising_id: number;
 
 	@ApiProperty({ description: '시작 일자(YYYY-MM-DD)', example: '2026-07-01' })
 	@IsDateString()

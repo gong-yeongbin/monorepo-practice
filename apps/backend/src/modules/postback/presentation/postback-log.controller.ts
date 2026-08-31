@@ -5,17 +5,18 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ListInstallPostbacksUseCase } from '@postback/application/list-install-postbacks.use-case';
 import { ListEventPostbacksUseCase } from '@postback/application/list-event-postbacks.use-case';
 import { ListUnregisteredPostbacksUseCase } from '@postback/application/list-unregistered-postbacks.use-case';
-import { EventLogDto, InstallLogDto, UnregisteredLogDto } from '@postback/application/dto/postback-log.dto';
+import { ListAdvertisingPostbacksUseCase } from '@postback/application/list-advertising-postbacks.use-case';
+import { AdvertisingLogDto, EventLogDto, InstallLogDto, UnregisteredLogDto } from '@postback/application/dto/postback-log.dto';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
-import { PostbackLogResponse, UnregisteredCountResponse } from '@postback/presentation/dto/postback-log.response.dto';
+import { AdvertisingPostbackLogsResponse, PostbackLogResponse, UnregisteredCountResponse } from '@postback/presentation/dto/postback-log.response.dto';
 import { Roles } from '@auth/presentation/roles.decorator';
 import { CurrentUser } from '@auth/presentation/current-user.decorator';
 import { AccessTokenPayload } from '@auth/application/token.constants';
 import { advertisingScopeOf } from '@auth/application/advertising-scope';
 
 @ApiTags('postbacks')
-// 대시보드 상세·일별 화면의 install·event·미등록 팝업이 호출하므로 USER에게도 연다(조회 전용 3개뿐).
+// 대시보드 상세·일별 화면의 install·event·미등록 팝업과 상세 화면의 엑셀 다운로드가 호출하므로 USER에게도 연다(조회 전용 4개뿐).
 // USER는 허용 광고 목록(user_advertising) 안의 캠페인만 조회된다. DEVELOPER·ADMIN은 스코핑 면제다.
 @Roles('DEVELOPER', 'ADMIN', 'USER')
 @Controller('postbacks')
@@ -24,8 +25,17 @@ export class PostbackLogController {
 	constructor(
 		private readonly listInstallPostbacksUseCase: ListInstallPostbacksUseCase,
 		private readonly listEventPostbacksUseCase: ListEventPostbacksUseCase,
-		private readonly listUnregisteredPostbacksUseCase: ListUnregisteredPostbacksUseCase
+		private readonly listUnregisteredPostbacksUseCase: ListUnregisteredPostbacksUseCase,
+		private readonly listAdvertisingPostbacksUseCase: ListAdvertisingPostbacksUseCase
 	) {}
+
+	@Get()
+	@ApiOperation({ summary: '광고 단위 포스트백 일괄 조회 — 광고 상세 화면의 엑셀 다운로드용' })
+	@ApiWrappedResponse({ status: 200, description: '조회 성공', type: AdvertisingPostbackLogsResponse })
+	@ApiResponse({ status: 400, description: '요청 값 검증 실패' })
+	async list(@Query() query: AdvertisingLogDto, @CurrentUser() user: AccessTokenPayload) {
+		return this.listAdvertisingPostbacksUseCase.execute(query, advertisingScopeOf(user));
+	}
 
 	@Get('install')
 	@ApiOperation({ summary: 'install 포스트백 로그 — token 또는 view_code 기준' })

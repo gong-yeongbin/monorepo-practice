@@ -177,7 +177,7 @@ CORS_ORIGIN="http://localhost:3000"
 | config | ADMIN 이상 | GET, PATCH `/config/:campaignId` |
 | reservation | ADMIN 이상 | GET, POST `/reservations`(advertisingId 필터·campaign별 예약 행 생성), DELETE `/reservations/:id`. 스케줄러가 매시 정각·부트 시 시각 지난 예약을 campaign(name·tracker_tracking_url)에 적용 |
 | dashboard | USER 이상 | GET `/dashboard`, `/dashboard/daily`(token 생략 시 전체 합산), `/dashboard/dailydetail`(token 기준 view_code·pub_id·sub_id 단위), `/dashboard/detail/:id` |
-| postback(로그) | USER 이상 | GET `/postbacks/install`, `/postbacks/event`, `/postbacks/unregistered` (대시보드 상세·일별 화면의 로그 팝업용 조회) |
+| postback(로그) | USER 이상 | GET `/postbacks/install`, `/postbacks/event`, `/postbacks/unregistered` (대시보드 상세·일별 화면의 로그 팝업용 조회), GET `/postbacks`(advertising_id 기준 광고 단위 일괄 조회 — 상세 화면 엑셀 다운로드용) |
 
 ### 기타
 

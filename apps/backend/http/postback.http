@@ -39,3 +39,7 @@ Authorization: Bearer {{access_token}}
 ### 미등록 이벤트 카운트 — campaign_config에 없는 이벤트명 그룹 합계
 GET {{host}}/postbacks/unregistered?token=seed-token-cafe-launch&start_date=2026-08-01&end_date=2026-08-31
 Authorization: Bearer {{access_token}}
+
+### 광고 단위 포스트백 일괄 조회 — 광고 상세 화면의 엑셀 다운로드용(install·event·미등록을 한 번에)
+GET {{host}}/postbacks?advertising_id=1&start_date=2026-08-01&end_date=2026-08-31
+Authorization: Bearer {{access_token}}

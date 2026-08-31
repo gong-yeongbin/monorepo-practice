@@ -10,6 +10,7 @@ import { SendMediaPostbackUseCase } from '@postback/application/send-media-postb
 import { ListInstallPostbacksUseCase } from '@postback/application/list-install-postbacks.use-case';
 import { ListEventPostbacksUseCase } from '@postback/application/list-event-postbacks.use-case';
 import { ListUnregisteredPostbacksUseCase } from '@postback/application/list-unregistered-postbacks.use-case';
+import { ListAdvertisingPostbacksUseCase } from '@postback/application/list-advertising-postbacks.use-case';
 import { POSTBACK_REPOSITORY } from '@postback/domain/postback.repository';
 import { PrismaPostbackRepository } from '@postback/infrastructure/prisma-postback.repository';
 import { CAMPAIGN_REPOSITORY } from '@postback/domain/campaign.repository';
@@ -34,6 +35,7 @@ import { HttpModule } from '@infra/http/http.module';
 		ListInstallPostbacksUseCase,
 		ListEventPostbacksUseCase,
 		ListUnregisteredPostbacksUseCase,
+		ListAdvertisingPostbacksUseCase,
 		{ provide: POSTBACK_REPOSITORY, useClass: PrismaPostbackRepository },
 		{ provide: CAMPAIGN_REPOSITORY, useClass: PrismaCampaignRepository },
 		{ provide: DAILY_REPORT_REPOSITORY, useClass: PrismaDailyReportRepository },

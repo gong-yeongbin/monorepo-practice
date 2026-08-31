@@ -4,7 +4,8 @@ import { PrismaService } from '@infra/prisma/prisma.service';
 
 describe('PrismaCampaignRepository (postback)', () => {
 	const findUnique = jest.fn();
-	const prisma = { campaign: { findUnique } } as unknown as PrismaService;
+	const findMany = jest.fn();
+	const prisma = { campaign: { findUnique, findMany } } as unknown as PrismaService;
 	const repository = new PrismaCampaignRepository(prisma);
 
 	beforeEach(() => jest.clearAllMocks());
@@ -22,5 +23,15 @@ describe('PrismaCampaignRepository (postback)', () => {
 	it('없으면 null을 반환한다', async () => {
 		findUnique.mockResolvedValue(null);
 		expect(await repository.findByToken('none')).toBeNull();
+	});
+
+	it('advertising_id로 캠페인 목록을 조회한다', async () => {
+		const campaigns = [{ token: 'token-1', campaign_config: [] }];
+		findMany.mockResolvedValue(campaigns);
+
+		const result = await repository.findByAdvertisingId(7);
+
+		expect(result).toBe(campaigns);
+		expect(findMany).toHaveBeenCalledWith({ where: { advertising_id: 7 }, include: { campaign_config: true, media: true } });
 	});
 });
