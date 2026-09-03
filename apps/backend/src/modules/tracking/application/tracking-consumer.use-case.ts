@@ -15,8 +15,6 @@ export class TrackingConsumerUseCase {
 	constructor(@Inject(DAILY_REPORT_REPOSITORY) private readonly dailyReportRepository: DailyReportRepository) {}
 
 	async execute(viewCodes: string[]) {
-		// [임시 계측] 배치 1건에 약 9초가 걸리는데 CPU·DB·Redis 어디에서도 시간이 잡히지 않아 구간을 나눠 잰다. 원인 확인 후 제거할 것.
-		const startedAt = Date.now();
 		const baseDate = kstBaseDate();
 		const dailyReportMap = new Map<string, DailyReport>();
 
@@ -40,7 +38,6 @@ export class TrackingConsumerUseCase {
 		}
 
 		const dailyReports = [...dailyReportMap.values()];
-		const aggregatedAt = Date.now();
 
 		// 배치 전체를 한 문장으로 upsert한다. 실패는 throw로 전파해 배치가 ack되지 않고 재전달되게 한다(문장이 원자적이라 재시도 안전).
 		try {
@@ -50,9 +47,6 @@ export class TrackingConsumerUseCase {
 			this.logger.warn(`배치 upsert 실패로 행 단위 재시도로 전환합니다: ${String(error)}`);
 			await this.upsertOneByOne(dailyReports, error);
 		}
-
-		// [임시 계측] 위 startedAt 주석 참고.
-		this.logger.log(`batch=${viewCodes.length} rows=${dailyReports.length} agg=${aggregatedAt - startedAt}ms upsert=${Date.now() - aggregatedAt}ms`);
 	}
 
 	// 배치가 한 문장이라 나쁜 행 하나가 전체를 롤백시킨다(삭제된 캠페인의 FK 위반 등).

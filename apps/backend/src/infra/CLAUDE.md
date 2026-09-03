@@ -25,6 +25,8 @@
 
 Stream 컨슈머의 `XREADGROUP BLOCK`은 연결을 장시간 점유하므로 **캐시 연결과 스트림 연결을 분리한 별도 ioredis 클라이언트**를 쓴다(`REDIS_CACHE_CLIENT` vs `REDIS_STREAM_CLIENT`). 둘을 합치지 말 것.
 
+같은 이유로 **스트림끼리도 블로킹 연결을 공유하지 않는다** — `StreamConsumer`는 스트림마다 `duplicate()`로 연결을 따로 만든다. ioredis는 명령을 연결 단위 큐로 보내므로, 공유하면 유입이 없는 스트림의 `BLOCK` 타임아웃(`STREAM_BLOCK_MS`) 동안 다른 스트림의 읽기가 그 뒤에서 대기한다. 실제로 postback이 5초를 자는 사이 tracking 배치가 통째로 밀려 사이클이 10~20초가 됐고(실제 처리는 90ms), 대기가 클라이언트 쪽이라 앱 CPU·DB·Redis 어느 지표에도 흔적이 남지 않아 원인을 찾는 데 오래 걸렸다.
+
 `StreamConsumer` 세부:
 - `register(stream, handler)`는 `OnApplicationBootstrap`의 소비 루프 시작 **전**에 끝나야 한다. 그래서 소비자 어댑터는 `OnModuleInit`에서 등록한다.
 - 핸들러가 **성공했을 때만** `xack`한다. 실패(throw)한 배치는 PEL에 남아 `XAUTOCLAIM`으로 재전달되고, `STREAM_MAX_DELIVERIES`회 이상 전달된 메시지는 처리 없이 ack로 폐기한다(poison pill 차단). 즉 at-least-once에 가까우므로 핸들러는 개별 건 실패를 내부에서 격리(`Promise.allSettled`)하고 배치 전체를 재처리해야 하는 인프라 장애 시에만 throw하며, 재전달에 대비해 멱등성에 유의할 것.

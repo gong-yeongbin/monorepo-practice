@@ -30,8 +30,9 @@ export class StreamConsumer implements OnApplicationBootstrap, OnApplicationShut
 	private readonly lingerMs: number;
 	private readonly role: string;
 	private running = false;
-	// XREADGROUP BLOCK이 연결을 점유하므로, 자동 파이프라이닝되는 공유 클라이언트와 분리한 블로킹 전용 연결
-	private blocking?: Redis;
+	// XREADGROUP BLOCK이 연결을 점유하므로, 자동 파이프라이닝되는 공유 클라이언트와 분리한 블로킹 전용 연결.
+	// 스트림마다 따로 둔다 — 이유는 onApplicationBootstrap 주석 참고.
+	private readonly blocking = new Map<string, Redis>();
 
 	constructor(
 		@Inject(REDIS_STREAM_CLIENT) private readonly redis: Redis,
@@ -55,12 +56,17 @@ export class StreamConsumer implements OnApplicationBootstrap, OnApplicationShut
 		// API 전용 프로세스(APP_ROLE=api)는 소비 루프를 돌리지 않는다(컨슈머 프로세스 분리)
 		if (this.role === 'api') return;
 
-		this.blocking = this.redis.duplicate({ enableAutoPipelining: false });
 		this.running = true;
 		for (const stream of this.handlers.keys()) {
-			await this.ensureGroup(stream);
+			// 블로킹 연결을 스트림끼리 공유하면 안 된다. ioredis는 명령을 연결 단위 큐로 보내므로, 유입이 없는
+			// 스트림의 XREADGROUP BLOCK이 타임아웃(STREAM_BLOCK_MS)을 채우는 동안 다른 스트림의 읽기가
+			// 그 뒤에서 대기한다. 실제로 postback이 5초를 자는 사이 tracking 배치가 통째로 밀려,
+			// 처리량이 유입이 아니라 BLOCK 주기에 묶였다(사이클 10~20초, 실제 처리는 90ms).
+			const client = this.redis.duplicate({ enableAutoPipelining: false });
+			this.blocking.set(stream, client);
+			await this.ensureGroup(stream, client);
 			// 스트림별로 독립 루프를 돌린다(await 하지 않아 서로 블로킹하지 않음). shutdown에서 완료를 기다리기 위해 보관한다.
-			this.loops.push(this.consume(stream));
+			this.loops.push(this.consume(stream, client));
 		}
 	}
 
@@ -68,7 +74,7 @@ export class StreamConsumer implements OnApplicationBootstrap, OnApplicationShut
 		this.running = false;
 		// 진행 중인 배치가 끝난 뒤(BLOCK 5초 내 루프 종료) 연결을 닫아 in-flight 유실을 막는다
 		await Promise.all(this.loops);
-		await this.quitClient(this.blocking);
+		for (const client of this.blocking.values()) await this.quitClient(client);
 		await this.quitClient(this.redis);
 	}
 
@@ -82,59 +88,31 @@ export class StreamConsumer implements OnApplicationBootstrap, OnApplicationShut
 	}
 
 	// 그룹이 이미 있으면 BUSYGROUP 에러가 나므로 무시한다
-	private async ensureGroup(stream: string) {
+	private async ensureGroup(stream: string, client: Redis) {
 		try {
-			await this.blocking!.xgroup('CREATE', stream, this.groupId, '$', 'MKSTREAM');
+			await client.xgroup('CREATE', stream, this.groupId, '$', 'MKSTREAM');
 		} catch (error) {
 			if (!(error instanceof Error && error.message.includes('BUSYGROUP'))) throw error;
 		}
 	}
 
-	private async consume(stream: string) {
+	private async consume(stream: string, client: Redis) {
 		const handler = this.handlers.get(stream);
 		if (!handler) return;
-
-		// [임시 계측] 적체가 2백만 건 쌓인 상태에서도 xreadgroup이 빈손으로 돌아와 BLOCK을 소진하는 정황이
-		// 있어(사이클 10~20초, 실제 처리는 90ms), 빈 읽기의 횟수와 대기 시간을 배치 직전 기준으로 모아 남긴다.
-		// 매 빈 읽기마다 찍으면 초당 여러 줄이 되므로 처리 성공 시 한 번만 요약한다. 원인 확인 후 제거할 것.
-		let emptyReads = 0;
-		let emptyWaitMs = 0;
 
 		while (this.running) {
 			try {
 				// 다른(죽은) 컨슈머가 ack하지 못하고 남긴 PEL 메시지를 회수해 먼저 처리한다
-				await this.reclaimIdle(stream, handler);
+				await this.reclaimIdle(stream, client, handler);
 
-				const readStartedAt = Date.now();
-				const response = await this.blocking!.xreadgroup(
-					'GROUP',
-					this.groupId,
-					this.consumerName,
-					'COUNT',
-					STREAM_READ_COUNT,
-					'BLOCK',
-					STREAM_BLOCK_MS,
-					'STREAMS',
-					stream,
-					'>'
-				);
+				const response = await client.xreadgroup('GROUP', this.groupId, this.consumerName, 'COUNT', STREAM_READ_COUNT, 'BLOCK', STREAM_BLOCK_MS, 'STREAMS', stream, '>');
 				// xreadgroup 응답 구조: [[streamName, [[id, [field, value, ...]], ...]]], 타임아웃이면 null
 				const streams = response as [string, StreamEntry[]][] | null;
 				const entries = streams?.[0]?.[1];
-				if (!entries?.length) {
-					// [임시 계측] 빈 읽기는 BLOCK을 소진하므로 횟수와 대기 시간만 모아두고 로그는 남기지 않는다.
-					emptyReads += 1;
-					emptyWaitMs += Date.now() - readStartedAt;
-					continue;
-				}
+				if (!entries?.length) continue;
 
-				// [임시 계측] 위 emptyReads 주석 참고.
-				this.logger.log(`stream '${stream}' 읽기: entries=${entries.length} readMs=${Date.now() - readStartedAt} 직전빈읽기=${emptyReads}회/${emptyWaitMs}ms`);
-				emptyReads = 0;
-				emptyWaitMs = 0;
-
-				await this.linger(stream, entries);
-				await this.processBatch(stream, handler, entries);
+				await this.linger(stream, client, entries);
+				await this.processBatch(stream, client, handler, entries);
 			} catch (error) {
 				if (!this.running) break;
 				this.logger.error(`stream '${stream}' 소비 중 오류: ${String(error)}`);
@@ -146,39 +124,30 @@ export class StreamConsumer implements OnApplicationBootstrap, OnApplicationShut
 	// XREADGROUP은 1건만 도착해도 즉시 반환하므로, 이 대기가 없으면 배치가 채워지지 않아
 	// 메시지 수만큼 DB 왕복이 생긴다. 늘어나는 Redis 왕복은 배치당 1회뿐이다.
 	// 유입이 없으면 첫 BLOCK이 null을 반환해 여기까지 오지 않으므로 유휴 시 비용은 0이다.
-	private async linger(stream: string, entries: StreamEntry[]) {
+	private async linger(stream: string, client: Redis, entries: StreamEntry[]) {
 		if (entries.length >= STREAM_READ_COUNT) return;
 
 		await new Promise((resolve) => setTimeout(resolve, this.lingerMs));
 		// 대기 중 셧다운이 시작되면 더 claim하지 않고 지금까지 읽은 배치만 처리한다
 		if (!this.running) return;
 
-		const response = await this.blocking!.xreadgroup(
-			'GROUP',
-			this.groupId,
-			this.consumerName,
-			'COUNT',
-			STREAM_READ_COUNT - entries.length,
-			'STREAMS',
-			stream,
-			'>'
-		);
+		const response = await client.xreadgroup('GROUP', this.groupId, this.consumerName, 'COUNT', STREAM_READ_COUNT - entries.length, 'STREAMS', stream, '>');
 		const more = (response as [string, StreamEntry[]][] | null)?.[0]?.[1];
 		if (more?.length) entries.push(...more);
 	}
 
 	// 핸들러 성공 시에만 ack한다. 실패한 배치는 PEL에 남아 XAUTOCLAIM으로 재전달된다.
-	private async processBatch(stream: string, handler: BatchHandler, entries: StreamEntry[]) {
+	private async processBatch(stream: string, client: Redis, handler: BatchHandler, entries: StreamEntry[]) {
 		const ids = entries.map(([id]) => id);
 		const messages = entries.map(([, fields]) => this.extractData(fields)).filter((value): value is string => value !== undefined);
 
 		await handler(messages);
-		await this.blocking!.xack(stream, this.groupId, ...ids);
+		await client.xack(stream, this.groupId, ...ids);
 	}
 
-	private async reclaimIdle(stream: string, handler: BatchHandler) {
+	private async reclaimIdle(stream: string, client: Redis, handler: BatchHandler) {
 		const cursor = this.claimCursors.get(stream) ?? '0';
-		const response = (await this.blocking!.xautoclaim(stream, this.groupId, this.consumerName, this.claimMinIdleMs, cursor, 'COUNT', STREAM_READ_COUNT)) as [
+		const response = (await client.xautoclaim(stream, this.groupId, this.consumerName, this.claimMinIdleMs, cursor, 'COUNT', STREAM_READ_COUNT)) as [
 			string,
 			(StreamEntry | null)[],
 			...unknown[],
@@ -190,22 +159,26 @@ export class StreamConsumer implements OnApplicationBootstrap, OnApplicationShut
 		if (!entries.length) return;
 
 		// 전달 횟수가 임계 이상인 메시지는 처리하지 않고 ack로 폐기해 무한 재소비(poison pill)를 막는다
-		const deliveryCounts = await this.getDeliveryCounts(stream, entries.map(([id]) => id));
+		const deliveryCounts = await this.getDeliveryCounts(
+			stream,
+			client,
+			entries.map(([id]) => id)
+		);
 		const poison = entries.filter(([id]) => (deliveryCounts.get(id) ?? 0) >= STREAM_MAX_DELIVERIES);
 		const retryable = entries.filter(([id]) => (deliveryCounts.get(id) ?? 0) < STREAM_MAX_DELIVERIES);
 
 		if (poison.length) {
 			this.logger.error(`stream '${stream}' 최대 전달 횟수(${STREAM_MAX_DELIVERIES}) 초과로 폐기: ${poison.map(([id]) => id).join(', ')}`);
-			await this.blocking!.xack(stream, this.groupId, ...poison.map(([id]) => id));
+			await client.xack(stream, this.groupId, ...poison.map(([id]) => id));
 		}
-		if (retryable.length) await this.processBatch(stream, handler, retryable);
+		if (retryable.length) await this.processBatch(stream, client, handler, retryable);
 	}
 
 	// XPENDING 확장 형태로 각 메시지의 전달 횟수를 조회한다
-	private async getDeliveryCounts(stream: string, ids: string[]): Promise<Map<string, number>> {
+	private async getDeliveryCounts(stream: string, client: Redis, ids: string[]): Promise<Map<string, number>> {
 		const [first, last] = [ids[0], ids[ids.length - 1]];
 		if (!first || !last) return new Map();
-		const pending = (await this.blocking!.xpending(stream, this.groupId, first, last, ids.length)) as [string, string, number, number][];
+		const pending = (await client.xpending(stream, this.groupId, first, last, ids.length)) as [string, string, number, number][];
 		return new Map(pending.map(([id, , , deliveryCount]) => [id, deliveryCount]));
 	}
 

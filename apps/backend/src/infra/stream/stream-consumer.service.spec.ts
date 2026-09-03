@@ -156,6 +156,21 @@ describe('StreamConsumer', () => {
 		expect(blocking.xack).toHaveBeenCalledWith('tracking', 'mecross-system', '5-0');
 	});
 
+	// 하나를 공유하면 유입이 없는 스트림의 XREADGROUP BLOCK이 타임아웃을 채우는 동안
+	// 다른 스트림의 읽기가 ioredis 연결 큐에서 대기해, 처리량이 유입이 아니라 BLOCK 주기에 묶인다.
+	// 지표에 드러나지 않는 종류의 저하라 회귀를 테스트로 막는다.
+	it('스트림마다 별도의 블로킹 연결을 만든다', async () => {
+		const consumer = await createConsumer();
+		consumer.register('tracking', jest.fn().mockResolvedValue(undefined));
+		consumer.register('postback', jest.fn().mockResolvedValue(undefined));
+
+		await consumer.onApplicationBootstrap();
+		await waitLoop();
+		await consumer.onApplicationShutdown();
+
+		expect(redis.duplicate).toHaveBeenCalledTimes(2);
+	});
+
 	it('APP_ROLE=api면 블로킹 연결을 만들지 않고 소비 루프도 시작하지 않는다', async () => {
 		const consumer = await createConsumer({ APP_ROLE: 'api' });
 		consumer.register('tracking', jest.fn());
