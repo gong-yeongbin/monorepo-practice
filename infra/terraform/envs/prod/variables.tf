@@ -127,6 +127,30 @@ variable "backend_desired_count" {
   default     = 0
 }
 
+variable "consumer_cpu" {
+  description = "컨슈머 Fargate 태스크 vCPU 단위 (1024 = 1 vCPU)"
+  type        = number
+  default     = 1024
+}
+
+variable "consumer_memory" {
+  description = "컨슈머 Fargate 태스크 메모리 (MiB)"
+  type        = number
+  default     = 2048
+}
+
+variable "consumer_base_count" {
+  description = "컨슈머 온디맨드 고정 태스크 수. 이 수를 넘는 증설분만 Spot으로 뜬다"
+  type        = number
+  default     = 1
+}
+
+variable "consumer_desired_count" {
+  description = "컨슈머 태스크 수. 오토스케일링이 없어 이 값이 그대로 반영된다"
+  type        = number
+  default     = 0
+}
+
 variable "image_tag" {
   description = "배포할 백엔드 이미지 태그 (CI/CD 도입 시 커밋 SHA 권장)"
   type        = string

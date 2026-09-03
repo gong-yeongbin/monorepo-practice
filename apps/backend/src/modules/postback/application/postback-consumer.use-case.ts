@@ -82,13 +82,10 @@ export class PostbackConsumerUseCase {
 			if (result.status === 'rejected') this.logger.error(`매체 포스트백 적재 실패: ${result.reason}`);
 		}
 
-		// 통계는 배치 한 문장으로 upsert한다. postback 로그가 이미 저장된 뒤라 여기서 throw해 배치를 재전달시키면
-		// 로그가 중복 INSERT되므로(unique 제약 없음) 실패는 로그로 격리한다.
-		try {
-			await this.dailyReportRepository.upsertMany([...dailyReportMap.values()]);
-		} catch (error) {
-			this.logger.error(`daily report 배치 upsert 실패: ${String(error)}`);
-		}
+		// 통계는 배치 한 문장으로 upsert한다. 실패를 삼키면 daily_report 집계가 재시도 없이 영구 누락되므로
+		// throw로 전파해 배치가 ack되지 않고 재전달되게 한다(문장이 원자적이라 실패 시 부분 반영이 없어 안전).
+		// 재전달 시 postback 로그가 중복 INSERT될 수 있으나(unique 제약 없음), 통계 정확도를 우선한다.
+		await this.dailyReportRepository.upsertMany([...dailyReportMap.values()]);
 	}
 
 	private parse(value: string): Postback | null {

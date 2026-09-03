@@ -12,7 +12,8 @@
 #
 # 주의: 로컬에 session-manager-plugin이 따로 설치돼 있어야 한다. AWS CLI에 포함되지 않는다.
 #
-# 상시 필요한 리소스가 아니다. 데이터 이관·수동 조회가 끝나면 enabled = false 로 내려 destroy할 것.
+# 끌 때는 enabled = false 로 내리면 인스턴스가 사라진다(접근 경로도 비용도 0이 된다).
+# 켜둔 동안 AMI 갱신으로 인스턴스가 교체되지 않도록 아래 aws_instance에 lifecycle 규칙을 둔다.
 
 data "aws_ami" "al2023" {
   count = var.enabled ? 1 : 0
@@ -92,5 +93,15 @@ resource "aws_instance" "this" {
 
   tags = {
     Name = "${var.project}-bastion"
+  }
+
+  # AMI는 data source가 most_recent로 잡으므로 Amazon이 새 AL2023 이미지를 낼 때마다 값이 바뀌고,
+  # ami는 교체를 유발하는 속성이라 무관한 apply가 배스천을 통째로 갈아치운다 —
+  # 인스턴스 ID가 바뀌어 진행 중인 SSM 세션이 끊기고 포트 포워딩도 함께 죽는다.
+  # 상시 띄워두는 호스트라 그 부작용이 크므로 AMI 변경은 무시한다.
+  # 보안 패치를 위해 최신 이미지로 올릴 때는 의도적으로 교체할 것:
+  #   terraform apply -replace=module.bastion.aws_instance.this[0]
+  lifecycle {
+    ignore_changes = [ami]
   }
 }

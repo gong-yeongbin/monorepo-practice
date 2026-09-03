@@ -17,6 +17,7 @@ describe('PostbackConsumerUseCase', () => {
 	beforeEach(async () => {
 		jest.clearAllMocks();
 		postbackRepository.create.mockResolvedValue(1);
+		dailyReportRepository.upsertMany.mockResolvedValue(undefined);
 
 		const module = await Test.createTestingModule({
 			providers: [
@@ -102,14 +103,15 @@ describe('PostbackConsumerUseCase', () => {
 		expect(report.revenue).toBe(0);
 	});
 
-	it('daily report 배치 upsert가 실패해도 예외를 전파하지 않는다 (postback 로그 중복 방지)', async () => {
+	it('daily report 배치 upsert가 실패하면 예외를 전파해 배치가 재전달되게 한다', async () => {
 		campaignRepository.findByToken.mockResolvedValue({
 			token: 'token-1',
 			campaign_config: [{ tracker_event_name: 'purchase_done', admin_event_name: 'purchase' }],
 		});
-		dailyReportRepository.upsertMany.mockRejectedValue(new Error('db down'));
+		const error = new Error('db down');
+		dailyReportRepository.upsertMany.mockRejectedValue(error);
 
-		await expect(useCase.execute([JSON.stringify({ token: 'token-1', view_code: 'vc-1', event_name: 'purchase_done', revenue: '10' })])).resolves.toBeUndefined();
+		await expect(useCase.execute([JSON.stringify({ token: 'token-1', view_code: 'vc-1', event_name: 'purchase_done', revenue: '10' })])).rejects.toBe(error);
 	});
 
 	it('send_media 설정이 켜진 이벤트는 치환된 URL과 저장 id로 media-postback 스트림에 적재한다', async () => {

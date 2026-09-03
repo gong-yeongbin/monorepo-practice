@@ -50,3 +50,11 @@ output "task_role_arn" {
 output "log_group_arn" {
   value = aws_cloudwatch_log_group.this.arn
 }
+
+output "consumer_service_name" {
+  value = aws_ecs_service.consumer.name
+}
+
+output "consumer_service_arn" {
+  value = aws_ecs_service.consumer.id
+}
