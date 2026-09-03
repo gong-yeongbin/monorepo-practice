@@ -7,6 +7,11 @@ import dayjs from 'dayjs';
 
 export interface EventModalColumns {
 	carrier: string;
+	deviceModel: string;
+	deviceManufacturer: string;
+	deviceType: string;
+	os: string;
+	osVersion: string;
 	country: string;
 	language: string;
 	ip: string;
@@ -49,6 +54,11 @@ const EventTable = observer(
 		const columns: TableColumnsType<(typeof rows)[number]> = [
 			{ title: 'NO', dataIndex: 'id', align: 'center', width: 40 },
 			{ title: 'CARRIER', dataIndex: 'carrier', align: 'center', width: 85, render: dash },
+			{ title: 'DEVICE MODEL', dataIndex: 'deviceModel', align: 'center', width: 110, render: dash },
+			{ title: 'MANUFACTURER', dataIndex: 'deviceManufacturer', align: 'center', width: 110, render: dash },
+			{ title: 'DEVICE TYPE', dataIndex: 'deviceType', align: 'center', width: 100, render: dash },
+			{ title: 'OS', dataIndex: 'os', align: 'center', width: 80, render: dash },
+			{ title: 'OS VERSION', dataIndex: 'osVersion', align: 'center', width: 90, render: dash },
 			{ title: 'COUNTRY', dataIndex: 'country', align: 'center', width: 80, render: dash },
 			{
 				title: 'LANGUAGE',

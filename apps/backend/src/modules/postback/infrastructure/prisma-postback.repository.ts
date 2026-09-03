@@ -8,6 +8,7 @@ const LOG_SELECT = {
 	tracker_name: true, event_name: true, click_id: true, pub_id: true, sub_id: true, view_code: true, token: true,
 	adid: true, idfa: true, ip: true, country_code: true, clicked_at: true, installed_at: true, evented_at: true,
 	media_sent_at: true, revenue_currency: true, revenue: true,
+	device_model: true, device_manufacturer: true, device_type: true, os: true, os_version: true, carrier: true,
 } as const;
 
 @Injectable()

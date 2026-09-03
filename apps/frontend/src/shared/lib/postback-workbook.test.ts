@@ -17,6 +17,11 @@ const campaigns = [
 const installRow = {
 	token: 'tok-a',
 	carrier: '',
+	deviceModel: '',
+	deviceManufacturer: '',
+	deviceType: '',
+	os: '',
+	osVersion: '',
 	country: 'KR',
 	language: '',
 	ip: '1.2.3.4',

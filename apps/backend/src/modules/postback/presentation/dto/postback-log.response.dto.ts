@@ -26,6 +26,18 @@ export class PostbackLogResponse implements PostbackLog {
 
 	country_code: string | null;
 
+	device_model: string | null;
+
+	device_manufacturer: string | null;
+
+	device_type: string | null;
+
+	os: string | null;
+
+	os_version: string | null;
+
+	carrier: string | null;
+
 	clicked_at: Date | string | null;
 
 	installed_at: Date | string | null;

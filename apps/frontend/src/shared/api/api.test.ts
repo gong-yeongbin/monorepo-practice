@@ -181,6 +181,12 @@ const postbackLogRow = {
 	idfa: null,
 	ip: '1.2.3.4',
 	country_code: 'KR',
+	device_model: null,
+	device_manufacturer: null,
+	device_type: null,
+	os: null,
+	os_version: null,
+	carrier: null,
 	clicked_at: '2026-07-21T10:00:00.000Z',
 	installed_at: '2026-07-21T10:05:00.000Z',
 	evented_at: null,
@@ -190,9 +196,14 @@ const postbackLogRow = {
 };
 
 describe('mapInstallLogRow', () => {
-	it('snake_case 로그를 인스톨 모달 컬럼으로 매핑하고 backend에 없는 carrier·language·sendUrl은 빈 값으로 채운다', () => {
+	it('snake_case 로그를 인스톨 모달 컬럼으로 매핑하고 backend에 없는 language·sendUrl은 빈 값으로 채운다', () => {
 		expect(mapInstallLogRow(postbackLogRow)).toEqual({
 			carrier: '',
+			deviceModel: '',
+			deviceManufacturer: '',
+			deviceType: '',
+			os: '',
+			osVersion: '',
 			country: 'KR',
 			language: '',
 			ip: '1.2.3.4',
@@ -205,6 +216,26 @@ describe('mapInstallLogRow', () => {
 			installTime: '2026-07-21T10:05:00.000Z',
 			sendTime: '',
 			sendUrl: '',
+		});
+	});
+
+	it('carrier·디바이스 정보가 있으면 그대로 매핑한다', () => {
+		const row = mapInstallLogRow({
+			...postbackLogRow,
+			carrier: 'SKT',
+			device_model: 'iPhone15,2',
+			device_manufacturer: 'Apple',
+			device_type: 'phone',
+			os: 'iOS',
+			os_version: '17.4',
+		});
+		expect(row).toMatchObject({
+			carrier: 'SKT',
+			deviceModel: 'iPhone15,2',
+			deviceManufacturer: 'Apple',
+			deviceType: 'phone',
+			os: 'iOS',
+			osVersion: '17.4',
 		});
 	});
 

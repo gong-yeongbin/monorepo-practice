@@ -124,6 +124,12 @@ interface BackendPostbackLog {
 	idfa: string | null;
 	ip: string;
 	country_code: string | null;
+	device_model: string | null;
+	device_manufacturer: string | null;
+	device_type: string | null;
+	os: string | null;
+	os_version: string | null;
+	carrier: string | null;
 	clicked_at: string | null;
 	installed_at: string | null;
 	evented_at: string | null;
@@ -132,9 +138,14 @@ interface BackendPostbackLog {
 	revenue: string | null;
 }
 
-// carrier·language·sendUrl은 backend postback 테이블에 없는 데이터 갭이라 빈 값으로 채운다
+// language·sendUrl은 backend postback 테이블에 없는 데이터 갭이라 빈 값으로 채운다
 export const mapInstallLogRow = (row: BackendPostbackLog) => ({
-	carrier: '',
+	carrier: row.carrier ?? '',
+	deviceModel: row.device_model ?? '',
+	deviceManufacturer: row.device_manufacturer ?? '',
+	deviceType: row.device_type ?? '',
+	os: row.os ?? '',
+	osVersion: row.os_version ?? '',
 	country: row.country_code ?? '',
 	language: '',
 	ip: row.ip,
