@@ -160,11 +160,6 @@ locals {
   environment = merge(var.environment, {
     TRACKING_PORT = tostring(var.tracking_port)
   })
-
-  # APP_ROLE로 프로세스 역할을 가른다(consumer.tf 참고). 주입하지 않으면 앱 기본값이 'all'이라
-  # 한 프로세스가 API·트래킹·스트림 소비를 모두 맡는다 — 컨슈머를 분리한 의미가 없어진다.
-  api_environment      = merge(local.environment, { APP_ROLE = "api" })
-  consumer_environment = merge(local.environment, { APP_ROLE = "consumer" })
 }
 
 # --- IAM ---
@@ -296,7 +291,7 @@ resource "aws_ecs_task_definition" "this" {
         }
       ]
 
-      environment = [for k, v in local.api_environment : { name = k, value = v }]
+      environment = [for k, v in local.environment : { name = k, value = v }]
       secrets     = [for k, arn in local.secret_arns : { name = k, valueFrom = arn }]
 
       logConfiguration = {

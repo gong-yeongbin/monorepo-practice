@@ -26,7 +26,6 @@ env:
   ECR_REPOSITORY: mecross-backend
   ECS_CLUSTER: mecross-cluster
   ECS_SERVICE: mecross-backend
-  ECS_CONSUMER_SERVICE: mecross-consumer
   ECS_TASK_FAMILY: mecross-backend
   LOG_GROUP: /ecs/mecross-backend
 
@@ -119,9 +118,4 @@ jobs:
           aws ecs update-service \
             --cluster "$ECS_CLUSTER" --service "$ECS_SERVICE" \
             --force-new-deployment > /dev/null
-          # 컨슈머는 같은 이미지를 쓰는 별도 서비스라 함께 재배포해야 코드가 어긋나지 않는다.
-          aws ecs update-service \
-            --cluster "$ECS_CLUSTER" --service "$ECS_CONSUMER_SERVICE" \
-            --force-new-deployment > /dev/null
-          aws ecs wait services-stable --cluster "$ECS_CLUSTER" \
-            --services "$ECS_SERVICE" "$ECS_CONSUMER_SERVICE"
+          aws ecs wait services-stable --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE"

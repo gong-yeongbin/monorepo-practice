@@ -124,27 +124,3 @@ variable "autoscaling_burst_cpu_threshold" {
   type        = number
   default     = 80
 }
-
-variable "consumer_cpu" {
-  description = "컨슈머 태스크 vCPU 단위. 소비는 메시지당 AES 복호화가 지배적인 CPU 작업이라 1 vCPU 미만은 의미가 없다"
-  type        = number
-  default     = 1024
-}
-
-variable "consumer_memory" {
-  description = "컨슈머 태스크 메모리 (MiB)"
-  type        = number
-  default     = 2048
-}
-
-variable "consumer_base_count" {
-  description = "Spot이 전멸해도 보장할 컨슈머 온디맨드 태스크 수. 태스크당 실제 처리량을 측정한 뒤 조정할 것(consumer.tf 참고)"
-  type        = number
-  default     = 1
-}
-
-variable "consumer_desired_count" {
-  description = "컨슈머 태스크 수. 오토스케일링을 붙이지 않아 Terraform이 그대로 소유한다(consumer.tf 참고)"
-  type        = number
-  default     = 0
-}

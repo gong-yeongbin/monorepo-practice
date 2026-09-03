@@ -78,7 +78,7 @@ data "aws_iam_policy_document" "github_actions" {
       "ecs:DescribeServices",
     ]
 
-    resources = [module.backend.service_arn, module.backend.consumer_service_arn]
+    resources = [module.backend.service_arn]
   }
 
   # 마이그레이션은 서비스 태스크와 같은 정의를 command override로 띄워 돌린다 —

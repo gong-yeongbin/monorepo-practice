@@ -99,11 +99,6 @@ module "backend" {
   autoscaling_min_count = var.backend_autoscaling_min
   autoscaling_max_count = var.backend_autoscaling_max
 
-  consumer_cpu           = var.consumer_cpu
-  consumer_memory        = var.consumer_memory
-  consumer_desired_count = var.consumer_desired_count
-  consumer_base_count    = var.consumer_base_count
-
   # REDIS_STREAM_CONSUMER는 주입하지 않는다 — 앱 기본값(consumer-<hostname>-<pid>)이
   # 태스크별로 유니크해야 다중 태스크에서 xautoclaim 중복 처리가 없다.
   environment = {
