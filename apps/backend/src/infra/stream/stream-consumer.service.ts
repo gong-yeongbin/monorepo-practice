@@ -94,11 +94,18 @@ export class StreamConsumer implements OnApplicationBootstrap, OnApplicationShut
 		const handler = this.handlers.get(stream);
 		if (!handler) return;
 
+		// [임시 계측] 적체가 2백만 건 쌓인 상태에서도 xreadgroup이 빈손으로 돌아와 BLOCK을 소진하는 정황이
+		// 있어(사이클 10~20초, 실제 처리는 90ms), 빈 읽기의 횟수와 대기 시간을 배치 직전 기준으로 모아 남긴다.
+		// 매 빈 읽기마다 찍으면 초당 여러 줄이 되므로 처리 성공 시 한 번만 요약한다. 원인 확인 후 제거할 것.
+		let emptyReads = 0;
+		let emptyWaitMs = 0;
+
 		while (this.running) {
 			try {
 				// 다른(죽은) 컨슈머가 ack하지 못하고 남긴 PEL 메시지를 회수해 먼저 처리한다
 				await this.reclaimIdle(stream, handler);
 
+				const readStartedAt = Date.now();
 				const response = await this.blocking!.xreadgroup(
 					'GROUP',
 					this.groupId,
@@ -114,7 +121,17 @@ export class StreamConsumer implements OnApplicationBootstrap, OnApplicationShut
 				// xreadgroup 응답 구조: [[streamName, [[id, [field, value, ...]], ...]]], 타임아웃이면 null
 				const streams = response as [string, StreamEntry[]][] | null;
 				const entries = streams?.[0]?.[1];
-				if (!entries?.length) continue;
+				if (!entries?.length) {
+					// [임시 계측] 빈 읽기는 BLOCK을 소진하므로 횟수와 대기 시간만 모아두고 로그는 남기지 않는다.
+					emptyReads += 1;
+					emptyWaitMs += Date.now() - readStartedAt;
+					continue;
+				}
+
+				// [임시 계측] 위 emptyReads 주석 참고.
+				this.logger.log(`stream '${stream}' 읽기: entries=${entries.length} readMs=${Date.now() - readStartedAt} 직전빈읽기=${emptyReads}회/${emptyWaitMs}ms`);
+				emptyReads = 0;
+				emptyWaitMs = 0;
 
 				await this.linger(stream, entries);
 				await this.processBatch(stream, handler, entries);

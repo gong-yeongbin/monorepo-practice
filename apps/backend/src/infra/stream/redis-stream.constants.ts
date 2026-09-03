@@ -3,7 +3,12 @@ export const REDIS_STREAM_CLIENT = Symbol('REDIS_STREAM_CLIENT');
 
 // XREADGROUP 한 번에 읽는 최대 메시지 수와 대기(BLOCK) 시간(ms).
 // 배치가 클수록 배치당 upsert SQL 1문장이므로 대량 유입 시 DB 왕복이 줄어든다.
-export const STREAM_READ_COUNT = 1000;
+//
+// 1000에서 올렸다. 적체가 쌓인 상태인데도 읽기 사이에 빈 xreadgroup이 끼어 BLOCK을 5초씩
+// 소진하는 것이 관측되어(사이클 10~20초, 그중 실제 처리는 90ms), 읽기 1회가 가져오는 양을
+// 늘려 대기 시간에 눌리지 않게 한다. 5000건이 만드는 daily_report 행은 실측 기준 약 750개라
+// 바인드 파라미터가 12,750개로 PostgreSQL 상한(65,535)에 여유가 크고, 핸들러도 약 450ms다.
+export const STREAM_READ_COUNT = 5000;
 export const STREAM_BLOCK_MS = 5000;
 
 // 첫 읽기가 COUNT를 못 채웠을 때 더 모으는 시간(ms).
