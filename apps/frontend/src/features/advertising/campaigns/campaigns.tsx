@@ -32,7 +32,7 @@ const Campaigns = () => {
 	}, []);
 
 	const { data, error } = useQuery({
-		queryKey: ['campaignList'],
+		queryKey: ['campaignList', paramId],
 		queryFn: () => api.getCampaigns(paramId),
 	});
 

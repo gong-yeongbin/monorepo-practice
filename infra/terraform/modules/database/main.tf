@@ -54,5 +54,8 @@ resource "aws_db_instance" "this" {
 resource "aws_ssm_parameter" "database_url" {
   name  = "/${var.project}/prod/DATABASE_URL"
   type  = "SecureString"
-  value = "postgresql://${var.db_username}:${random_password.db.result}@${aws_db_instance.this.address}:5432/${var.db_name}"
+  # RDS PostgreSQL 17 기본 파라미터 그룹이 암호화 연결을 요구한다(sslmode 없으면 pg_hba.conf 거부:
+  # "no pg_hba.conf entry for host ..., no encryption"). RDS 인증서는 Node 기본 신뢰 체인에 없어
+  # verify-full 대신 no-verify로 암호화만 하고 체인 검증은 생략한다(사설 VPC 내부 트래픽이라 수용).
+  value = "postgresql://${var.db_username}:${random_password.db.result}@${aws_db_instance.this.address}:5432/${var.db_name}?sslmode=no-verify"
 }
