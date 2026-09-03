@@ -45,3 +45,16 @@ yarn-error.log*
 
 /.idea
 .vscode/
+
+# 데이터 이관 작업물 (레포에 올리지 않는다)
+#   db_migration/       — 생성물이 3.7GB고, 마스터 SQL에는 실제 campaign token 등
+#                         프로덕션 데이터가 그대로 들어 있다. 규칙·결정·검증 결과는
+#                         루트 DB_MIGRATION.md / LEGACY_DAILY_REPORT.md / LEGACY_POSTBACK.md에 남는다.
+#   apps/backend/scripts/ — 레거시 MySQL에 직접 붙는 일회성 이관 생성기
+/db_migration/
+/apps/backend/scripts/
+
+# 이관 실행 런북 (개인 작업용 — 접속 절차·실측 수치가 들어 있다)
+/LEGACY_DAILY_REPORT.md
+/LEGACY_POSTBACK.md
+/DB_MIGRATION.md
