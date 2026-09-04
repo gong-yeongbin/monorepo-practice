@@ -1,4 +1,5 @@
 import { Expose, Transform } from 'class-transformer';
+import { normalizeViewCode } from '@common/utils/view-code.util';
 import dayjs from 'dayjs';
 
 export class AppsflyerInstall {
@@ -7,7 +8,7 @@ export class AppsflyerInstall {
 	clickId: string;
 
 	@Expose({ name: 'af_siteid' })
-	@Transform(({ value }) => (Array.isArray(value) ? encodeURIComponent(value[0]) : encodeURIComponent(value)))
+	@Transform(({ value }) => normalizeViewCode(Array.isArray(value) ? value[0] : value))
 	viewCode: string;
 
 	@Expose({ name: 'af_c_id' })

@@ -31,6 +31,21 @@ describe('TrackingConsumerUseCase', () => {
 		expect(reports[0].sub_id).toBe('sub-1');
 	});
 
+	// 스트림에는 URL용 인코딩값이 실리지만 daily_report 키는 디코드된 원문이어야 postback과 같은 형식이 된다
+	it('view_code는 percent-encoding을 푼 원문으로 저장하고, 인코딩값과 원문이 섞여 와도 한 행으로 합산한다', async () => {
+		dailyReportRepository.upsertMany.mockResolvedValue(undefined);
+		const encoded = viewCodeCodec.encode('token-1:pub-1:sub-1');
+		const plain = decodeURIComponent(encoded);
+		expect(encoded).not.toBe(plain);
+
+		await useCase.execute([encoded, plain]);
+
+		const reports = dailyReportRepository.upsertMany.mock.calls[0][0];
+		expect(reports).toHaveLength(1);
+		expect(reports[0].view_code).toBe(plain);
+		expect(reports[0].click).toBe(2);
+	});
+
 	it('서로 다른 viewCode는 하나의 배치에 각각의 리포트로 담는다', async () => {
 		dailyReportRepository.upsertMany.mockResolvedValue(undefined);
 

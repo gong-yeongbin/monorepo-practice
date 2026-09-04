@@ -127,7 +127,7 @@ model postback {
   click_id         String    @db.VarChar(500)
   pub_id           String?   @db.VarChar(500)
   sub_id           String?   @db.VarChar(500)
-  // view_code는 AES(`token:pub_id:sub_id`)를 base64+URL 인코딩한 파생값이라 길이가 두 가변 입력에 딸려 늘어난다.
+  // view_code는 AES(`token:pub_id:sub_id`)의 base64 원문이라 길이가 두 가변 입력에 딸려 늘어난다(URL용 percent-encoding은 저장 전에 풀어 넣는다).
   // 고정 폭을 두면 긴 sub_id에서 저장이 깨지므로(VarChar(255)였을 때 실제로 초과) 상한을 두지 않는다.
   view_code        String    @db.Text
   token            String    @db.VarChar(100)
@@ -162,7 +162,7 @@ model postback {
 
 model daily_report {
   id           BigInt   @id @default(autoincrement())
-  // view_code는 AES(`token:pub_id:sub_id`)를 base64+URL 인코딩한 파생값이라 길이가 두 가변 입력에 딸려 늘어난다.
+  // view_code는 AES(`token:pub_id:sub_id`)의 base64 원문이라 길이가 두 가변 입력에 딸려 늘어난다(URL용 percent-encoding은 저장 전에 풀어 넣는다).
   // 고정 폭을 두면 긴 sub_id에서 저장이 깨지므로(VarChar(255)였을 때 실제로 초과) 상한을 두지 않는다.
   view_code    String   @db.Text
   // 관계를 campaign_id(PK)가 아니라 token으로 연결한다. tracking consumer가 클릭 집계 시 campaign을 조회하지 않고 viewCode에서 디코드한 token만으로 upsert하기 위한 의도적 설계다(핫패스 DB 조회 회피).

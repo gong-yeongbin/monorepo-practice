@@ -25,7 +25,8 @@ export const buildMediaPostbackUrl = (media: Media, config: CampaignConfig, post
 		token: postback.token,
 		pub_id: postback.pub_id,
 		sub_id: postback.sub_id,
-		view_code: postback.view_code,
+		// DB에는 URL 인코딩을 푼 원문이 저장되지만 매체에는 트래킹 URL과 같은 인코딩된 view_code를 전달한다(아래 치환 인코딩과 별개)
+		view_code: encodeURIComponent(postback.view_code),
 		revenue: postback.revenue,
 		currency: postback.revenue_currency,
 	};

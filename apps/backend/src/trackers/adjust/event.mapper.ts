@@ -1,4 +1,5 @@
 import { Expose, Transform } from 'class-transformer';
+import { normalizeViewCode } from '@common/utils/view-code.util';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -12,7 +13,7 @@ export class AdjustEvent {
 	clickId: string;
 
 	@Expose({ name: 'publisher_id' })
-	@Transform(({ value }) => (Array.isArray(value) ? encodeURIComponent(value[0]) : encodeURIComponent(value)))
+	@Transform(({ value }) => normalizeViewCode(Array.isArray(value) ? value[0] : value))
 	viewCode: string;
 
 	@Expose({ name: 'cp_token' })

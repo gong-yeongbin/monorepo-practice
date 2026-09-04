@@ -59,4 +59,13 @@ describe('buildMediaPostbackUrl', () => {
 		const url = buildMediaPostbackUrl(media, config(), postback({ click_id: 'a b&c=d' }));
 		expect(url).toBe('https://media.example.com/event?click_id=a%20b%26c%3Dd&event=media_purchase');
 	});
+
+	// DB에는 URL 인코딩을 푼 원문이 저장되지만, 매체가 받는 view_code 값은 트래킹 URL과 같은 인코딩된 형태여야 한다.
+	// 값을 먼저 인코딩한 뒤 치환 인코딩이 한 번 더 걸리므로 URL상으로는 %252F가 된다(매체가 디코드하면 %2F 형태).
+	it('view_code는 인코딩된 값을 매체에 전달한다(치환 인코딩까지 두 번)', () => {
+		const eventMedia: Media = { ...media, event_postback_url: 'https://media.example.com/event?view_code={view_code}' };
+		const url = buildMediaPostbackUrl(eventMedia, config(), postback({ view_code: 'yiBlMXo/DLnd+YRE=' }));
+		expect(url).toBe('https://media.example.com/event?view_code=yiBlMXo%252FDLnd%252BYRE%253D');
+		expect(decodeURIComponent('yiBlMXo%252FDLnd%252BYRE%253D')).toBe('yiBlMXo%2FDLnd%2BYRE%3D');
+	});
 });

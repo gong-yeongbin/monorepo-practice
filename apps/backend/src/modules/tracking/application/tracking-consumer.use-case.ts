@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { DAILY_REPORT_REPOSITORY, DailyReportRepository } from '@tracking/domain/daily-report.repository';
 import { DailyReport, createDailyReport } from '@tracking/domain/daily-report.entity';
-import { viewCodeCodec } from '@common/utils/view-code.util';
+import { normalizeViewCode, viewCodeCodec } from '@common/utils/view-code.util';
 import { kstBaseDate } from '@common/utils/date.util';
 
 // campaign.token은 VarChar(36)이라 이보다 긴 token은 어떤 캠페인과도 매칭될 수 없다.
@@ -18,7 +18,9 @@ export class TrackingConsumerUseCase {
 		const baseDate = kstBaseDate();
 		const dailyReportMap = new Map<string, DailyReport>();
 
-		for (const viewCode of viewCodes) {
+		for (const rawViewCode of viewCodes) {
+			// 스트림에는 URL용 인코딩값이 실려 오므로 저장 키는 디코드된 원문으로 통일한다
+			const viewCode = normalizeViewCode(rawViewCode);
 			const [token = '', pubId, subId] = viewCodeCodec.decode(viewCode).split(':');
 
 			// 복호화 실패·형식 이상으로 캠페인과 매칭될 수 없는 token은 담지 않는다.

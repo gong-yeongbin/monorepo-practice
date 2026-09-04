@@ -25,3 +25,14 @@ export const viewCodeCodec = {
 		}
 	},
 };
+
+// URL용으로 percent-encoding된 viewCode를 저장용 원문(base64)으로 되돌린다.
+// encodeURIComponent는 트래커 URL에 싣기 위한 것이라 DB에는 디코드된 값을 넣는다.
+// 원문(`%` 없음)에는 no-op이고, 잘못된 `%`로 decodeURIComponent가 던지면 입력을 그대로 둔다(공개 포스트백 엔드포인트가 500으로 떨어지지 않게).
+export const normalizeViewCode = (value: string): string => {
+	try {
+		return decodeURIComponent(value);
+	} catch {
+		return value;
+	}
+};

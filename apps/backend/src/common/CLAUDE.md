@@ -11,4 +11,4 @@
 ## 기존 유틸 (동작 주의)
 
 - `date.util.ts` — `kstBaseDate()`는 서버 타임존과 무관하게 **KST 기준 오늘**을 UTC 자정 `Date`로 반환한다. `daily_report.created_date`가 `@db.Date`라 이 형태를 기대한다. 날짜 집계 키를 만들 때 `new Date()` 대신 이걸 쓴다.
-- `view-code.util.ts` — `viewCodeCodec.encode/decode`는 viewCode를 AES-128-CBC로 다룬다. 복호화된 viewCode는 `광고코드:pubId:subId` 형태이며 `.split(':')`으로 분해한다(use-case에서 사용). `decode`는 실패 시 던지지 않고 입력값을 그대로 반환한다.
+- `view-code.util.ts` — `viewCodeCodec.encode/decode`는 viewCode를 AES-128-CBC로 다룬다. 복호화된 viewCode는 `광고코드:pubId:subId` 형태이며 `.split(':')`으로 분해한다(use-case에서 사용). `decode`는 실패 시 던지지 않고 입력값을 그대로 반환한다. `encode` 결과는 URL용 percent-encoding이 걸려 있으므로 DB(`postback`·`daily_report`)에 저장할 때는 `normalizeViewCode`로 풀어서 넣는다(원문에는 no-op, 잘못된 `%`면 입력 반환).

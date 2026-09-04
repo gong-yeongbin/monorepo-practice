@@ -1,4 +1,5 @@
 import { Expose, Transform } from 'class-transformer';
+import { normalizeViewCode } from '@common/utils/view-code.util';
 import dayjs from 'dayjs';
 
 export class AirbridgeEvent {
@@ -7,7 +8,7 @@ export class AirbridgeEvent {
 	clickId: string;
 
 	@Expose({ name: 'sub_id' })
-	@Transform(({ value }) => (Array.isArray(value) ? encodeURIComponent(value[0]) : encodeURIComponent(value)))
+	@Transform(({ value }) => normalizeViewCode(Array.isArray(value) ? value[0] : value))
 	viewCode: string;
 
 	@Expose({ name: 'custom_param1' })

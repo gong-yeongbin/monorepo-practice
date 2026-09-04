@@ -1,5 +1,6 @@
 // singular install 포스트백 쿼리를 표준 포스트백 필드로 변환하는 매퍼
 import { Expose, Transform } from 'class-transformer';
+import { normalizeViewCode } from '@common/utils/view-code.util';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -13,7 +14,7 @@ export class SingularInstall {
 	clickId: string;
 
 	@Expose({ name: 'sub2' })
-	@Transform(({ value }) => (Array.isArray(value) ? encodeURIComponent(value[0]) : encodeURIComponent(value)))
+	@Transform(({ value }) => normalizeViewCode(Array.isArray(value) ? value[0] : value))
 	viewCode: string;
 
 	@Expose({ name: 'sub1' })

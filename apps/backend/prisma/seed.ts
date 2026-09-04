@@ -2,7 +2,7 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcrypt';
-import { viewCodeCodec } from '../src/common/utils/view-code.util';
+import { normalizeViewCode, viewCodeCodec } from '../src/common/utils/view-code.util';
 import { kstBaseDate } from '../src/common/utils/date.util';
 import { TRACKERS } from '../src/trackers/tracker.registry';
 import { createPostback } from '../src/modules/postback/domain/postback.entity';
@@ -187,7 +187,7 @@ async function main() {
 	}
 
 	// 8~9. campaign마다 daily_report 7일치 + postback 로그. 캠페인별 규모(factor)를 다르게 해 화면 구분이 쉽다.
-	// view_code는 실제 트래킹과 동일하게 `token:pubId:subId`를 인코딩한 값이고,
+	// view_code는 실제 트래킹과 동일하게 `token:pubId:subId`를 암호화한 값이고(저장 형식은 URL 인코딩을 푼 원문),
 	// postback 건수는 daily_report의 install·registration·purchase·revenue와 일치시킨다.
 	// postback은 unique 키가 없어 upsert 대신 seed 데이터(click_id 접두사)만 지우고 다시 넣는다
 	const baseDate = kstBaseDate();
@@ -195,7 +195,7 @@ async function main() {
 	const MINUTE = 60 * 1000;
 	const postbacks: Prisma.postbackCreateManyInput[] = [];
 	for (const [c, target] of campaigns.entries()) {
-		const viewCode = viewCodeCodec.encode(`${target.token}:seed_pub:seed_sub`);
+		const viewCode = normalizeViewCode(viewCodeCodec.encode(`${target.token}:seed_pub:seed_sub`));
 		const factor = [1, 0.6, 0.4, 0.2][c] ?? 1;
 		for (let i = 0; i < DAILY_REPORT_DAYS; i++) {
 			const createdDate = new Date(baseDate.getTime() - i * 24 * 60 * 60 * 1000);
@@ -287,9 +287,9 @@ async function main() {
 	// 실제 수신 형태(파라미터 40여 개, 중복 키, 미치환 매크로)를 raw_query_params에 그대로 남긴다.
 	// 파생 컬럼은 손으로 적지 않고 실제 파이프라인과 같은 경로(TRACKERS 매퍼 → createPostback)로 만들어 매퍼가 바뀌면 시드도 따라간다.
 	// view_code를 sub_id로 갈라 두어(seed_sub_raw) 위 7일치의 "postback 건수 = daily_report 카운터" 정합을 건드리지 않는다.
-	const sampleViewCode = viewCodeCodec.encode(`${campaign.token}:seed_pub:seed_sub_raw`);
-	// 트래커는 URL 디코드된 값을 되돌려주고 매퍼가 다시 인코딩한다 — 쿼리에는 디코드된 형태를 넣는다
-	const samples = buildPostbackSamples({ token: campaign.token, viewCode: decodeURIComponent(sampleViewCode), baseDate });
+	const sampleViewCode = normalizeViewCode(viewCodeCodec.encode(`${campaign.token}:seed_pub:seed_sub_raw`));
+	// 트래커는 URL 디코드된 값을 되돌려주고 매퍼는 그 원문을 그대로 저장한다 — 쿼리에도 원문을 넣는다
+	const samples = buildPostbackSamples({ token: campaign.token, viewCode: sampleViewCode, baseDate });
 	for (const sample of samples) {
 		const definition = TRACKERS[sample.tracker]!;
 		// 중복 키를 배열로 넘기는 것은 express도 마찬가지다(타입만 string) — 실제 런타임과 같은 형태로 매퍼에 태운다
