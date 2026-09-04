@@ -22,4 +22,9 @@ export class CreateCampaignDto {
 	@Type(() => Number)
 	@IsInt()
 	media_id: number;
+
+	@ApiProperty({ description: '캠페인별 트래커 트래킹 URL', example: 'https://app.appsflyer.com/com.example.app?pid=mecross_int' })
+	@IsNotEmpty()
+	@IsString()
+	tracker_tracking_url: string;
 }

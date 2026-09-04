@@ -12,7 +12,7 @@ describe('CreateCampaignUseCase', () => {
 	};
 	let useCase: CreateCampaignUseCase;
 
-	const dto: CreateCampaignDto = { name: 'c', type: 'CPI', advertising_id: 5, media_id: 2 };
+	const dto: CreateCampaignDto = { name: 'c', type: 'CPI', advertising_id: 5, media_id: 2, tracker_tracking_url: 'https://c/{AppKey}' };
 
 	beforeEach(async () => {
 		jest.clearAllMocks();
@@ -24,7 +24,7 @@ describe('CreateCampaignUseCase', () => {
 		useCase = module.get(CreateCampaignUseCase);
 	});
 
-	it('advertising의 tracker 정보를 도출해 campaign을 생성한다', async () => {
+	it('advertising의 tracker 이름을 도출하고 입력받은 트래킹 URL로 campaign을 생성한다', async () => {
 		campaignRepository.findAdvertisingTracker.mockResolvedValue({ tracker_name: 'appsflyer', tracker_tracking_url: 'https://t' });
 		campaignRepository.mediaExists.mockResolvedValue(true);
 		const created = { id: 10 };
@@ -37,7 +37,7 @@ describe('CreateCampaignUseCase', () => {
 			advertising_id: 5,
 			media_id: 2,
 			tracker_name: 'appsflyer',
-			tracker_tracking_url: 'https://t',
+			tracker_tracking_url: 'https://c/{AppKey}',
 		});
 	});
 

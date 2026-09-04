@@ -18,7 +18,7 @@ describe('CampaignController', () => {
 	beforeEach(() => jest.clearAllMocks());
 
 	it('create는 생성 use-case에 body를 위임한다', async () => {
-		const body: CreateCampaignDto = { name: 'c', type: 'CPI', advertising_id: 5, media_id: 2 };
+		const body: CreateCampaignDto = { name: 'c', type: 'CPI', advertising_id: 5, media_id: 2, tracker_tracking_url: 'https://t' };
 		const created = { id: 10 };
 		(createCampaignUseCase.execute as jest.Mock).mockResolvedValue(created);
 

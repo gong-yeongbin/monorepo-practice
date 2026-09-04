@@ -102,21 +102,21 @@ const CampaignForm = observer(
 		const handleFormChange = () => {
 			setDisabledSubmit(true);
 			const values = form.getFieldsValue();
-			// appkey·trackerTrackingUrl은 backend 생성 DTO에 없어 필수값에서 제외한다
-			const { mediaIdx, campaignName, type } = values;
-			if (mediaIdx && campaignName && type) {
+			const { mediaIdx, campaignName, type, trackerTrackingUrl } = values;
+			if (mediaIdx && campaignName && type && trackerTrackingUrl) {
 				setDisabledSubmit(false);
 			}
 		};
 
 		const handleFormValues = () => {
 			const formValues = form.getFieldsValue();
-			const { mediaIdx, campaignName, type } = formValues;
+			const { mediaIdx, campaignName, type, trackerTrackingUrl } = formValues;
 			handleSubmit({
 				name: campaignName,
 				type,
 				advertising_id: Number(paramId),
 				media_id: Number(mediaIdx),
+				tracker_tracking_url: trackerTrackingUrl,
 			});
 		};
 
@@ -125,6 +125,7 @@ const CampaignForm = observer(
 			type: string;
 			advertising_id: number;
 			media_id: number;
+			tracker_tracking_url: string;
 		}) => {
 			try {
 				await axiosInstance.post(`/campaigns`, body);
@@ -243,16 +244,12 @@ const CampaignForm = observer(
 
 					<Row gutter={16}>
 						<Col span={24}>
-							<Form.Item name="trackerTrackingUrl" label="트래커 트래킹 URL (저장 미지원)">
+							<Form.Item
+								name="trackerTrackingUrl"
+								label="트래커 트래킹 URL"
+								rules={[{ required: true, message: '입력해주세요.' }]}
+							>
 								<Input ref={trackingUrlRef} allowClear />
-							</Form.Item>
-						</Col>
-					</Row>
-
-					<Row gutter={16}>
-						<Col span={24}>
-							<Form.Item name="appkey" label="앱 키 (저장 미지원)">
-								<Input placeholder="트래커 트래킹 URL의 app key를 입력해주세요" allowClear />
 							</Form.Item>
 							{urlWithAppKey !== 'noAppKey' && (
 								<UrlWrapper>

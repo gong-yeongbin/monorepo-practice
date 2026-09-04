@@ -16,7 +16,8 @@ Content-Type: application/json
 	"name": "테스트 캠페인",
 	"type": "CPI",
 	"advertising_id": 1,
-	"media_id": 1
+	"media_id": 1,
+	"tracker_tracking_url": "https://app.appsflyer.com/com.example.app?pid=mecross_int"
 }
 
 ### campaign 수정 — name·type·media_id·is_active 부분 수정 (advertising_id 불변)

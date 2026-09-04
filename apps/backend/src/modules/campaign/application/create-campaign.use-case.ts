@@ -1,4 +1,4 @@
-// advertising의 tracker 정보를 도출해 campaign(+기본 config)을 생성하는 use-case
+// advertising의 tracker 이름을 도출하고 입력받은 트래킹 URL로 campaign(+기본 config)을 생성하는 use-case
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Campaign } from '@campaign/domain/campaign.entity';
 import { CAMPAIGN_REPOSITORY, CampaignRepository } from '@campaign/domain/campaign.repository';
@@ -25,7 +25,7 @@ export class CreateCampaignUseCase {
 			advertising_id: dto.advertising_id,
 			media_id: dto.media_id,
 			tracker_name: trackerInfo.tracker_name,
-			tracker_tracking_url: trackerInfo.tracker_tracking_url,
+			tracker_tracking_url: dto.tracker_tracking_url,
 		});
 	}
 }
