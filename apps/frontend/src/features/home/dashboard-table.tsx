@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import {
 	useReactTable,
@@ -33,7 +33,7 @@ const columnHelper = createColumnHelper<DashboardColumns>();
 const DashboardTable = (props: { data: Array<DashboardColumns> }) => {
 	const { data } = props;
 
-	const [dataWithName] = useState(data.filter(item => item.name !== null));
+	const dataWithName = useMemo(() => data.filter(item => item.name !== null), [data]);
 
 	const navigate = useNavigate();
 
