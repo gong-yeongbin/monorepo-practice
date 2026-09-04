@@ -210,7 +210,7 @@ const CampaignForm = observer(
 								label="캠페인명"
 								rules={[{ required: true, message: '입력해주세요.' }]}
 							>
-								<Input allowClear />
+								<Input allowClear maxLength={50} />
 							</Form.Item>
 						</Col>
 					</Row>

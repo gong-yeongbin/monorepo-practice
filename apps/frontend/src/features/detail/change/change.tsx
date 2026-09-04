@@ -172,7 +172,7 @@ const Change = () => {
 										},
 									]}
 								>
-									<Input />
+									<Input maxLength={50} />
 								</Form.Item>
 							</Descriptions.Item>
 							<Descriptions.Item label="변경 트랙킹 URL" span={3} style={{ height: '1rem' }}>

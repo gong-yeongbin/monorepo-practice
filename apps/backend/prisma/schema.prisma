@@ -72,7 +72,7 @@ model advertising {
 model campaign {
   id                   Int     @id @default(autoincrement())
   token                String  @unique @default(uuid()) @db.VarChar(36)
-  name                 String  @db.VarChar(30)
+  name                 String  @db.VarChar(50)
   type                 Type
   is_active            Boolean @default(true)
   tracker_name         String  @db.Text
@@ -114,7 +114,7 @@ model reservation {
   id           Int      @id @default(autoincrement())
   campaign     campaign @relation(fields: [campaign_id], references: [id], onDelete: Cascade)
   campaign_id  Int      @db.Integer
-  name         String   @db.VarChar(30)
+  name         String   @db.VarChar(50)
   tracking_url String   @db.Text
   reserved_at  DateTime @db.Timestamp(0)
   is_applied   Boolean  @default(false)
