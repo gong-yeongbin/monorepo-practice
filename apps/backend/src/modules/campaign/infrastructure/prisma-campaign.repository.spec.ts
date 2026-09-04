@@ -25,7 +25,7 @@ describe('PrismaCampaignRepository', () => {
 		const result = await repository.findByAdvertisingId(1);
 
 		expect(result).toEqual([{ campaign_id: 3, token: 'tok', campaign_name: 'c', type: 'CPI', is_active: true, media_name: 'm1', tracker_tracking_url: 'https://t' }]);
-		expect(campaign.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { advertising_id: 1 }, orderBy: { id: 'desc' } }));
+		expect(campaign.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { advertising_id: 1 }, orderBy: [{ is_active: 'desc' }, { id: 'desc' }] }));
 	});
 
 	it('findAdvertisingTracker는 advertising의 tracker 정보를 매핑한다', async () => {

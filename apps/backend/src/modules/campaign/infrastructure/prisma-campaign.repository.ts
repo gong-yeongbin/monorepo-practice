@@ -15,7 +15,7 @@ export class PrismaCampaignRepository implements CampaignRepository {
 	async findByAdvertisingId(advertising_id: number): Promise<CampaignListRow[]> {
 		const rows = await this.prismaService.campaign.findMany({
 			where: { advertising_id },
-			orderBy: { id: 'desc' },
+			orderBy: [{ is_active: 'desc' }, { id: 'desc' }],
 			include: { media: { select: { name: true } } },
 		});
 
