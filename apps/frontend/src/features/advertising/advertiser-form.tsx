@@ -87,9 +87,13 @@ const AdvertiserForm = observer(
 				setDrawerVisible(false);
 				queryClient.invalidateQueries({ queryKey: ['advertising'] });
 				message.success('등록되었습니다.');
-			} catch (error) {
-				sessionStorage.clear();
-				navigate('/login');
+			} catch (error: unknown) {
+				if (error instanceof Error && error.message.includes('409')) {
+					message.error('동일한 광고명이 존재합니다.');
+				} else {
+					sessionStorage.clear();
+					navigate('/login');
+				}
 			}
 		};
 
@@ -184,7 +188,7 @@ const AdvertiserForm = observer(
 								label="광고명"
 								rules={[{ required: true, message: '입력해주세요.' }]}
 							>
-								<Input allowClear />
+								<Input allowClear maxLength={44} />
 							</Form.Item>
 						</Col>
 					</Row>

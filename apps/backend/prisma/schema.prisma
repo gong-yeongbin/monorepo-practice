@@ -57,7 +57,7 @@ model tracker {
 
 model advertising {
   id    Int     @id @default(autoincrement())
-  name  String  @unique @db.VarChar(30)
+  name  String  @unique @db.VarChar(50)
   image String? @db.Text
 
   advertiser    advertiser @relation(fields: [advertiser_id], references: [id], onUpdate: Cascade)
