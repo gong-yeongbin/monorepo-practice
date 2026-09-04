@@ -1,0 +1,80 @@
+name: deploy frontend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/frontend/**"
+      - "packages/**"
+      - "pnpm-lock.yaml"
+      - "package.json"
+      - ".github/workflows/deploy-frontend.yml"
+  workflow_dispatch:
+
+# 두 배포가 겹치면 sync --delete가 서로의 파일을 지울 수 있다. 정적 파일 교체라 뒤의 것이
+# 결국 이기므로 앞선 실행을 끊어도 backend처럼 어정쩡한 상태가 남지 않는다.
+concurrency:
+  group: deploy-frontend
+  cancel-in-progress: true
+
+# id-token: OIDC 토큰 발급용. backend 워크플로와 같은 역할을 가져온다.
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ap-northeast-2
+  # 버킷 이름은 Terraform이 <project>-frontend-<account id>로 정한다 (infra/terraform/modules/frontend/main.tf).
+  S3_BUCKET: mecross-frontend-478657622805
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # 도메인과 배포 id는 저장소에 없다(tfvars는 gitignore). 저장소 Settings > Variables에 넣어 둔다.
+      #   ADMIN_API_URL              — terraform output admin_api_url
+      #   CLOUDFRONT_DISTRIBUTION_ID — terraform output cloudfront_distribution_id
+      - name: check variables
+        env:
+          ADMIN_API_URL: ${{ vars.ADMIN_API_URL }}
+          CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+        run: |
+          if [ -z "$ADMIN_API_URL" ] || [ -z "$CLOUDFRONT_DISTRIBUTION_ID" ]; then
+            echo "저장소 Variables에 ADMIN_API_URL·CLOUDFRONT_DISTRIBUTION_ID를 설정해야 한다"
+            exit 1
+          fi
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # VITE_* 값은 빌드 시점에 번들에 박힌다 — 런타임 환경변수가 아니다.
+      - name: build
+        env:
+          VITE_API_URL: ${{ vars.ADMIN_API_URL }}
+        run: pnpm --filter=frontend build
+
+      # 역할의 신뢰 정책이 이 저장소의 main 브랜치만 허용한다(infra/terraform/envs/prod/cicd.tf).
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::478657622805:role/mecross-github-actions
+          aws-region: ${{ env.AWS_REGION }}
+
+      # --delete로 옛 해시 파일을 정리한다. 배포 직후 옛 index.html을 든 브라우저가 옛 청크를
+      # 못 받을 수 있지만, 새로고침이면 해결되는 어드민 화면이라 감수한다.
+      - name: upload
+        run: aws s3 sync apps/frontend/dist "s3://$S3_BUCKET" --delete
+
+      - name: invalidate
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}" \
+            --paths "/*" > /dev/null

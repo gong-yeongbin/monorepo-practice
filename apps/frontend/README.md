@@ -151,6 +151,8 @@ pnpm test:coverage           # 커버리지 (미달 시 exit 1)
 
 `VITE_API_URL`을 배포 대상 API 주소로 두고 빌드한 뒤, 정적 결과물(`dist/`)을 S3에 sync하고 CloudFront 캐시를 무효화합니다. S3 + CloudFront(OAC) 구성과 절차는 [infra/terraform/README.md](../../infra/terraform/README.md)에 있습니다.
 
+main 브랜치에 `apps/frontend/**` 변경이 push되면 `.github/workflows/deploy-frontend.yml`이 위 절차를 자동으로 수행합니다. 저장소 Variables에 `ADMIN_API_URL`·`CLOUDFRONT_DISTRIBUTION_ID`(각각 `terraform output admin_api_url` / `cloudfront_distribution_id`)가 있어야 합니다.
+
 ```bash
 pnpm build          # 또는 build:staging / build:prod
 ```

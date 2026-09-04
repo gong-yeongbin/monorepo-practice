@@ -1,4 +1,4 @@
-# GitHub Actions가 ECR push와 ECS 재배포를 하기 위한 OIDC 신뢰 설정.
+# GitHub Actions가 ECR push·ECS 재배포·frontend S3 배포를 하기 위한 OIDC 신뢰 설정.
 #
 # 장기 액세스 키를 저장소 시크릿에 넣지 않으려고 web identity federation을 쓴다 —
 # GitHub이 워크플로 실행마다 발급하는 단기 토큰을 STS가 검증하고 역할을 넘겨준다.
@@ -139,6 +139,32 @@ data "aws_iam_policy_document" "github_actions" {
     ]
 
     resources = ["${module.backend.log_group_arn}:*"]
+  }
+
+  # frontend 배포(.github/workflows/deploy-frontend.yml): 빌드 결과물을 버킷에 sync한다.
+  # sync --delete가 옛 해시 파일을 지우므로 DeleteObject까지 필요하다.
+  statement {
+    sid       = "FrontendBucketList"
+    actions   = ["s3:ListBucket"]
+    resources = ["arn:aws:s3:::${module.frontend.bucket_name}"]
+  }
+
+  statement {
+    sid = "FrontendBucketWrite"
+
+    actions = [
+      "s3:PutObject",
+      "s3:DeleteObject",
+    ]
+
+    resources = ["arn:aws:s3:::${module.frontend.bucket_name}/*"]
+  }
+
+  # 업로드 뒤 엣지 캐시를 비워야 새 index.html이 바로 보인다.
+  statement {
+    sid       = "FrontendInvalidate"
+    actions   = ["cloudfront:CreateInvalidation"]
+    resources = [module.frontend.distribution_arn]
   }
 }
 
