@@ -142,6 +142,11 @@ model postback {
   os                  String?   @db.VarChar(30)
   os_version          String?   @db.VarChar(30)
   carrier             String?   @db.VarChar(50)
+  // 단말 언어·앱 버전 — 트래커마다 표기가 달라 원본 그대로 보존한다(adjust·airbridge `ko`, adbrix `KO`, appsflyer `한국어`).
+  // 정규화가 필요해지면 raw_query_params가 남아 있으므로 나중에 파생 컬럼을 추가해 백필한다.
+  // appsflyer는 app_version을, singular는 language를 포스트백에 주지 않아 해당 트래커에선 항상 null이다.
+  language            String?   @db.VarChar(30)
+  app_version         String?   @db.VarChar(30)
   clicked_at       DateTime? @db.Timestamp(0)
   installed_at     DateTime? @db.Timestamp(0)
   evented_at       DateTime? @db.Timestamp(0)

@@ -85,4 +85,12 @@ export class AirbridgeEvent {
 	@Expose({ name: 'device_carrier' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
 	carrier: string;
+
+	@Expose({ name: 'language' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	language: string;
+
+	@Expose({ name: 'appVersion' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	appVersion: string;
 }

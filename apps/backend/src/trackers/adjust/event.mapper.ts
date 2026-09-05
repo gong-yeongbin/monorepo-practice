@@ -80,4 +80,12 @@ export class AdjustEvent {
 	@Expose({ name: 'isp' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
 	carrier: string;
+
+	@Expose({ name: 'language' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	language: string;
+
+	@Expose({ name: 'app_version' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	appVersion: string;
 }

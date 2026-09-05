@@ -95,4 +95,12 @@ export class AdbrixRemasterEvent {
 	@Expose({ name: 'device_carrier' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
 	carrier: string;
+
+	@Expose({ name: 'device_language' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	language: string;
+
+	@Expose({ name: 'app_version' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	appVersion: string;
 }

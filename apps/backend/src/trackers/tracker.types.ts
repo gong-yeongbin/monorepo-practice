@@ -21,6 +21,9 @@ export interface TrackerPostback {
 	os?: string;
 	osVersion?: string;
 	carrier?: string;
+	// 단말 언어·앱 버전 — appsflyer는 app_version을, singular는 language를 주지 않는다
+	language?: string;
+	appVersion?: string;
 }
 
 export interface TrackerEventPostback extends TrackerPostback {

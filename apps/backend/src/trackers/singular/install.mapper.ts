@@ -57,4 +57,8 @@ export class SingularInstall {
 	@Expose({ name: 'os_version' })
 	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
 	osVersion: string;
+
+	@Expose({ name: 'app_version' })
+	@Transform(({ value }) => (Array.isArray(value) ? value[0] : value))
+	appVersion: string;
 }
