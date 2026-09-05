@@ -57,11 +57,6 @@ export class PrismaUserRepository implements UserRepository {
 		return toUser(row);
 	}
 
-	// password는 이미 해시된 값을 받는다(해싱은 use-case 책임)
-	async updatePassword(id: number, password: string): Promise<void> {
-		await this.prismaService.user.update({ where: { id }, data: { password } });
-	}
-
 	async delete(id: number): Promise<void> {
 		await this.prismaService.user.delete({ where: { id } });
 	}

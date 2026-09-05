@@ -3,12 +3,10 @@ import { Body, Controller, Delete, Get, Param, Patch, Query, UseInterceptors } f
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ListUserDto } from '@user/application/dto/list-user.dto';
 import { UpdateUserDto } from '@user/application/dto/update-user.dto';
-import { UpdateUserPasswordDto } from '@user/application/dto/update-user-password.dto';
 import { UserIdDto } from '@user/application/dto/user-id.dto';
 import { ListUserUseCase } from '@user/application/list-user.use-case';
 import { GetUserUseCase } from '@user/application/get-user.use-case';
 import { UpdateUserUseCase } from '@user/application/update-user.use-case';
-import { UpdateUserPasswordUseCase } from '@user/application/update-user-password.use-case';
 import { DeleteUserUseCase } from '@user/application/delete-user.use-case';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
@@ -25,7 +23,6 @@ export class UserController {
 		private readonly listUserUseCase: ListUserUseCase,
 		private readonly getUserUseCase: GetUserUseCase,
 		private readonly updateUserUseCase: UpdateUserUseCase,
-		private readonly updateUserPasswordUseCase: UpdateUserPasswordUseCase,
 		private readonly deleteUserUseCase: DeleteUserUseCase
 	) {}
 
@@ -52,15 +49,6 @@ export class UserController {
 	@ApiResponse({ status: 404, description: 'user 없음' })
 	async update(@Param() param: UserIdDto, @Body() body: UpdateUserDto) {
 		return this.updateUserUseCase.execute(param.id, body);
-	}
-
-	@Patch(':id/password')
-	@ApiOperation({ summary: 'user 비밀번호 초기화 (현재 비밀번호 확인 없이 새 값으로 교체)' })
-	@ApiWrappedResponse({ status: 200, description: '변경 성공' })
-	@ApiResponse({ status: 400, description: '요청 값 검증 실패' })
-	@ApiResponse({ status: 404, description: 'user 없음' })
-	async updatePassword(@Param() param: UserIdDto, @Body() body: UpdateUserPasswordDto): Promise<void> {
-		await this.updateUserPasswordUseCase.execute(param.id, body);
 	}
 
 	@Delete(':id')

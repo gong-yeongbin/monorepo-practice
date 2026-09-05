@@ -29,8 +29,6 @@ export interface UserRepository {
 	findByEmailWithPassword(email: string): Promise<UserWithPassword | null>;
 	create(props: CreateUserProps): Promise<void>;
 	update(id: number, props: UpdateUserProps): Promise<User>;
-	// 비밀번호는 UpdateUserProps와 분리한다 — bcrypt 해시라 다른 필드와 함께 부분 수정할 값이 아니다(반환값도 쓰지 않는다)
-	updatePassword(id: number, password: string): Promise<void>;
 	delete(id: number): Promise<void>;
 	// 지정한 id 중 실제로 존재하는 advertising 개수. 허용 목록 검증용이다.
 	// user 모듈이 AdvertisingModule에 의존하면 AuthModule → UserModule 경로로 advertising 모듈이 끌려오므로

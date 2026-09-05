@@ -133,7 +133,7 @@ CORS_ORIGIN="http://localhost:3000"
 |---|---|
 | `USER` | 대시보드 조회(`/dashboard/*`)와 그 상세 화면이 쓰는 `GET /advertising/:id`·`GET /postbacks/*`. 신규 가입자의 기본 역할. **단 허용 목록(`user_advertising`)에 있는 광고의 데이터만 보입니다** |
 | `ADMIN` | 광고 운영 API 전반 (광고주·광고·캠페인·매체·트래커·설정·예약·포스트백 로그·대시보드) |
-| `DEVELOPER` | 전부 + 사용자 관리(`/users`) — 가입 승인·역할 변경·허용 광고 지정·비밀번호 초기화·삭제 |
+| `DEVELOPER` | 전부 + 사용자 관리(`/users`) — 가입 승인·역할 변경·허용 광고 지정·삭제 |
 
 가입은 `POST /auth/signup/verify`로 `role=USER`, `approved=false` 상태의 user를 만듭니다. 승인 전에는 로그인이 403이며, `DEVELOPER`가 `GET /users?approved=false`로 대기 목록을 확인하고 `PATCH /users/:id`에 `{"approved": true, "advertising_ids": [...]}`를 보내 **승인과 동시에 볼 수 있는 광고를 지정**합니다.
 
@@ -168,7 +168,7 @@ CORS_ORIGIN="http://localhost:3000"
 
 | 리소스 | 접근 | 라우트 |
 |---|---|---|
-| user | DEVELOPER | GET `/users`(`?approved=false`로 승인 대기 목록), GET `/users/:id`, PATCH `/users/:id`(role·approved·advertising_ids 수정 = 가입 승인 + 허용 광고 지정), PATCH `/users/:id/password`(비밀번호 초기화), DELETE `/users/:id` |
+| user | DEVELOPER | GET `/users`(`?approved=false`로 승인 대기 목록), GET `/users/:id`, PATCH `/users/:id`(role·approved·advertising_ids 수정 = 가입 승인 + 허용 광고 지정), DELETE `/users/:id` |
 | advertiser | ADMIN 이상 | GET, POST `/advertisers`, GET, PATCH, DELETE `/advertisers/:id` |
 | advertising | ADMIN 이상<br>(`GET /advertising/:id`만 USER 이상) | GET, POST `/advertising`, GET, PUT, DELETE `/advertising/:id`, POST `/advertising/:id/image`. 단건 조회는 대시보드 상세 화면의 InfoCard가 쓰므로 USER에게도 열려 있다 |
 | media | ADMIN 이상 | GET, POST `/media`, GET, PATCH, DELETE `/media/:id` |
