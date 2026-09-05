@@ -4,6 +4,7 @@ import { Button, Table, Tooltip } from 'antd';
 import type { TableColumnsType } from 'antd';
 import { CSVLink } from 'react-csv';
 import dayjs from 'dayjs';
+import { useFillHeight } from '@/shared/ui/modals/use-fill-height';
 
 export interface InstallModalColumns {
 	carrier: string;
@@ -45,6 +46,8 @@ const timeCell = (value?: string, sendUrl?: string) => {
 const InstallTable = observer(
 	(props: { data: Array<InstallModalColumns>; titleRef: React.RefObject<HTMLSpanElement | null> }) => {
 		const { data, titleRef } = props;
+
+		const [containerRef, scrollY] = useFillHeight();
 
 		const rows = data.map((obj, i) => ({ ...obj, id: i + 1, MEDIA: sessionStorage.getItem('mediaName') }));
 
@@ -102,7 +105,7 @@ const InstallTable = observer(
 		};
 
 		return (
-			<div style={{ height: '100%', width: '100%' }}>
+			<div ref={containerRef} style={{ height: '100%', width: '100%' }}>
 				<CSVLink data={data} filename={setFileName()}>
 					<Button size="small" style={{ marginBottom: '0.5rem' }}>
 						CSV 다운로드
@@ -114,7 +117,7 @@ const InstallTable = observer(
 					dataSource={rows}
 					pagination={false}
 					size="small"
-					scroll={{ x: 'max-content', y: '60vh' }}
+					scroll={{ x: 'max-content', y: scrollY }}
 				/>
 			</div>
 		);
