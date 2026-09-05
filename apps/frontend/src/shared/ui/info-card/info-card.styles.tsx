@@ -48,7 +48,9 @@ export const UploadWrapper = styled.div`
 `;
 export const StyledUpload = styled(Upload)`
 	position: relative;
-	.ant-upload-select-picture-card {
+	/* antd 6의 picture-card select는 기본 102px(controlHeightLG * 2.55)이라 70px UploadWrapper에서 잘린다.
+	   antd 쪽 셀렉터가 클래스 4개라 &&&로 특이도를 올린다(cssinjs 주입 순서에 기대지 않기 위함). */
+	&&& .ant-upload.ant-upload-select {
 		width: 100%;
 		height: 100%;
 		overflow: hidden;
