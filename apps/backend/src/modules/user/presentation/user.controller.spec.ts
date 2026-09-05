@@ -3,14 +3,16 @@ import { UserController } from './user.controller';
 import { ListUserUseCase } from '@user/application/list-user.use-case';
 import { GetUserUseCase } from '@user/application/get-user.use-case';
 import { UpdateUserUseCase } from '@user/application/update-user.use-case';
+import { UpdateUserPasswordUseCase } from '@user/application/update-user-password.use-case';
 import { DeleteUserUseCase } from '@user/application/delete-user.use-case';
 
 describe('UserController', () => {
 	const listUserUseCase = { execute: jest.fn() } as unknown as ListUserUseCase;
 	const getUserUseCase = { execute: jest.fn() } as unknown as GetUserUseCase;
 	const updateUserUseCase = { execute: jest.fn() } as unknown as UpdateUserUseCase;
+	const updateUserPasswordUseCase = { execute: jest.fn() } as unknown as UpdateUserPasswordUseCase;
 	const deleteUserUseCase = { execute: jest.fn() } as unknown as DeleteUserUseCase;
-	const controller = new UserController(listUserUseCase, getUserUseCase, updateUserUseCase, deleteUserUseCase);
+	const controller = new UserController(listUserUseCase, getUserUseCase, updateUserUseCase, updateUserPasswordUseCase, deleteUserUseCase);
 
 	beforeEach(() => jest.clearAllMocks());
 
@@ -43,6 +45,11 @@ describe('UserController', () => {
 
 		await controller.update({ id: 1 }, { role: 'ADMIN', approved: true });
 		expect(updateUserUseCase.execute).toHaveBeenCalledWith(1, { role: 'ADMIN', approved: true });
+	});
+
+	it('updatePassword는 비밀번호 use-case에 id와 body를 위임한다', async () => {
+		await controller.updatePassword({ id: 1 }, { password: 'password1234' });
+		expect(updateUserPasswordUseCase.execute).toHaveBeenCalledWith(1, { password: 'password1234' });
 	});
 
 	it('delete는 삭제 use-case에 id를 위임한다', async () => {

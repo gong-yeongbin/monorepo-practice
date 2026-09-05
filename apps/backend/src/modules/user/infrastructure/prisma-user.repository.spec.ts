@@ -111,6 +111,12 @@ describe('PrismaUserRepository', () => {
 		expect(update.mock.calls[0][0].data).not.toHaveProperty('user_advertising');
 	});
 
+	// 해싱은 use-case 책임이라 repository는 받은 값을 그대로 넣는다
+	it('updatePassword는 id로 password만 수정한다', async () => {
+		await repository.updatePassword(1, 'hashed-password');
+		expect(update).toHaveBeenCalledWith({ where: { id: 1 }, data: { password: 'hashed-password' } });
+	});
+
 	it('delete는 id로 삭제한다', async () => {
 		await repository.delete(1);
 		expect(del).toHaveBeenCalledWith({ where: { id: 1 } });

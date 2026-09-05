@@ -44,6 +44,15 @@ Content-Type: application/json
 	"advertising_ids": []
 }
 
+### user 비밀번호 초기화 — 현재 비밀번호 확인 없이 새 값(8~72자)으로 교체한다
+PATCH {{host}}/users/1/password
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+	"password": "password1234"
+}
+
 ### user 삭제
 DELETE {{host}}/users/1
 Authorization: Bearer {{access_token}}
