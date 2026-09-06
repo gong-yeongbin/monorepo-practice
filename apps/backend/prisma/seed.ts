@@ -193,6 +193,28 @@ async function main() {
 	const baseDate = kstBaseDate();
 	await prisma.postback.deleteMany({ where: { click_id: { startsWith: 'seed_click_' } } });
 	const MINUTE = 60 * 1000;
+	// 디바이스 정보 컬럼(팝업·엑셀)을 확인할 수 있도록 행마다 값을 돌려 쓴다.
+	// 모델·제조사·타입·OS는 서로 맞는 조합이라야 화면이 어색하지 않아 프로필 단위로 묶고, 트래커가 안 주는 경우를 재현하는 null 프로필을 하나 섞는다.
+	// 단말 언어는 트래커마다 표기가 달라(adjust·airbridge `ko`, adbrix `KO`, appsflyer `한국어`) 정규화 없이 원문으로 저장되므로 그 편차를 그대로 담는다.
+	// 앱 버전·언어의 null은 실제로도 생긴다(appsflyer는 앱 버전을, singular는 언어를 포스트백에 주지 않는다).
+	// 배열 길이를 6·4·5·4로 다르게 둬 조합이 한 화면 안에서 겹치지 않고 퍼진다.
+	const DEVICE_PROFILES = [
+		{ device_model: 'SM-S928N', device_manufacturer: 'samsung', device_type: 'phone', os: 'Android', os_version: '15' },
+		{ device_model: 'iPhone15,2', device_manufacturer: 'Apple', device_type: 'phone', os: 'iOS', os_version: '17.4' },
+		{ device_model: 'SM-F766N', device_manufacturer: 'samsung', device_type: 'phone', os: 'Android', os_version: '16' },
+		{ device_model: 'iPad14,3', device_manufacturer: 'Apple', device_type: 'tablet', os: 'iOS', os_version: '18.1' },
+		{ device_model: 'SM-X910N', device_manufacturer: 'samsung', device_type: 'tablet', os: 'Android', os_version: '14' },
+		{ device_model: null, device_manufacturer: null, device_type: null, os: null, os_version: null },
+	];
+	const CARRIERS = ['SKTelecom', 'KT', 'LG U+', null];
+	const LANGUAGES = ['ko', 'KO', 'en', '한국어', null];
+	const APP_VERSIONS = ['1.0.0', '1.2.0', '2.0.1', null];
+	const rotate = (n: number) => ({
+		...DEVICE_PROFILES[n % DEVICE_PROFILES.length],
+		carrier: CARRIERS[n % CARRIERS.length],
+		language: LANGUAGES[n % LANGUAGES.length],
+		app_version: APP_VERSIONS[n % APP_VERSIONS.length],
+	});
 	const postbacks: Prisma.postbackCreateManyInput[] = [];
 	for (const [c, target] of campaigns.entries()) {
 		const viewCode = normalizeViewCode(viewCodeCodec.encode(`${target.token}:seed_pub:seed_sub`));
@@ -247,6 +269,7 @@ async function main() {
 			for (let j = 0; j < install; j++) {
 				postbacks.push({
 					...common,
+					...rotate(j),
 					event_name: 'install',
 					click_id: `seed_click_${c}_${i}_install_${j}`,
 					clicked_at: at(j * 10),
@@ -257,6 +280,7 @@ async function main() {
 			for (let j = 0; j < registration; j++) {
 				postbacks.push({
 					...common,
+					...rotate(j),
 					event_name: 'af_complete_registration',
 					click_id: `seed_click_${c}_${i}_registration_${j}`,
 					clicked_at: at(j * 10),
@@ -267,6 +291,7 @@ async function main() {
 			for (let j = 0; j < purchase; j++) {
 				postbacks.push({
 					...common,
+					...rotate(j),
 					event_name: 'af_purchase',
 					click_id: `seed_click_${c}_${i}_purchase_${j}`,
 					clicked_at: at(j * 10),
@@ -278,6 +303,7 @@ async function main() {
 			// 미등록 이벤트 1건 — campaign_config에 없는 이벤트명이라 미등록 모달에 집계된다 (daily_report에는 집계되지 않는 값)
 			postbacks.push({
 				...common,
+				...rotate(i),
 				event_name: 'af_login',
 				click_id: `seed_click_${c}_${i}_login`,
 				clicked_at: dayStart,
