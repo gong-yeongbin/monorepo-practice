@@ -37,12 +37,13 @@ src/
 │   │       └── daily-detail/  # view_code·pub_id·sub_id 단위 상세
 │   ├── media/                 # 매체 목록
 │   ├── tracker/               # 트래커 목록
-│   └── developer/             # 개발자 메뉴 (PrivateRoute 보호)
+│   └── developer/             # 개발자 메뉴 (DEVELOPER 전용)
 ├── shared/                    # 공용 계층
 │   ├── api/                   # axios 인스턴스 + api 객체 + 응답 매퍼
-│   ├── lib/                   # 순수 헬퍼 (get-cell, get-total)
+│   ├── lib/                   # 순수 헬퍼 (get-cell, get-total, auth, postback-workbook)
 │   └── ui/                    # 재사용 컴포넌트 (info-card, modals, private-route, select-options)
-└── mocks/                     # MSW 핸들러·워커
+├── mocks/                     # MSW 핸들러·워커
+└── images/                    # 정적 이미지 (로고)
 ```
 
 ## 실행
@@ -81,21 +82,23 @@ VITE_API_URL=http://localhost:3001
 
 `app.tsx`에 정의되어 있습니다. `/` 이하는 `Home` 레이아웃의 중첩 라우트이며, 매칭되지 않는 경로는 `/`로 리다이렉트됩니다.
 
-| 경로 | 화면 |
-|---|---|
-| `/login` | 로그인 |
-| `/signup` | 회원가입 |
-| `/` | 대시보드 (광고별 집계) |
-| `/:id` | 광고 상세 (캠페인별 집계) |
-| `/:id/change` | 트래커 URL 예약 변경 |
-| `/:id/daily` | 일별 리포트 |
-| `/:id/daily/detail` | 일별 상세 (view_code·pub_id·sub_id 단위) |
-| `/advertising` | 광고 목록 |
-| `/advertising/:id` | 광고별 캠페인 목록 |
-| `/advertising/:id/events/:campaignIdx` | 캠페인 이벤트 설정 |
-| `/media` | 매체 목록 |
-| `/tracker` | 트래커 목록 |
-| `/developer` | 개발자 메뉴 (`PrivateRoute` 보호) |
+역할 가드는 `PrivateRoute`(`shared/ui/private-route.tsx`)가 라우트에 겁니다. access token payload의 role을 직접 읽어 허용 역할이 아니면 `/`로 되돌립니다.
+
+| 경로 | 화면 | 접근 |
+|---|---|---|
+| `/login` | 로그인 | 공개 |
+| `/signup` | 회원가입 | 공개 |
+| `/` | 대시보드 (광고별 집계) | 로그인 사용자 전체 |
+| `/:id` | 광고 상세 (캠페인별 집계) | 로그인 사용자 전체 |
+| `/:id/daily` | 일별 리포트 | 로그인 사용자 전체 |
+| `/:id/daily/detail` | 일별 상세 (view_code·pub_id·sub_id 단위) | 로그인 사용자 전체 |
+| `/:id/change` | 트래커 URL 예약 변경 | DEVELOPER·ADMIN |
+| `/advertising` | 광고 목록 | DEVELOPER·ADMIN |
+| `/advertising/:id` | 광고별 캠페인 목록 | DEVELOPER·ADMIN |
+| `/advertising/:id/events/:campaignIdx` | 캠페인 이벤트 설정 | DEVELOPER·ADMIN |
+| `/media` | 매체 목록 | DEVELOPER·ADMIN |
+| `/tracker` | 트래커 목록 | DEVELOPER·ADMIN |
+| `/developer` | 개발자 메뉴 (가입 승인·허용 광고 지정) | DEVELOPER |
 
 ## 상태 관리
 
@@ -111,7 +114,7 @@ VITE_API_URL=http://localhost:3001
 - 401 응답이면 response 인터셉터가 `sessionStorage.refreshToken`으로 `/auth/refresh`를 호출해 access token을 재발급하고 원 요청을 **1회** 재시도합니다. 재발급까지 실패하면 세션을 비우고 `/login`으로 보냅니다. 이때 refresh 호출은 인터셉터 재진입을 막기 위해 raw axios를 씁니다.
 - react-query v5에는 `useQuery`별 `onError`가 없어, 공통 에러 처리는 `app.tsx`의 `QueryCache.onError` 전역 핸들러가 맡습니다. **401·403일 때만** 세션을 비우고 로그인으로 보내며, 네트워크·서버 오류는 세션을 유지합니다.
 
-화면에서 호출하는 backend 엔드포인트는 `/auth/signin`, `/auth/signup`, `/auth/signup/verify`, `/auth/refresh`, `/dashboard`, `/advertising`, `/advertisers`, `/campaigns`, `/config/:campaignId`, `/media`, `/trackers`, `/reservations`입니다.
+화면에서 호출하는 backend 엔드포인트는 `/auth/signin`, `/auth/signup`, `/auth/signup/verify`, `/auth/refresh`, `/auth/email-availability`, `/dashboard`(+`/daily`·`/dailydetail`·`/detail/:id`), `/postbacks`(+`/install`·`/event`·`/unregistered`), `/advertising`(+`/:id/image`), `/advertisers`, `/campaigns`, `/config/:campaignId`, `/media`, `/trackers`, `/reservations`, `/users`입니다.
 
 backend는 응답을 `{ statusCode, data, _meta }`로 감싸고 카운터를 snake_case·숫자로 내려주는 반면 화면 유틸(`getTotal`·`getCell`)은 camelCase·문자열 카운터를 가정합니다. 이 간극은 `shared/api/api.tsx`의 매퍼(`toCounterStrings`, `mapDashboardRow` 등)가 흡수합니다.
 
@@ -137,7 +140,7 @@ pnpm test:coverage           # 커버리지 (미달 시 exit 1)
 
 테스트는 `src/**/*.{test,spec}.{ts,tsx}`로 소스 옆에 둡니다. 설정은 `vite.config.ts`의 `test` 필드에 있으며 `@/*` 별칭을 그대로 공유합니다.
 
-**커버리지는 statements·branches·functions·lines 4지표 모두 90% 임계가 강제**됩니다. 다만 대상(`coverage.include`)은 현재 테스트가 다루는 순수 로직 파일로 한정되어 있습니다 — `shared/lib/get-cell.tsx`, `shared/lib/get-total.tsx`, `shared/api/api.tsx`. antd·react-table·MobX에 의존하는 화면 컴포넌트를 포함하면 임계를 만족할 수 없기 때문입니다. 대상 파일 안에서 테스트하지 않는 함수는 `/* v8 ignore start */` … `/* v8 ignore stop */`로 분모에서 제외합니다.
+**커버리지는 statements·branches·functions·lines 4지표 모두 90% 임계가 강제**됩니다. 다만 대상(`coverage.include`)은 현재 테스트가 다루는 순수 로직 파일로 한정되어 있습니다 — `shared/lib/get-cell.tsx`, `shared/lib/get-total.tsx`, `shared/lib/auth.ts`, `shared/lib/postback-workbook.ts`, `shared/api/api.tsx`. antd·react-table·MobX에 의존하는 화면 컴포넌트를 포함하면 임계를 만족할 수 없기 때문입니다. 대상 파일 안에서 테스트하지 않는 함수는 `/* v8 ignore start */` … `/* v8 ignore stop */`로 분모에서 제외합니다.
 
 ## 코드 스타일
 

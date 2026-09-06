@@ -2,11 +2,15 @@
 
 광고 트래킹 플랫폼의 AWS 배포 인프라. **일 1억 클릭(평균 ~1,160 RPS) 실트래픽** 전제로 설계됨. (2026-08-26 확정)
 
+> **현재 상태: 운영 중.** 2026-09-03 23:19 KST DNS 컷오버로 이 스택이 실트래픽을 받는다(유입 약 700~1,100/s).
+> 레거시 EC2·RDS·ElastiCache·CloudFront·S3와 고아 NAT/EIP는 2026-09-05에 정리됐다.
+> 진행 이력과 컷오버 이후 남은 과제는 문서 끝에 정리돼 있다.
+
 ## 아키텍처
 
 > 구성도(요청 경로·정적 자산·단일 AZ 전후 비교·운영 접속): [architecture.html](./architecture.html) — 브라우저로 열면 된다.
 
-> **plan 검증(2026-08-30)**: `70 add, 0 change, 0 destroy`. 레거시가 쓰는 `api.`·`admin.` 레코드는 생성 목록에 없고(컷오버 게이트 동작), SES 리소스도 없다. 서브넷은 `ap-northeast-2a`·`2b`에 만들어지되 RDS·Valkey·Fargate·NLB·bastion은 전부 `2a`에 잡힌다.
+> 서브넷은 `ap-northeast-2a`·`2b`에 만들어지되 RDS·Valkey·Fargate·NLB·bastion은 전부 `2a`에 잡힌다. SES 리소스는 Terraform이 소유하지 않는다.
 
 ```
 매체 클릭 / 트래커 포스트백
@@ -97,7 +101,7 @@
 
 1. ✅ 80 포트 트래킹 직접 포워드 (리다이렉트 왕복 제거, Terraform 반영됨)
 2. ✅ GA 제거 (현재도 트래킹 경로엔 미사용으로 확인 — 월 $19 정리 대상)
-3. ⬜ 앱 레벨: `res.redirect()` 기본 HTML 바디 제거, `X-Powered-By`·ETag 헤더 제거 (현 서버 기준 월 $50~100 수준)
+3. ✅ 앱 레벨: 302에서 `res.redirect()`의 HTML 바디 제거 + `Content-Length: 0` 명시, `X-Powered-By` 제거, 트래킹 포트 CORS 헤더 제거 (현 서버 기준 월 $50~100 수준)
 4. ✅ **Cost Explorer로 DT 구성 규명 완료** (2026-08-30) — AZ 간 전송 $233은 단일 AZ 배치로 제거, egress 5.1TB 중 2~3TB는 여전히 미규명
 5. ⬜ 남은 egress 2~3TB 출처 규명 (포스트백 발신 재시도가 유력) — 인터넷 egress라 단일 AZ로는 안 줄어든다
 
@@ -178,12 +182,13 @@ terraform init && terraform plan && terraform apply
 # cutover_dns_enabled = true 로 재-apply → api·admin 레코드가 신규 스택을 가리킨다
 ```
 
-### ⚠️ `api.<domain>`·`admin.<domain>`은 레거시가 쓰는 이름이다
+### `cutover_dns_enabled` (컷오버 게이트 — 이미 열려 있다)
 
-두 레코드는 지금 레거시 EC2와 레거시 S3 어드민을 가리키고 있다. **레코드를 만드는 행위 자체가
-프로덕션 컷오버**라서 `cutover_dns_enabled`(기본 `false`)로 가둬 뒀다. `false`인 동안은 두 레코드를
-아예 만들지 않으므로 레거시가 그대로 트래픽을 받고, 신규 스택은 `nlb_dns_name`·`alb_dns_name`과
-CloudFront 도메인으로 직접 검증한다. `admin-api.`·`asset.`은 신규 이름이라 처음부터 만든다.
+`api.<domain>`·`admin.<domain>`은 레거시가 쓰던 이름이라 **레코드를 만드는 행위 자체가 프로덕션
+컷오버**였다. 그래서 `cutover_dns_enabled`(기본 `false`)로 가둬 뒀고, **2026-09-03에 `true`로
+전환해 컷오버를 마쳤다.** 지금 두 레코드는 신규 NLB·CloudFront를 가리킨다. 다시 `false`로 되돌리면
+레코드가 삭제되어 서비스가 죽으므로 건드리지 말 것. `admin-api.`·`asset.`은 신규 이름이라 처음부터
+만들어져 있다.
 
 컷오버 절차 전체는 `~/.claude/plans/stateless-meandering-aho.md` 참고.
 
@@ -194,12 +199,40 @@ terraform fmt -check -recursive
 cd envs/prod && terraform init -backend=false && terraform validate
 ```
 
-## 남은 작업 (순서대로)
+## 진행 이력
 
-1. ✅ AWS 자격증명 설정 · **Cost Explorer 실측**(2026-08-30) · **plan 검증**(70 add / 0 change / **0 destroy**) → ⬜ bootstrap → apply
-2. `bastion_enabled = true`로 DB 접속 경로 확보 → `prisma migrate deploy` → 레거시 데이터 이전(MySQL → PostgreSQL 이기종: pgloader/AWS DMS)
-3. Dockerfile (pnpm workspace + **arm64** + `prisma migrate deploy` 전략) + CI/CD
-4. 앱 수정: CORS `localhost:3000` 하드코딩 해제(`apps/backend/src/main.ts`), 302 응답 슬림화, 트래킹 로그 억제
-5. frontend 빌드(`VITE_API_URL=https://admin-api.<도메인>` — `admin_api_url` 출력 참조) → S3 sync + CloudFront invalidation
-6. DNS 컷오버(`cutover_dns_enabled = true`) → 기존 EC2/RDS/ElastiCache/GA 정리
-7. 노출된 IAM 키 폐기, `bastion_enabled = false`로 되돌리기
+1. ✅ AWS 자격증명 설정 · Cost Explorer 실측(2026-08-30) · bootstrap → apply(2026-08-30)
+2. ✅ bastion으로 DB 접속 경로 확보 → 마이그레이션 적용 → 레거시 MySQL 데이터 이관(`db_migration/`)
+3. ✅ Dockerfile(pnpm workspace + arm64) + GitHub Actions CI/CD(OIDC, `.github/workflows/deploy-{backend,frontend}.yml`)
+4. ✅ 앱 수정: CORS origin 환경변수화(`CORS_ORIGIN`), 트래킹 포트에서 CORS·`X-Powered-By` 제거
+5. ✅ frontend 빌드 → S3 sync + CloudFront invalidation (워크플로가 수행)
+6. ✅ **DNS 컷오버 2026-09-03** → 레거시 EC2·RDS·ElastiCache·GA·CloudFront·S3 정리 완료(2026-09-05)
+7. ✅ 노출된 IAM 키 폐기(`apps/backend/.env`에서 삭제 — 앱은 ECS task role로 S3·SES를 쓴다)
+
+배스천은 상시 운영하기로 해 `bastion_enabled = true`로 두고 AMI 변경은 `ignore_changes`로 고정했다.
+
+## 남은 과제 (2026-09-05 기준)
+
+- **운영 알람이 없다.** 신규 스택의 CloudWatch 알람 3개는 전부 오토스케일링용이라 장애를 알려주는
+  알람이 하나도 없다. 특히 스트림 적체(`XINFO GROUPS`의 lag) 커스텀 지표·알람이 없어서, 컷오버 직후
+  장애가 앱 CPU·RDS·Valkey 어느 서버 지표에도 나타나지 않았다(대기가 ioredis 클라이언트 큐에 있었다).
+- **`ReservationScheduler`의 `@Cron(EVERY_HOUR)`가 API 태스크 전부에서 돈다.** 태스크 수만큼 중복
+  실행되며 멱등성은 확인되지 않았다. per-task CPU Maximum이 매시 98%를 찍는 원인이기도 하다.
+- **`advertising.image` 141건이 죽은 URL을 가리킨다.** 레거시 버킷 `mcpro-admin-image-prod`가
+  2026-09-05에 삭제되어(버전 관리 꺼져 있어 복구 불가) 어드민에서 광고 이미지가 깨진다.
+  `image`를 NULL로 정리하거나 광고주 재업로드가 필요하고, 버킷 이름 재선점도 검토 대상이다.
+- **`STREAM_READ_COUNT` 1000 → 5000 상향은 연결 분리 전의 우회다.** 되돌릴지 재검토.
+- **인터넷 egress 2~3TB의 출처가 여전히 미규명**(포스트백 발신 재시도가 유력). AZ 간 전송은 단일 AZ
+  배치로 $0이 됐다.
+- 기본 VPC `vpc-55c3733e`는 타 계정과의 active 피어링 `pcx-0ee207cb14de742dc`가 남아 있어 보류 중이다
+  (무과금). 상대를 확인한 뒤 엔드포인트 → 라우트 → 서브넷 → 라우트테이블 → IGW → VPC 순으로 정리한다.
+
+### 오토스케일링 실측 (2026-09-05, 건드리기 전에 읽을 것)
+
+- 유입 트래픽이 **10분 주기**다(매시 :00·:10·:20·:30·:40에 1~2분 스파이크). 태스크 기동이 1~2분이라
+  **반응형 증설이 이 패턴을 못 잡는다** — 임계값을 어디에 두든 증설분은 스파이크가 끝난 뒤 도착한다.
+  실효 있는 건 상시 용량(`autoscaling_min_count` 또는 target 하향)뿐이다.
+- 증설은 전부 burst 정책이 한다. target tracking의 AlarmHigh는 한 번도 울리지 않았다(5분 평균 최고
+  53~59%). **`autoscaling_cpu_target` 60은 올리지 말 것** — 증설 문턱은 그대로인 채 AlarmLow만 올라가
+  축소만 공격적으로 변한다. burst 임계는 80(발화 하루 2회)이고 상한은 85다(90이면 0회 = 정책 사망).
+- 2026-09-05 결정: **아무것도 바꾸지 않고 유지**(target 60 / burst 80).

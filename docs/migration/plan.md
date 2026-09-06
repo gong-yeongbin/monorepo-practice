@@ -1,5 +1,10 @@
 # admin-backend → monorepo-practice 이관 계획
 
+> **완료된 작업의 기록이다.** 이관은 끝났고 2026-09-03 컷오버로 신규 스택이 실트래픽을 받는다.
+> 아래 "핵심 결정사항"·"이관 순서"는 착수 당시의 판단이며, 최종 결과와 다른 부분이 있다
+> (인증 엔드포인트·역할 체계·ResponseInterceptor 적용 범위 등). 현재 API의 기준 문서는
+> [apps/backend/README.md](../../apps/backend/README.md)이고, 진행 결과는 [checklist.md](./checklist.md)에 있다.
+
 ## 목적
 
 레거시 `admin-backend`(NestJS 8 + TypeORM + 평면 모듈)의 프론트엔드 제공 API를

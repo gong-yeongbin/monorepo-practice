@@ -8,6 +8,7 @@
 - `cache/` — Redis 캐시. `CachePort` 인터페이스 + `CACHE_PORT` 심볼 토큰, `RedisCacheAdapter` 구현. **TTL은 밀리초 단위**로 받아 `PX`로 넘긴다.
 - `stream/` — Redis Stream 프로듀서/컨슈머. 비동기 메시징(구 Kafka).
 - `storage/` — AWS S3 파일 업로드. `StoragePort` 인터페이스 + `STORAGE_PORT` 심볼 토큰, `S3StorageAdapter` 구현. 업로드 후 **DB에 영구 저장될 공개 URL**을 반환한다(만료되는 presigned URL을 쓸 수 없는 이유). 운영 버킷은 비공개라 `ASSET_BASE_URL`(CloudFront 도메인)을 접두사로 쓰고, 미설정 시 S3 정적 URL로 폴백한다.
+- `mail/` — AWS SES 메일 발송(회원가입 인증 코드). `MailPort` 인터페이스 + `MAIL_PORT` 심볼 토큰, `SesMailAdapter` 구현. `SESClient`는 `SES_CLIENT` 토큰으로 따로 주입한다. 자격 증명은 AWS SDK 기본 체인에 맡기고(운영은 ECS task role) region과 `SES_FROM_EMAIL`만 설정한다.
 - `http/` — 외부 HTTP 호출(매체 포스트백 재전송에 사용). `HttpPort` 인터페이스 + `HTTP_PORT` 심볼 토큰, global fetch 기반 `FetchHttpAdapter` 구현. 타임아웃은 `AbortSignal.timeout`.
 
 ## 포트-어댑터 패턴

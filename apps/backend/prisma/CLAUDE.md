@@ -36,7 +36,7 @@
 
 - **`daily_report`의 관계가 `campaign_id`가 아니라 `token`으로 연결됨** — tracking consumer는 클릭 집계 시 campaign을 조회하지 않고 viewCode에서 디코드한 token만으로 upsert한다. FK를 campaign_id로 바꾸면 트래킹 핫패스에 DB 조회가 강제되어 성능이 나빠진다. `campaign.token`은 uuid 기본값이라 잘 바뀌지 않는다.
 - **`postback.revenue`는 `String`, `daily_report.revenue`는 `Int`** — postback은 트래커 원본 매출(소수·통화 혼재 가능)을 손실 없이 보존한다. daily_report는 집계 카운터라 Int. 타입을 통일하려 하지 말 것(어느 쪽이든 손실). 매출 집계 정책(통화 변환·소수 처리)이 필요하면 그건 별도 설계 사안.
-- **`postback`은 삽입 위주** — 트래킹 파이프라인은 `createMany`만 한다. 어드민 로그 조회 API(`/postbacks/install·event·unregistered`)가 추가되면서 조회 인덱스 3개(`[token, installed_at]`, `[token, evented_at]`, `[view_code]`)를 뒀다(`20260815100000`).
+- **`postback`은 삽입 위주** — 트래킹 파이프라인은 `createMany`만 한다. 어드민 로그 조회 API(`/postbacks/install·event·unregistered`)를 위해 조회 인덱스를 뒀다. 조회 일자 기준이 트래커 시각(`installed_at`·`evented_at`)에서 **수신 시각(`created_at`)** 으로 바뀌면서 인덱스 두 개를 `[token, created_at]` 하나로 대체했고(`20260906000000`), `[view_code]`가 남아 있다. daily_report 카운트와 로그 건수를 맞추려면 두 집계가 같은 시각 기준이어야 한다.
 - **`daily_report`의 인덱스가 unique 하나로 부족했다** — `@@unique([view_code, created_date])`는 선두가 `view_code`라 `created_date`·`token`으로 들어오는 조회 4개(dashboard·daily·dailyDetail·detail)를 커버하지 못한다. `@@index([created_date])`와 `@@index([token, created_date])`를 따로 둔 이유다(`20260830000000`). `token`은 FK지만 PostgreSQL이 FK 인덱스를 자동 생성하지 않는다.
 - 두 테이블 모두 데이터가 크게 쌓이면 보존 기간 정책·날짜 파티셔닝은 별도 설계 사안.
 
@@ -44,4 +44,5 @@
 
 - `migrations/`와 `migration_lock.toml`은 **버전 관리에 포함**한다. 손으로 편집하지 않는다.
 - 이미 적용·커밋된 마이그레이션 SQL은 수정하지 않는다. 변경이 필요하면 새 마이그레이션을 만든다.
+- **운영 테이블의 인덱스 교체는 `CreateIndex`를 `DropIndex`보다 먼저 쓴다.** 마이그레이션 파일은 한 트랜잭션이라 `DropIndex`의 ACCESS EXCLUSIVE 락이 커밋까지 유지되고, 앞에 두면 인덱스 빌드(수 분) 내내 조회까지 막힌다. `CreateIndex`의 SHARE 락은 쓰기만 막는다(쓰기는 Redis Stream에 쌓였다가 처리된다). 예: `20260906000000_postback_log_index_by_created_at`.
 - 컬럼/테이블 **리네임**은 Prisma가 drop+create로 해석해 데이터가 날아갈 수 있다. 생성된 SQL을 열어 `RENAME`인지 확인하고, 아니면 SQL을 손봐서 데이터를 보존한다(예: `daily_statistic → daily_report` 리네임 마이그레이션 참고).

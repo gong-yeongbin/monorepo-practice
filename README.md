@@ -10,12 +10,13 @@
 
 - **어드민 리소스 관리**: 광고주·광고·캠페인·매체·트래커 CRUD와 대시보드 조회
 - **인증·인가**: 이메일 인증 코드 기반 2단계 회원가입 + 관리자 승인 + JWT access/refresh 토큰. 역할(`USER`⊂`ADMIN`⊂`DEVELOPER`) 기반으로 어드민 API 접근을 제한 (`USER`는 대시보드 조회만)
-- **트래킹 처리**: 다양한 트래킹 솔루션(AppsFlyer, Adjust, Airbridge, AdbrixRemaster) 지원
-- **포스트백 전송**: 매체사로 포스트백 전송 (공개 수신 엔드포인트는 IP 기준 rate limit)
+- **트래킹 처리**: 다양한 트래킹 솔루션(AppsFlyer, Adjust, Airbridge, AdbrixRemaster, Singular) 지원
+- **포스트백 전송**: 매체사로 포스트백 전송 (수신 엔드포인트는 IP 기준 rate limit)
 - **일별 집계**: `daily_report`로 클릭/설치/이벤트/매출 등을 KST 기준 일별 집계
 - **예약 변경**: 캠페인 상위 트래커 URL을 지정 시각에 일괄 변경 (스케줄러 실행)
 - **비동기 메시징**: Redis Stream 기반 consumer group으로 트래킹·포스트백 배치 처리 (API·컨슈머 프로세스 분리 가능)
 - **API 문서**: Swagger(OpenAPI) UI 제공 (`/docs`)
+- **포트 분리**: 한 프로세스가 어드민 API(3001)와 트래킹·포스트백(3002)을 따로 listen하고, 트래킹 포트에서는 공개 경로만 통과 (운영에서 트래킹을 L4 NLB로 받기 때문)
 
 ## 🏗️ 아키텍처
 
@@ -27,7 +28,7 @@
 │   ┌──────────────┐   HTTP(axios)   ┌──────────────┐            │
 │   │   frontend   │ ──────────────▶ │   backend    │            │
 │   │ (React/Vite) │                 │  (NestJS)    │            │
-│   │    :3000     │                 │    :3001     │            │
+│   │    :3000     │                 │  :3001/:3002 │            │
 │   └──────────────┘                 └──────┬───────┘            │
 │                                           │                    │
 │                        Prisma ────────────┼──── Redis          │
@@ -44,6 +45,8 @@
 └───────────────────────────────────────────────────────────────┘
 ```
 
+backend 프로세스 하나가 포트 둘을 listen합니다 — 어드민 API는 `:3001`, 매체·트래커가 호출하는 트래킹·포스트백은 `:3002`이며 트래킹 포트에서는 공개 경로만 통과합니다. 운영에서 트래킹을 경로 분기가 불가능한 L4 NLB로 받기 때문이고, CORS도 어드민 포트에만 붙습니다.
+
 ## 🛠️ 기술 스택
 
 ### 백엔드 (`apps/backend`)
@@ -52,7 +55,7 @@
 - **Prisma 7**: ORM 및 데이터베이스 관리 (`@prisma/adapter-pg` driver adapter)
 - **ioredis**: Redis Stream(비동기 메시징) + Redis 캐시 클라이언트
 - **@nestjs/jwt / bcrypt**: JWT access·refresh 토큰과 비밀번호 해싱
-- **@nestjs/throttler**: 공개 엔드포인트(트래킹·포스트백) IP 기준 rate limit
+- **@nestjs/throttler**: 포스트백 수신 엔드포인트 IP 기준 rate limit (트래킹은 키 카디널리티 문제로 제외)
 - **@nestjs/schedule**: 트래커 URL 예약 변경 스케줄러
 - **@aws-sdk/client-ses / client-s3**: 회원가입 인증 코드 메일 발송, advertising 이미지 업로드
 - **@nestjs/swagger**: OpenAPI 문서 생성
@@ -83,9 +86,9 @@
 ```
 monorepo-practice/
 ├── apps/                          # 애플리케이션
-│   ├── backend/                   # NestJS API (:3001)
+│   ├── backend/                   # NestJS API (어드민 :3001 / 트래킹 :3002)
 │   │   ├── src/
-│   │   │   ├── common/            # 순수 유틸 (date, view-code)
+│   │   │   ├── common/            # 순수 유틸 (date, view-code, cache-key)
 │   │   │   ├── infra/             # 외부 연결 어댑터
 │   │   │   │   ├── cache/         # Redis 캐시 (포트/어댑터)
 │   │   │   │   ├── stream/        # Redis Stream 프로듀서/컨슈머
@@ -108,10 +111,11 @@ monorepo-practice/
 │   │   │   │   ├── postback/      # 포스트백 처리
 │   │   │   │   └── reservation/   # 트래커 URL 예약 변경
 │   │   │   ├── trackers/          # 트래커별 파라미터 매핑 (anti-corruption)
-│   │   │   ├── main.ts
+│   │   │   ├── main.ts            # 어드민 3001 + 트래킹 3002 두 포트 바인딩
 │   │   │   └── main.consumer.ts   # 컨슈머 전용 엔트리포인트 (APP_ROLE=consumer)
 │   │   ├── prisma/                # Prisma 스키마 및 마이그레이션
 │   │   ├── http/                  # 엔드포인트별 HTTP 요청 파일
+│   │   ├── Dockerfile             # ECS 배포 이미지 (arm64)
 │   │   └── README.md
 │   │
 │   └── frontend/                  # React 어드민 (:3000)
@@ -119,7 +123,8 @@ monorepo-practice/
 │       │   ├── app/               # 진입점·라우팅·MobX Store·전역 스타일
 │       │   ├── features/          # 기능별 화면 (home/login/signup/advertising/detail/media/tracker/developer)
 │       │   ├── shared/            # 공용 api / lib / ui
-│       │   └── mocks/             # MSW 핸들러
+│       │   ├── mocks/             # MSW 핸들러
+│       │   └── images/            # 정적 이미지
 │       ├── vite.config.ts
 │       └── README.md
 │
@@ -127,6 +132,7 @@ monorepo-practice/
 │   ├── eslint-config/             # ESLint / Prettier 설정 (@repo/eslint-config)
 │   │   ├── base.js
 │   │   ├── nestjs.js
+│   │   ├── react.js
 │   │   └── prettier.js
 │   │
 │   └── typescript-config/         # TypeScript 설정 (@repo/typescript-config)
@@ -136,11 +142,11 @@ monorepo-practice/
 ├── infra/
 │   └── terraform/                 # AWS 배포 인프라 (ECS Fargate·RDS·ElastiCache·S3+CloudFront)
 │
-├── docs/
-│   └── migration/                 # admin-backend 이관 계획·체크리스트·맥락 메모
+├── docs/                          # 작업별 계획·체크리스트·맥락 메모 (완료된 작업 기록)
+│   ├── migration/                 # 레거시 admin-backend 이관
+│   └── view-code-decode/          # view_code 저장 형식 통일
 │
-├── checklist.md                   # 진행 중 작업 체크리스트
-├── context-notes.md               # 작업 결정 사항과 그 이유
+├── .github/workflows/             # main push 시 backend·frontend 자동 배포
 ├── docker-compose.yml             # Docker Compose 설정
 ├── turbo.json                     # Turborepo 설정
 ├── pnpm-workspace.yaml            # pnpm 워크스페이스 설정
@@ -209,8 +215,9 @@ pnpm docker:down
 # 데이터베이스
 DATABASE_URL="postgresql://postgres:1234@localhost:5432/mecross"
 
-# 서버
+# 서버 (어드민 API 포트 / 트래킹·포스트백 포트, 후자는 미설정 시 3002)
 PORT=3001
+TRACKING_PORT=3002
 
 # Redis (캐시·스트림 공용) — 컨슈머 이름은 미설정 시 consumer-<호스트명>-<PID>로 자동 생성
 VALKEY="redis://localhost:6379"
@@ -319,6 +326,7 @@ pnpm dev
 
 - `@repo/eslint-config/base`: 기본 설정
 - `@repo/eslint-config/nestjs`: NestJS 설정 (type-checked)
+- `@repo/eslint-config/react`: React 설정 (react-hooks, jsx-a11y)
 - `@repo/eslint-config/prettier`: 공유 Prettier 설정
 
 ### TypeScript (`packages/typescript-config`)
@@ -490,7 +498,20 @@ pnpm preview
 
 ### AWS 배포
 
-ECS Fargate·RDS PostgreSQL·ElastiCache Valkey·S3+CloudFront 구성의 Terraform 코드가 `infra/terraform/`에 있습니다. 아키텍처·비용·배포 절차는 [infra/terraform/README.md](./infra/terraform/README.md)를 참고하세요.
+ECS Fargate·RDS PostgreSQL·ElastiCache Valkey·S3+CloudFront 구성의 Terraform 코드가 `infra/terraform/`에 있습니다. 2026-09-03에 레거시에서 컷오버해 **이 스택이 실트래픽을 받고 있습니다.** 아키텍처·비용·운영 접속(bastion) 절차는 [infra/terraform/README.md](./infra/terraform/README.md)를 참고하세요.
+
+### CI/CD
+
+main 브랜치 push는 GitHub Actions가 배포까지 수행합니다(OIDC 역할, 장기 키 없음).
+
+| 워크플로 | 트리거 경로 | 동작 |
+|---|---|---|
+| `deploy-backend.yml` | `apps/backend/**`, `packages/**`, 락파일 | arm64 러너에서 이미지 빌드 → ECR push → **마이그레이션 태스크**(`prisma migrate deploy`) → ECS 서비스 강제 재배포 |
+| `deploy-frontend.yml` | `apps/frontend/**`, `packages/**`, 락파일 | Vite 빌드 → S3 sync → CloudFront 무효화 |
+
+마이그레이션은 새 코드 배포 **전에** 별도 Fargate 태스크로 돌고, 실패하면 배포가 중단됩니다. 따라서 운영에는 `pnpm db:deploy`를 손으로 실행하지 않습니다.
+
+프론트 배포는 저장소 Variables에 `ADMIN_API_URL`·`CLOUDFRONT_DISTRIBUTION_ID`(각각 `terraform output admin_api_url` / `cloudfront_distribution_id`)가 있어야 합니다.
 
 ## 🤝 기여 가이드
 

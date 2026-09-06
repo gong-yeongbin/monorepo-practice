@@ -12,4 +12,5 @@
 ## 주의
 
 - 새 라우트를 추가하면 `app.tsx`의 `<Routes>`에 등록한다. 중첩 라우트는 부모 화면이 `<Outlet />`을 렌더해야 한다(`features/home/home.tsx`가 셸 역할).
+- 역할 제한이 필요한 라우트는 `PrivateRoute`(`shared/ui/private-route.tsx`) 그룹 안에 넣는다. 운영 화면은 `allow={['DEVELOPER', 'ADMIN']}` 그룹, `developer`는 `allow={['DEVELOPER']}`다. USER에게 열 화면만 그룹 밖에 둔다.
 - `Store`에 서버에서 온 목록·상세 데이터를 캐싱하지 말 것. 서버 상태는 react-query가 소유한다.

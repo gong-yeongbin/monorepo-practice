@@ -1,6 +1,8 @@
 # Backend
 
-광고 관리 플랫폼(광고주/캠페인/매체/트래커)과 Redis Stream 기반 트래킹·포스트백 처리를 담당하는 API 서버입니다. 기본 포트는 3001입니다.
+광고 관리 플랫폼(광고주/캠페인/매체/트래커)과 Redis Stream 기반 트래킹·포스트백 처리를 담당하는 API 서버입니다.
+
+**포트를 둘 씁니다.** 같은 express 인스턴스를 두 서버로 노출해 어드민 API는 `PORT`(기본 3001), 트래킹·포스트백은 `TRACKING_PORT`(기본 3002)로 받습니다. 트래킹 포트에서는 공개 경로(`/tracking`, `/:name/install`, `/:name/event`, `/health`)만 통과하고 나머지는 404입니다 — 운영에서 트래킹을 NLB(L4, 평문 80)로 받는데 NLB가 경로를 못 거르므로 앱이 진입 포트로 역할을 가릅니다(`src/main.ts`). CORS도 어드민 포트에만 겁니다.
 
 ## 기술 스택
 
@@ -16,7 +18,7 @@
 
 ```
 src/
-├── main.ts                    # 진입점 (전역 ValidationPipe, PORT 바인딩)
+├── main.ts                    # 진입점 (전역 ValidationPipe, 어드민 PORT + 트래킹 TRACKING_PORT 바인딩)
 ├── main.consumer.ts           # 컨슈머 전용 진입점 (APP_ROLE=consumer 강제)
 ├── app.module.ts              # 루트 모듈
 ├── app.controller.ts          # GET /health
@@ -44,7 +46,7 @@ src/
 │   ├── tracking/              # 트래킹 클릭 수신·리다이렉트
 │   └── postback/              # 트래커 포스트백 수신
 └── trackers/                  # 트래커 벤더별 파라미터 정의 레지스트리
-                               #   (appsflyer / adjust / airbridge / adbrix-remaster)
+                               #   (appsflyer / adjust / airbridge / adbrix-remaster / singular)
 ```
 
 ## 실행
@@ -87,16 +89,20 @@ REDIS_STREAM_CONSUMER=""
 # 운영에서 API·컨슈머를 분리 기동할 때 API 측에 반드시 api를 지정 (컨슈머는 start:consumer가 consumer로 강제)
 APP_ROLE="all"
 
-# Redis Stream 튜닝 — XADD MAXLEN 상한(기본 100000), XAUTOCLAIM 회수 최소 유휴 ms(기본 60000)
+# Redis Stream 튜닝 — XADD MAXLEN 상한(기본 100000), XAUTOCLAIM 회수 최소 유휴 ms(기본 60000),
+# 배치를 합치려고 기다리는 시간 ms(기본 200). 나머지 튜닝값(READ_COUNT·BLOCK_MS·MAX_DELIVERIES)은
+# 환경변수가 아니라 src/infra/stream/redis-stream.constants.ts의 상수다.
 REDIS_STREAM_MAXLEN=100000
 STREAM_CLAIM_MIN_IDLE_MS=60000
+STREAM_LINGER_MS=200
 
 # DB 커넥션 풀 크기 (미설정 시 pg Pool 기본 10, 권장: API 30 / 컨슈머 10, 합계 < PostgreSQL max_connections)
 DB_CONNECTION_LIMIT=10
 
-# 공개 엔드포인트 rate limit — 60초 창, IP 기준 (기본 tracking 300 / postback 600)
+# 포스트백 rate limit — 60초 창, IP 기준 (기본 600). ThrottlerGuard는 PostbackController에만 붙는다.
 # in-memory 저장소라 API 단일 프로세스 전제. 수평 확장 시 Redis storage 도입 필요.
-THROTTLE_TRACKING_LIMIT=300
+# 트래킹에는 rate limit이 없다 — 기본 인메모리 저장소가 IP 키를 지우지 않아 카디널리티가 무한한
+# 이 경로에서 메모리·CPU를 무한히 먹는다(근거는 tracking.controller.ts 주석).
 THROTTLE_POSTBACK_LIMIT=600
 
 # 프록시(LB) 뒤 배포 시 1로 설정 — X-Forwarded-For 기반 클라이언트 IP 식별(rate limit 전제)
@@ -108,15 +114,22 @@ AWS_REGION="ap-northeast-2"
 SES_FROM_EMAIL="no-reply@example.com"
 
 # AWS S3 — advertising 이미지 업로드 저장소
-# 버킷은 업로드 객체(advertising/*)의 public read(s3:GetObject)를 허용해야 함 — URL이 DB에 영구 저장됨
 S3_BUCKET="my-bucket"
+
+# 업로드된 이미지 URL의 접두사. 저장 시점의 절대 URL이 advertising.image에 영구 저장되므로 배포 후
+# 바꾸면 기존 이미지가 깨진다. 운영은 터라폼이 CloudFront 도메인(asset.<도메인>)을 주입한다 —
+# 앱 버킷이 비공개라 S3 정적 URL은 403이다. 미설정 시 S3 정적 URL로 폴백한다.
+ASSET_BASE_URL="https://asset.<도메인>"
 
 # JWT — signin·refresh 토큰 서명 키 (없으면 로그인 시점에 에러)
 JWT_ACCESS_SECRET="change-me-access"
 JWT_REFRESH_SECRET="change-me-refresh"
 
-# 서버
+# 서버 — 어드민 API 포트
 PORT=3001
+
+# 트래킹·포스트백 수신 포트 (미설정 시 3002). 이 포트에서는 공개 경로만 통과한다.
+TRACKING_PORT=3002
 
 # 어드민 API의 CORS 허용 origin (미설정 시 http://localhost:3000)
 # 어드민 포트에만 적용된다 — 트래킹 포트는 응답 바이트 절감을 위해 CORS 헤더를 붙이지 않는다.
@@ -156,7 +169,9 @@ CORS_ORIGIN="http://localhost:3000"
 | POST | `/auth/signin` | 로그인 — access(15분)·refresh(7일) 토큰 발급 (미승인 user는 403) |
 | POST | `/auth/refresh` | refresh token으로 access token 재발급 |
 
-### 트래킹·포스트백 — 공개 (인증 대신 IP 기준 rate limit)
+### 트래킹·포스트백 — 공개 (`@Public()`)
+
+어드민 포트(3001)와 트래킹 포트(3002) 양쪽에서 받습니다. 포스트백만 IP 기준 rate limit(`ThrottlerGuard`)이 걸려 있고, 트래킹에는 없습니다(위 환경 변수 주석 참고).
 
 | 메서드 | 경로 | 설명 |
 |---|---|---|

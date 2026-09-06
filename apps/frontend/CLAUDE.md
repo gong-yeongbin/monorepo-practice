@@ -13,7 +13,7 @@
 - `pnpm lint` — `eslint src/**/*.{ts,tsx}`. `pnpm check-types` — `tsc --noEmit`.
 - `pnpm test` — Vitest 1회 실행(jsdom 환경). `pnpm test:watch`로 watch 모드. `pnpm test:coverage`로 커버리지. 테스트 설정은 `vite.config.ts`의 `test` 필드에 있고, `@/*` 별칭을 그대로 공유한다.
 
-테스트는 `src/**/*.{test,spec}.{ts,tsx}`로 콜로케이션한다. 현재는 React 비의존 순수 로직 위주다 — `shared/lib`(get-cell·get-total), `shared/api`(CVR 파생). `getTotal`은 `useMemo`를 쓰므로 `@testing-library/react`로 렌더해 검증한다.
+테스트는 `src/**/*.{test,spec}.{ts,tsx}`로 콜로케이션한다. 현재는 React 비의존 순수 로직 위주다 — `shared/lib`(get-cell·get-total·auth·postback-workbook), `shared/api`(CVR 파생·응답 매퍼). `getTotal`은 `useMemo`를 쓰므로 `@testing-library/react`로 렌더해 검증한다.
 
 ## 커버리지 기준 (엄수)
 
@@ -27,8 +27,8 @@
 
 - `src/app` — 앱 부트스트랩. `index.tsx`(진입점), `app.tsx`(라우팅·Provider), `store.tsx`(MobX Store + Context), `global-styles.tsx`(styled-components 전역 스타일·공용 styled 컴포넌트).
 - `src/features/<기능>` — 기능별 화면. `home`/`login`/`signup`/`advertising`/`detail`/`media`/`tracker`/`developer`. 중첩 라우트는 하위 폴더로(`advertising/campaigns/events`, `detail/change`, `detail/daily/daily-detail`).
-- `src/shared` — 공용. `api`(axios 인스턴스 + `api` 객체), `lib`(get-cell·get-total 등 순수 헬퍼), `ui`(info-card·modals·private-route·select-options 등 재사용 컴포넌트).
-- `src/mocks` — MSW 목 서버(`handlers.ts`, `browser.ts`).
+- `src/shared` — 공용. `api`(axios 인스턴스 + `api` 객체 + 응답 매퍼), `lib`(get-cell·get-total·auth·postback-workbook 등 순수 헬퍼), `ui`(info-card·modals·private-route·select-options 등 재사용 컴포넌트).
+- `src/mocks` — MSW 목 서버(`handlers.ts`, `browser.ts`). `src/images`에는 정적 이미지(로고)만 둔다.
 - 경로 별칭 `@/*` → `src/*` (vite.config.ts + tsconfig.json 양쪽에 설정).
 
 ## 네이밍 컨벤션 (엄수)
@@ -50,3 +50,4 @@
 - **개발 모드에서 MSW는 backend에 없는 엔드포인트만 목킹한다.** `index.tsx`가 `worker.start({ onUnhandledRequest: 'bypass' })`로 워커를 켜고, 핸들러에 없는 요청은 실제 backend(3001)로 통과한다. 목 대상 목록은 `src/mocks/CLAUDE.md` 참고.
 - **`.env`에 `VITE_API_URL=http://localhost:3001`이 필요하다**(gitignore되므로 직접 만든다). 없으면 axios baseURL이 undefined가 되어 실제 backend 호출과 MSW 매칭이 모두 어긋난다.
 - react-query v5는 `useQuery`별 `onError`가 없다. 공통 에러 처리는 `app.tsx`의 `QueryCache.onError` 전역 핸들러로 한다.
+- **역할 가드는 화면이 아니라 라우트에 건다.** `app.tsx`에서 `PrivateRoute`가 운영 화면(`:id/change`·`advertising`·`media`·`tracker`)을 `['DEVELOPER', 'ADMIN']`으로, `developer`를 `['DEVELOPER']`로 감싼다. 새 운영 화면은 이 그룹 안에 넣는다.
