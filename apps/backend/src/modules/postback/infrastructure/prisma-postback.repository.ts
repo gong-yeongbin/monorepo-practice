@@ -3,6 +3,11 @@ import { PrismaService } from '@infra/prisma/prisma.service';
 import { Postback, PostbackLog } from '@postback/domain/postback.entity';
 import { PostbackLogFilter, PostbackRepository, UnregisteredCount } from '@postback/domain/postback.repository';
 
+// 로그 조회의 일자 기준은 created_at(포스트백 수신 시각)이다.
+// 트래커가 알려준 installed_at·evented_at으로 자르면 늦게 도착한 포스트백이
+// daily_report(수신 시각의 KST 일자로 집계 — postback-consumer.use-case의 kstBaseDate)와 다른 날에 걸려
+// 카운트는 올라갔는데 모달은 비어 보이는 불일치가 난다.
+
 // 로그 조회 select 목록(raw_query_params 제외 — 무겁고 화면에서 안 씀)
 const LOG_SELECT = {
 	tracker_name: true, event_name: true, click_id: true, pub_id: true, sub_id: true, view_code: true, token: true,
@@ -31,10 +36,10 @@ export class PrismaPostbackRepository implements PostbackRepository {
 				event_name: 'install',
 				...(filter.token && { token: filter.token }),
 				...(filter.view_code && { view_code: filter.view_code }),
-				installed_at: { gte: filter.start, lt: filter.end },
+				created_at: { gte: filter.start, lt: filter.end },
 			},
 			select: LOG_SELECT,
-			orderBy: { installed_at: 'desc' },
+			orderBy: { created_at: 'desc' },
 		});
 	}
 
@@ -45,10 +50,10 @@ export class PrismaPostbackRepository implements PostbackRepository {
 				event_name: { in: tracker_event_names },
 				...(filter.token && { token: filter.token }),
 				...(filter.view_code && { view_code: filter.view_code }),
-				evented_at: { gte: filter.start, lt: filter.end },
+				created_at: { gte: filter.start, lt: filter.end },
 			},
 			select: LOG_SELECT,
-			orderBy: { evented_at: 'desc' },
+			orderBy: { created_at: 'desc' },
 		});
 	}
 
@@ -56,7 +61,7 @@ export class PrismaPostbackRepository implements PostbackRepository {
 	async countUnregistered(token: string, registered_event_names: string[], start: Date, end: Date): Promise<UnregisteredCount[]> {
 		const rows = await this.prismaService.postback.groupBy({
 			by: ['event_name'],
-			where: { token, event_name: { notIn: registered_event_names }, evented_at: { gte: start, lt: end } },
+			where: { token, event_name: { notIn: registered_event_names }, created_at: { gte: start, lt: end } },
 			_count: { _all: true },
 		});
 

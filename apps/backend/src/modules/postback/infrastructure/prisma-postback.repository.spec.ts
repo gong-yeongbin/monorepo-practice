@@ -32,15 +32,15 @@ describe('PrismaPostbackRepository', () => {
 		expect(update).toHaveBeenCalledWith({ where: { id: BigInt(7) }, data: { media_sent_at: sentAt } });
 	});
 
-	it('findInstalls는 token 필터와 installed_at 범위로 event_name=install만 조회한다', async () => {
+	it('findInstalls는 token 필터와 created_at 범위로 event_name=install만 조회한다', async () => {
 		const rows = [{ event_name: 'install' }];
 		findMany.mockResolvedValue(rows);
 
 		expect(await repository.findInstalls({ token: 'tok', ...range })).toBe(rows);
 		expect(findMany).toHaveBeenCalledWith(
 			expect.objectContaining({
-				where: { event_name: 'install', token: 'tok', installed_at: { gte: range.start, lt: range.end } },
-				orderBy: { installed_at: 'desc' },
+				where: { event_name: 'install', token: 'tok', created_at: { gte: range.start, lt: range.end } },
+				orderBy: { created_at: 'desc' },
 			})
 		);
 	});
@@ -55,15 +55,15 @@ describe('PrismaPostbackRepository', () => {
 		expect(call.where.view_code).toBe('vc1');
 	});
 
-	it('findEvents는 트래커 이벤트명 목록과 evented_at 범위로 조회한다', async () => {
+	it('findEvents는 트래커 이벤트명 목록과 created_at 범위로 조회한다', async () => {
 		const rows = [{ event_name: 'af_purchase' }];
 		findMany.mockResolvedValue(rows);
 
 		expect(await repository.findEvents({ token: 'tok', view_code: 'vc1', ...range }, ['af_purchase'])).toBe(rows);
 		expect(findMany).toHaveBeenCalledWith(
 			expect.objectContaining({
-				where: { event_name: { in: ['af_purchase'] }, token: 'tok', view_code: 'vc1', evented_at: { gte: range.start, lt: range.end } },
-				orderBy: { evented_at: 'desc' },
+				where: { event_name: { in: ['af_purchase'] }, token: 'tok', view_code: 'vc1', created_at: { gte: range.start, lt: range.end } },
+				orderBy: { created_at: 'desc' },
 			})
 		);
 	});
@@ -83,7 +83,7 @@ describe('PrismaPostbackRepository', () => {
 		expect(groupBy).toHaveBeenCalledWith(
 			expect.objectContaining({
 				by: ['event_name'],
-				where: { token: 'tok', event_name: { notIn: ['install', 'af_purchase'] }, evented_at: { gte: range.start, lt: range.end } },
+				where: { token: 'tok', event_name: { notIn: ['install', 'af_purchase'] }, created_at: { gte: range.start, lt: range.end } },
 			})
 		);
 	});

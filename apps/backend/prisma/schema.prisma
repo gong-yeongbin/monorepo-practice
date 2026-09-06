@@ -160,8 +160,9 @@ model postback {
   created_at       DateTime  @default(now()) @db.Timestamp(0)
 
   // 어드민 로그 조회(인스톨·이벤트·미등록 모달)용 인덱스. 삽입 전용이던 설계에 조회 API가 추가되면서 도입했다.
-  @@index([token, installed_at])
-  @@index([token, evented_at])
+  // 조회 일자 기준이 트래커 시각(installed_at·evented_at)에서 수신 시각(created_at)으로 바뀌면서
+  // [token, installed_at]·[token, evented_at]을 [token, created_at] 하나로 대체했다(prisma-postback.repository 주석 참고).
+  @@index([token, created_at])
   @@index([view_code])
 }
 
