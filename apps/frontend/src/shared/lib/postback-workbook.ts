@@ -48,7 +48,7 @@ export const buildPostbackSheets = (logs: PostbackExportLogs, campaigns: Array<C
 	};
 };
 
-// language·sendUrl은 backend postback 테이블에 없어 항상 빈 값이라 컬럼에서 뺐다(api.tsx의 매퍼 주석 참고)
+// sendUrl은 backend postback 테이블에 없어 항상 빈 값이라 컬럼에서 뺐다(api.tsx의 매퍼 주석 참고)
 export const INSTALL_COLUMNS: Array<Column<Named<InstallExportRow>>> = [
 	{ header: 'CAMPAIGN', width: 24, cell: row => row.campaignName },
 	{ header: 'MEDIA', width: 12, cell: row => row.mediaName },
@@ -57,8 +57,9 @@ export const INSTALL_COLUMNS: Array<Column<Named<InstallExportRow>>> = [
 	{ header: 'MANUFACTURER', width: 16, cell: row => row.deviceManufacturer },
 	{ header: 'DEVICE TYPE', width: 14, cell: row => row.deviceType },
 	{ header: 'OS', width: 10, cell: row => row.os },
-	{ header: 'OS VERSION', width: 12, cell: row => row.osVersion },
 	{ header: 'COUNTRY', width: 10, cell: row => row.country },
+	{ header: 'LANGUAGE', width: 10, cell: row => row.language },
+	{ header: 'APP VERSION', width: 12, cell: row => row.appVersion },
 	{ header: 'IP', width: 16, cell: row => row.ip },
 	{ header: 'ADID', width: 38, cell: row => row.adid },
 	{ header: 'CLICK ID', width: 38, cell: row => row.clickId },
@@ -79,8 +80,9 @@ export const EVENT_COLUMNS: Array<Column<Named<EventExportRow>>> = [
 	{ header: 'MANUFACTURER', width: 16, cell: row => row.deviceManufacturer },
 	{ header: 'DEVICE TYPE', width: 14, cell: row => row.deviceType },
 	{ header: 'OS', width: 10, cell: row => row.os },
-	{ header: 'OS VERSION', width: 12, cell: row => row.osVersion },
 	{ header: 'COUNTRY', width: 10, cell: row => row.country },
+	{ header: 'LANGUAGE', width: 10, cell: row => row.language },
+	{ header: 'APP VERSION', width: 12, cell: row => row.appVersion },
 	{ header: 'IP', width: 16, cell: row => row.ip },
 	{ header: 'ADID', width: 38, cell: row => row.adid },
 	{ header: 'CLICK ID', width: 38, cell: row => row.clickId },

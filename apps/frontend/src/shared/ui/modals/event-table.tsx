@@ -12,9 +12,9 @@ export interface EventModalColumns {
 	deviceManufacturer: string;
 	deviceType: string;
 	os: string;
-	osVersion: string;
 	country: string;
 	language: string;
+	appVersion: string;
 	ip: string;
 	adid: string;
 	clickId: string;
@@ -61,7 +61,6 @@ const EventTable = observer(
 			{ title: 'MANUFACTURER', dataIndex: 'deviceManufacturer', align: 'center', width: 110, render: dash },
 			{ title: 'DEVICE TYPE', dataIndex: 'deviceType', align: 'center', width: 100, render: dash },
 			{ title: 'OS', dataIndex: 'os', align: 'center', width: 80, render: dash },
-			{ title: 'OS VERSION', dataIndex: 'osVersion', align: 'center', width: 90, render: dash },
 			{ title: 'COUNTRY', dataIndex: 'country', align: 'center', width: 80, render: dash },
 			{
 				title: 'LANGUAGE',
@@ -70,6 +69,7 @@ const EventTable = observer(
 				width: 90,
 				render: value => (value ? (value === '한국어' ? 'KO' : value) : '-'),
 			},
+			{ title: 'APP VERSION', dataIndex: 'appVersion', align: 'center', width: 100, render: dash },
 			{ title: 'IP', dataIndex: 'ip', align: 'center', width: 120, render: dash },
 			{ title: 'ADID', dataIndex: 'adid', align: 'center', width: 150, render: dash },
 			{ title: 'CLICK ID', dataIndex: 'clickId', align: 'center', width: 150, render: dash },

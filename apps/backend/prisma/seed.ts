@@ -238,6 +238,9 @@ async function main() {
 				idfa: null,
 				ip: '127.0.0.1',
 				country_code: 'KR',
+				// appsflyer는 언어를 '한국어'처럼 표시명으로 보낸다(postback-samples의 원본과 동일). app_version은 실제론 안 주지만 모달·엑셀 컬럼 확인용으로 채운다
+				language: '한국어',
+				app_version: '1.0.0',
 				raw_query_params: JSON.stringify({ seed: true }),
 			};
 			// 인스톨 — daily_report.install과 동일 건수 (event_name='install' + installed_at 기준 조회)

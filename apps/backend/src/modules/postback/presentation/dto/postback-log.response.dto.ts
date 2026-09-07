@@ -38,6 +38,10 @@ export class PostbackLogResponse implements PostbackLog {
 
 	carrier: string | null;
 
+	language: string | null;
+
+	app_version: string | null;
+
 	clicked_at: Date | string | null;
 
 	installed_at: Date | string | null;

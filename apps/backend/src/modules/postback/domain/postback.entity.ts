@@ -31,9 +31,8 @@ export interface Postback {
 }
 
 // 어드민 로그 조회용 레코드. raw_query_params는 무겁고 화면에서 안 쓰므로 제외한다.
-// language·app_version은 수집만 하고 아직 화면에서 쓰지 않아 조회 select에서 빠져 있다.
 // country_code는 스키마상 nullable이라 저장 타입과 달리 null 허용으로 재정의한다.
-export interface PostbackLog extends Omit<Postback, 'raw_query_params' | 'country_code' | 'language' | 'app_version'> {
+export interface PostbackLog extends Omit<Postback, 'raw_query_params' | 'country_code'> {
 	country_code: string | null;
 }
 

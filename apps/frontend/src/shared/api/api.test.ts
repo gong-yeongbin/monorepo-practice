@@ -187,6 +187,8 @@ const postbackLogRow = {
 	os: null,
 	os_version: null,
 	carrier: null,
+	language: null,
+	app_version: null,
 	clicked_at: '2026-07-21T10:00:00.000Z',
 	installed_at: '2026-07-21T10:05:00.000Z',
 	evented_at: null,
@@ -196,16 +198,16 @@ const postbackLogRow = {
 };
 
 describe('mapInstallLogRow', () => {
-	it('snake_case 로그를 인스톨 모달 컬럼으로 매핑하고 backend에 없는 language·sendUrl은 빈 값으로 채운다', () => {
+	it('snake_case 로그를 인스톨 모달 컬럼으로 매핑하고 backend에 없는 sendUrl은 빈 값으로 채운다', () => {
 		expect(mapInstallLogRow(postbackLogRow)).toEqual({
 			carrier: '',
 			deviceModel: '',
 			deviceManufacturer: '',
 			deviceType: '',
 			os: '',
-			osVersion: '',
 			country: 'KR',
 			language: '',
+			appVersion: '',
 			ip: '1.2.3.4',
 			adid: 'adid-1',
 			clickId: 'click-1',
@@ -227,7 +229,8 @@ describe('mapInstallLogRow', () => {
 			device_manufacturer: 'Apple',
 			device_type: 'phone',
 			os: 'iOS',
-			os_version: '17.4',
+			language: 'ko',
+			app_version: '1.2.3',
 		});
 		expect(row).toMatchObject({
 			carrier: 'SKT',
@@ -235,7 +238,8 @@ describe('mapInstallLogRow', () => {
 			deviceManufacturer: 'Apple',
 			deviceType: 'phone',
 			os: 'iOS',
-			osVersion: '17.4',
+			language: 'ko',
+			appVersion: '1.2.3',
 		});
 	});
 
