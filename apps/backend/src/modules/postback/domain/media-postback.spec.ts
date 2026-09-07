@@ -7,7 +7,7 @@ import { Postback } from './postback.entity';
 describe('buildMediaPostbackUrl', () => {
 	const media: Media = {
 		install_postback_url: 'https://media.example.com/install?click_id={click_id}',
-		event_postback_url: 'https://media.example.com/event?click_id={click_id}&event={event}',
+		event_postback_url: 'https://media.example.com/event?click_id={click_id}&event={event_name}',
 	};
 
 	const config = (overrides: Partial<CampaignConfig> = {}): CampaignConfig => ({
@@ -39,13 +39,19 @@ describe('buildMediaPostbackUrl', () => {
 		expect(url).toBe('https://media.example.com/install?click_id=click-1');
 	});
 
-	it("install이 아니면 event 템플릿을 쓰고 {event}는 media_event_name으로 치환한다", () => {
+	it("install이 아니면 event 템플릿을 쓰고 {event_name}은 media_event_name으로 치환한다", () => {
 		const url = buildMediaPostbackUrl(media, config(), postback());
 		expect(url).toBe('https://media.example.com/event?click_id=click-1&event=media_purchase');
 	});
 
+	it('{android_device_id}·{ios_device_id}는 adid·idfa로 치환한다(레거시 매체 템플릿 표기)', () => {
+		const template = 'https://m.example.com/pb?event_type={event_name}&sub2={click_id}&sub5={android_device_id}&sub6={ios_device_id}';
+		const url = buildMediaPostbackUrl({ ...media, event_postback_url: template }, config(), postback());
+		expect(url).toBe('https://m.example.com/pb?event_type=media_purchase&sub2=click-1&sub5=adid-1&sub6=idfa-1');
+	});
+
 	it('params에 없는 플레이스홀더는 빈 문자열로 치환한다', () => {
-		const url = buildMediaPostbackUrl({ ...media, event_postback_url: 'https://m.example.com/e?x={unknown_key}&event={event}' }, config(), postback());
+		const url = buildMediaPostbackUrl({ ...media, event_postback_url: 'https://m.example.com/e?x={unknown_key}&event={event_name}' }, config(), postback());
 		expect(url).toBe('https://m.example.com/e?x=&event=media_purchase');
 	});
 

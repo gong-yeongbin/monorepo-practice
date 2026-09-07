@@ -12,7 +12,7 @@ export class CreateMediaDto {
 	@IsString()
 	install_postback_url: string;
 
-	@ApiProperty({ description: 'event 포스트백을 전달할 매체 URL', example: 'https://media.example.com/event?click_id={click_id}&event={event}' })
+	@ApiProperty({ description: 'event 포스트백을 전달할 매체 URL', example: 'https://media.example.com/event?click_id={click_id}&event={event_name}' })
 	@IsNotEmpty()
 	@IsString()
 	event_postback_url: string;

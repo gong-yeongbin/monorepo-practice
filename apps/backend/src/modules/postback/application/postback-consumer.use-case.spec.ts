@@ -12,7 +12,7 @@ describe('PostbackConsumerUseCase', () => {
 	const producer = { send: jest.fn() };
 	let useCase: PostbackConsumerUseCase;
 
-	const media = { install_postback_url: 'https://media.example.com/install?click_id={click_id}', event_postback_url: 'https://media.example.com/event?click_id={click_id}&event={event}' };
+	const media = { install_postback_url: 'https://media.example.com/install?click_id={click_id}', event_postback_url: 'https://media.example.com/event?click_id={click_id}&event={event_name}' };
 
 	beforeEach(async () => {
 		jest.clearAllMocks();

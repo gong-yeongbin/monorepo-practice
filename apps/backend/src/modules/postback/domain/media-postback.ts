@@ -19,9 +19,11 @@ export const buildMediaPostbackUrl = (media: Media, config: CampaignConfig, post
 	const template = config.admin_event_name === 'install' ? media.install_postback_url : media.event_postback_url;
 	const params: Record<string, string | null | undefined> = {
 		click_id: postback.click_id,
-		event: config.media_event_name,
+		event_name: config.media_event_name,
 		adid: postback.adid,
 		idfa: postback.idfa,
+		android_device_id: postback.adid,
+		ios_device_id: postback.idfa,
 		token: postback.token,
 		pub_id: postback.pub_id,
 		sub_id: postback.sub_id,

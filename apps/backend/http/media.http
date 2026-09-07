@@ -14,7 +14,7 @@ Content-Type: application/json
 {
 	"name": "테스트 매체",
 	"install_postback_url": "https://media.example.com/install?click_id={click_id}",
-	"event_postback_url": "https://media.example.com/event?click_id={click_id}&event={event}"
+	"event_postback_url": "https://media.example.com/event?click_id={click_id}&event={event_name}"
 }
 
 ### media 수정 — 전체 교체 방식 (3개 필드 모두 필요)
@@ -25,7 +25,7 @@ Content-Type: application/json
 {
 	"name": "수정된 매체",
 	"install_postback_url": "https://media.example.com/install2?click_id={click_id}",
-	"event_postback_url": "https://media.example.com/event2?click_id={click_id}&event={event}"
+	"event_postback_url": "https://media.example.com/event2?click_id={click_id}&event={event_name}"
 }
 
 ### media 삭제

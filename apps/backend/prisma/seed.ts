@@ -116,7 +116,7 @@ async function main() {
 		create: {
 			name: '테스트 매체',
 			install_postback_url: 'https://media.example.com/install?click_id={click_id}',
-			event_postback_url: 'https://media.example.com/event?click_id={click_id}&event={event}',
+			event_postback_url: 'https://media.example.com/event?click_id={click_id}&event={event_name}',
 		},
 	});
 
