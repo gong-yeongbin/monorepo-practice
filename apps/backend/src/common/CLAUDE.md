@@ -11,5 +11,5 @@
 ## 기존 유틸 (동작 주의)
 
 - `date.util.ts` — `kstBaseDate()`는 서버 타임존과 무관하게 **KST 기준 오늘**을 UTC 자정 `Date`로 반환한다. `daily_report.created_date`가 `@db.Date`라 이 형태를 기대한다. 날짜 집계 키를 만들 때 `new Date()` 대신 이걸 쓴다.
-- `cache-key.util.ts` — `campaignCacheKey(token)`. 트래킹 조회(캐시 적재)와 campaign 수정(무효화)이 반드시 같은 키를 써야 해서 한 곳에 둔다.
+- `cache-key.util.ts` — `campaignCacheKey(token)`. 트래킹 조회(캐시 적재)와 campaign 수정(무효화)이 반드시 같은 키를 써야 해서 한 곳에 둔다. `TRACKING_MODE_CACHE_KEY`는 전역 트래킹 차단 스위치라 캠페인별이 아니고 인자도 없어 상수다.
 - `view-code.util.ts` — `viewCodeCodec.encode/decode`는 viewCode를 AES-128-CBC로 다룬다. 복호화된 viewCode는 `광고코드:pubId:subId` 형태이며 `.split(':')`으로 분해한다(use-case에서 사용). `decode`는 실패 시 던지지 않고 입력값을 그대로 반환한다. `encode` 결과는 URL용 percent-encoding이 걸려 있으므로 DB(`postback`·`daily_report`)에 저장할 때는 `normalizeViewCode`로 풀어서 넣는다(원문에는 no-op, 잘못된 `%`면 입력 반환).

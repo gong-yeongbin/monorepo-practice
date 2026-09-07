@@ -1,9 +1,10 @@
-import { Controller, Get, Query, Res } from '@nestjs/common';
+import { Controller, Get, Query, Res, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { QueryDto } from '@tracking/application/dto/query.dto';
 import { TrackingUseCase } from '@tracking/application/tracking.use-case';
 import { Public } from '@auth/presentation/public.decorator';
+import { TrackingModeGuard } from '@tracking/presentation/tracking-mode.guard';
 
 @ApiTags('tracking')
 // 광고 클릭이 직접 호출하는 공개 엔드포인트 — 인증도 rate limit도 없다.
@@ -15,6 +16,8 @@ import { Public } from '@auth/presentation/public.decorator';
 // 대가로 어뷰징 방어가 없다 — NLB에는 WAF가 붙지 않아 인프라 단으로 올릴 수단도 현재 없다.
 // 되살리려면 공유 저장소(Valkey) 기반으로 붙일 것. 기본 저장소로 되돌리지 말 것.
 @Public()
+// 점검·긴급 차단용 스위치. 어드민(PATCH /tracking-mode)이 모드를 바꾸면 차단된 클릭은 503으로 나간다.
+@UseGuards(TrackingModeGuard)
 @Controller()
 export class TrackingController {
 	constructor(private readonly trackingUseCase: TrackingUseCase) {}
@@ -24,6 +27,7 @@ export class TrackingController {
 	@ApiResponse({ status: 302, description: '트래커 트래킹 URL로 리다이렉트' })
 	@ApiResponse({ status: 400, description: '요청 값 검증 실패' })
 	@ApiResponse({ status: 404, description: 'token에 해당하는 campaign 또는 tracker 없음' })
+	@ApiResponse({ status: 503, description: '트래킹 모드가 closed이거나, half에서 이번 요청이 차단됨' })
 	async tracking(@Query() query: QueryDto, @Res() res: Response) {
 		const url = await this.trackingUseCase.execute(query);
 		// res.redirect()는 HTML 바디("Found. Redirecting to...")를 붙인다.

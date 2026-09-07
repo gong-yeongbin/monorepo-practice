@@ -175,7 +175,7 @@ CORS_ORIGIN="http://localhost:3000"
 
 | 메서드 | 경로 | 설명 |
 |---|---|---|
-| GET | `/tracking` | 트래킹 클릭 수신 — 트래커 랜딩 URL로 리다이렉트, Redis Stream으로 비동기 저장 |
+| GET | `/tracking` | 트래킹 클릭 수신 — 트래커 랜딩 URL로 리다이렉트, Redis Stream으로 비동기 저장. 트래킹 모드가 `closed`면 전부, `half`면 평균 절반이 503으로 막힌다 |
 | GET | `/:name/install` | 트래커별 install 포스트백 수신 (`name`: appsflyer 등) |
 | GET | `/:name/event` | 트래커별 event 포스트백 수신 |
 
@@ -190,6 +190,7 @@ CORS_ORIGIN="http://localhost:3000"
 | tracker | ADMIN 이상 | GET, POST `/trackers`, GET, PATCH, DELETE `/trackers/:id` |
 | campaign | ADMIN 이상 | GET, POST `/campaigns`, GET, PATCH, DELETE `/campaigns/:id` |
 | config | ADMIN 이상 | GET, PATCH `/config/:campaignId` |
+| tracking-mode | DEVELOPER | GET, PATCH `/tracking-mode`. 점검·긴급 차단 스위치 — `open`(정상)·`half`(평균 절반만 통과)·`closed`(전부 503). 값은 Redis에 있고 각 태스크가 3초 캐시하므로 반영에 최대 3초 걸린다 |
 | reservation | ADMIN 이상 | GET, POST `/reservations`(advertisingId 필터·campaign별 예약 행 생성), DELETE `/reservations/:id`. 스케줄러가 매시 정각·부트 시 시각 지난 예약을 campaign(name·tracker_tracking_url)에 적용 |
 | dashboard | USER 이상 | GET `/dashboard`, `/dashboard/daily`(token 생략 시 전체 합산), `/dashboard/dailydetail`(token 기준 view_code·pub_id·sub_id 단위), `/dashboard/detail/:id` |
 | postback(로그) | USER 이상 | GET `/postbacks/install`, `/postbacks/event`, `/postbacks/unregistered` (대시보드 상세·일별 화면의 로그 팝업용 조회), GET `/postbacks`(advertising_id 기준 광고 단위 일괄 조회 — 상세 화면 엑셀 다운로드용) |

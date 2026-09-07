@@ -1,0 +1,30 @@
+### 현재 트래킹 수용 모드 조회
+GET {{host}}/tracking-mode
+Authorization: Bearer {{access_token}}
+
+### 전면 차단 — 클릭이 전부 503으로 나간다
+PATCH {{host}}/tracking-mode
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+	"mode": "closed"
+}
+
+### 절반만 통과 — 요청마다 난수로 판정한다
+PATCH {{host}}/tracking-mode
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+	"mode": "half"
+}
+
+### 정상 복구 — 모드 변경은 각 태스크의 3초 로컬 캐시가 만료된 뒤 전체에 반영된다
+PATCH {{host}}/tracking-mode
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+	"mode": "open"
+}
