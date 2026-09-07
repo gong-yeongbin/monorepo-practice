@@ -18,6 +18,7 @@
 - `detail`은 세 갈래로 나뉜다 — `detail`(기본 상세), `change`(예약 변경), `daily`(일별 통계, 다시 `daily-detail`로).
 - **역할 가드는 라우트에 건다.** `app.tsx`에서 `PrivateRoute`(`shared/ui/private-route.tsx`)가 두 갈래로 쓰인다 — `allow={['DEVELOPER', 'ADMIN']}` 그룹이 운영 화면(`:id/change`·`advertising`·`media`·`tracker`)을 감싸고, `developer`만 `allow={['DEVELOPER']}`다. 판정은 access token payload에서 직접 읽고, 역할이 아니면 `/`로 되돌린다. USER는 대시보드·상세·일별만 남는다.
 - `developer`는 가입 승인과 사용자별 허용 광고 목록을 관리한다 — 허용 광고(`advertising_ids`)는 backend에서 **통째 교체**라 다중 선택을 즉시 보내지 않고 행별 편집 상태로 모았다가 버튼을 눌러야 PATCH한다(`user-table.tsx`).
+- `developer`의 `트래킹 제어` 탭(`tracking-mode-panel.tsx`)은 트래킹 클릭 수용 모드를 바꾼다 — `정상`/`절반`/`전면`. 실서비스 클릭이 멈추는 스위치라 라디오 선택을 즉시 보내지 않고 [적용]을 눌러야 하며, 차단 방향(`half`·`closed`)은 확인 모달을 한 번 더 받는다(`shared/lib/tracking-mode.ts`의 `confirm`). backend가 DEVELOPER 전용이라 이 탭을 ADMIN이 보는 화면으로 옮기면 403이 난다.
 
 ## 규칙
 

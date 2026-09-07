@@ -1,5 +1,6 @@
 import React from 'react';
 import { axiosInstance } from '@/shared/api/axios';
+import { TrackingMode } from '@/shared/lib/tracking-mode';
 
 export const getDataWithCvr = (data: any) => {
 	data.forEach((row: { cvr: number; install: string; click: string }) => {
@@ -509,6 +510,15 @@ const getCampaignEvents = async (campaignIdx?: string) => {
 	return res.data.data.map(mapConfigRow);
 };
 
+const getTrackingMode = async (): Promise<TrackingMode> => {
+	const res = await axiosInstance.get('/tracking-mode');
+	return res.data.data.mode;
+};
+
+const updateTrackingMode = async (mode: TrackingMode) => {
+	await axiosInstance.patch('/tracking-mode', { mode });
+};
+
 export const api = {
 	getDashboardData,
 	getDetail,
@@ -528,5 +538,7 @@ export const api = {
 	deleteUser,
 	getCampaigns,
 	getCampaignEvents,
+	getTrackingMode,
+	updateTrackingMode,
 };
 /* v8 ignore stop */
