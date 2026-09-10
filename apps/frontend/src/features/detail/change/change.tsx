@@ -161,7 +161,7 @@ const Change = () => {
 			>
 				<MainWrapper>
 					<div style={{ height: 'calc(var(--vh, 1vh) * 100 - 27rem)' }}>
-						<Descriptions bordered>
+						<Descriptions bordered column={3}>
 							<Descriptions.Item label="변경 캠페인명" span={3} style={{ height: '1rem' }}>
 								<Form.Item
 									name="campaignName"
