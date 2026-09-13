@@ -1,11 +1,5 @@
 import React, { useMemo } from 'react';
-import {
-	useReactTable,
-	getCoreRowModel,
-	getPaginationRowModel,
-	flexRender,
-	createColumnHelper,
-} from '@tanstack/react-table';
+import { useReactTable, getCoreRowModel, flexRender, createColumnHelper } from '@tanstack/react-table';
 import { observer } from 'mobx-react';
 import { Avatar, Pagination } from 'antd';
 import { useNavigate } from 'react-router';
@@ -25,12 +19,20 @@ export interface AdvertiserColumns {
 	campaign: number;
 }
 
-const rowsPerPage = 25;
+export const rowsPerPage = 25;
 
 const columnHelper = createColumnHelper<AdvertiserColumns>();
 
-const AdvertisingTable = observer((props: { data: Array<AdvertiserColumns> }) => {
-	const { data } = props;
+// 서버 페이징: data는 현재 페이지 항목만, total은 검색 조건 전체 건수. 페이지 이동은 onPageChange로 상위에 알린다
+interface AdvertisingTableProps {
+	data: Array<AdvertiserColumns>;
+	page: number;
+	total: number;
+	onPageChange: (page: number) => void;
+}
+
+const AdvertisingTable = observer((props: AdvertisingTableProps) => {
+	const { data, page, total, onPageChange } = props;
 
 	const navigate = useNavigate();
 
@@ -88,12 +90,10 @@ const AdvertisingTable = observer((props: { data: Array<AdvertiserColumns> }) =>
 		data,
 		columns,
 		getCoreRowModel: getCoreRowModel(),
-		getPaginationRowModel: getPaginationRowModel(),
 		columnResizeMode: 'onChange',
 		enableColumnResizing: true,
 		initialState: {
 			columnVisibility: { idx: false, status: false, imageUrl: false, platform: false },
-			pagination: { pageIndex: 0, pageSize: rowsPerPage },
 		},
 	});
 
@@ -131,8 +131,9 @@ const AdvertisingTable = observer((props: { data: Array<AdvertiserColumns> }) =>
 				<Pagination
 					size="small"
 					pageSize={rowsPerPage}
-					total={data.length}
-					onChange={(page, _pageSize) => table.setPageIndex(page - 1)}
+					current={page}
+					total={total}
+					onChange={nextPage => onPageChange(nextPage)}
 				/>
 			</PageContainer>
 		</TableStyles>

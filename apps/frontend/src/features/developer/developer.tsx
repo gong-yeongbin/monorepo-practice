@@ -18,10 +18,14 @@ const Developer = observer(() => {
 
 	// 전체를 한 번만 받아 탭에서 나눈다(승인 대기는 approved=false로 따로 조회할 수도 있지만 쿼리가 둘로 늘어난다)
 	const { data: users } = useQuery({ queryKey: ['users'], queryFn: () => api.getUsers() });
-	const { data: advertising } = useQuery({ queryKey: ['advertising'], queryFn: () => api.getAdvertising({ searchWords: '' }) });
+	// 허용 광고 옵션. 서버 페이징 전환 전과 동일하게 100건까지만 받는다(전체 목록 수신은 별도 작업)
+	const { data: advertising } = useQuery({
+		queryKey: ['advertising', 'options'],
+		queryFn: () => api.getAdvertising({ searchWords: '', page: 1, pageSize: 100 }),
+	});
 
 	const advertisingOptions = useMemo(
-		() => (advertising ?? []).map((row: { idx: string; name: string }) => ({ idx: row.idx, name: row.name })),
+		() => (advertising?.items ?? []).map((row: { idx: string; name: string }) => ({ idx: row.idx, name: row.name })),
 		[advertising],
 	);
 

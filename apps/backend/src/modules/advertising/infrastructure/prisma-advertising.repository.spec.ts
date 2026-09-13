@@ -3,7 +3,7 @@ import { PrismaAdvertisingRepository } from './prisma-advertising.repository';
 import { PrismaService } from '@infra/prisma/prisma.service';
 
 describe('PrismaAdvertisingRepository', () => {
-	const advertising = { findUnique: jest.fn(), findMany: jest.fn(), create: jest.fn(), update: jest.fn(), delete: jest.fn() };
+	const advertising = { findUnique: jest.fn(), findMany: jest.fn(), count: jest.fn(), create: jest.fn(), update: jest.fn(), delete: jest.fn() };
 	const tracker = { findUnique: jest.fn() };
 	const advertiser = { findUnique: jest.fn() };
 	const campaign = { count: jest.fn() };
@@ -55,18 +55,22 @@ describe('PrismaAdvertisingRepository', () => {
 		expect(advertising.update).toHaveBeenCalledWith({ where: { id: 1 }, data: { image: 'https://bucket.s3.region.amazonaws.com/advertising/1' } });
 	});
 
-	it('list는 tracker명을 싣고 활성 campaign 개수를 세어 1개 이상이면 status=true로 매핑한다', async () => {
+	it('list는 tracker명을 싣고 활성 campaign 개수를 세어 1개 이상이면 status=true로 매핑하고, 검색 조건 전체 건수를 total로 함께 돌려준다', async () => {
 		advertising.findMany.mockResolvedValue([
 			{ id: 1, name: 'a', image: 'img', advertiser_id: 1, tracker_id: 2, tracker: { name: 'appsflyer' }, _count: { campaign: 2 } },
 			{ id: 2, name: 'b', image: null, advertiser_id: 1, tracker_id: 2, tracker: { name: 'adjust' }, _count: { campaign: 0 } },
 		]);
+		advertising.count.mockResolvedValue(120);
 
 		const result = await repository.list({ search: 'a', offset: 0, limit: 20 });
 
-		expect(result).toEqual([
-			{ id: 1, name: 'a', image: 'img', advertiser_id: 1, tracker_id: 2, tracker: 'appsflyer', campaign: 2, status: true },
-			{ id: 2, name: 'b', image: null, advertiser_id: 1, tracker_id: 2, tracker: 'adjust', campaign: 0, status: false },
-		]);
+		expect(result).toEqual({
+			items: [
+				{ id: 1, name: 'a', image: 'img', advertiser_id: 1, tracker_id: 2, tracker: 'appsflyer', campaign: 2, status: true },
+				{ id: 2, name: 'b', image: null, advertiser_id: 1, tracker_id: 2, tracker: 'adjust', campaign: 0, status: false },
+			],
+			total: 120,
+		});
 		expect(advertising.findMany).toHaveBeenCalledWith(
 			expect.objectContaining({
 				where: { name: { contains: 'a' } },
@@ -75,6 +79,7 @@ describe('PrismaAdvertisingRepository', () => {
 				take: 20,
 			})
 		);
+		expect(advertising.count).toHaveBeenCalledWith({ where: { name: { contains: 'a' } } });
 	});
 
 	it('get은 연결된 media를 중복 없이 모아 반환한다', async () => {

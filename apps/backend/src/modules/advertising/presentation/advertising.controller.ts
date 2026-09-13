@@ -14,7 +14,7 @@ import { ListAdvertisingDto } from '@advertising/application/dto/list-advertisin
 import { AdvertisingIdDto } from '@advertising/application/dto/advertising-id.dto';
 import { ResponseInterceptor } from '@interceptors/response.interceptor';
 import { ApiWrappedResponse } from '@interceptors/api-wrapped-response.decorator';
-import { AdvertisingImageResponse, AdvertisingInfoResponse, AdvertisingListItemResponse, AdvertisingResponse } from '@advertising/presentation/dto/advertising.response.dto';
+import { AdvertisingImageResponse, AdvertisingInfoResponse, AdvertisingListPageResponse, AdvertisingResponse } from '@advertising/presentation/dto/advertising.response.dto';
 import { Roles } from '@auth/presentation/roles.decorator';
 import { CurrentUser } from '@auth/presentation/current-user.decorator';
 import { AccessTokenPayload } from '@auth/application/token.constants';
@@ -46,8 +46,8 @@ export class AdvertisingController {
 	}
 
 	@Get()
-	@ApiOperation({ summary: 'advertising 목록 조회 (search·offset·limit)' })
-	@ApiWrappedResponse({ status: 200, description: '조회 성공', type: AdvertisingListItemResponse, isArray: true })
+	@ApiOperation({ summary: 'advertising 목록 조회 (search·offset·limit). 검색 조건 전체 건수 total을 함께 반환' })
+	@ApiWrappedResponse({ status: 200, description: '조회 성공', type: AdvertisingListPageResponse })
 	@ApiResponse({ status: 400, description: '요청 값 검증 실패' })
 	async list(@Query() query: ListAdvertisingDto) {
 		return this.listAdvertisingUseCase.execute(query);

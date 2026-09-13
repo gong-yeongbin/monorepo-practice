@@ -25,10 +25,10 @@ describe('AdvertisingController', () => {
 		expect(create.execute).toHaveBeenCalledWith(body);
 	});
 
-	it('list는 목록 use-case에 query를 위임한다', async () => {
+	it('list는 목록 use-case에 query를 위임하고 항목·전체 건수를 돌려준다', async () => {
 		const query = { search: 'a', offset: 0, limit: 20 };
-		(list.execute as jest.Mock).mockResolvedValue([]);
-		await controller.list(query);
+		(list.execute as jest.Mock).mockResolvedValue({ items: [], total: 0 });
+		expect(await controller.list(query)).toEqual({ items: [], total: 0 });
 		expect(list.execute).toHaveBeenCalledWith(query);
 	});
 

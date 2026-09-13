@@ -12,6 +12,7 @@ import {
 	mapEventLogRow,
 	mapUnregisteredLogRow,
 	mapAdvertisingListItem,
+	mapAdvertisingListPage,
 	mapCampaignListItem,
 	mapReservationRow,
 	mapConfigRow,
@@ -306,6 +307,13 @@ describe('mapAdvertisingListItem', () => {
 
 	it('status가 false면 0으로 매핑한다', () => {
 		expect(mapAdvertisingListItem({ ...backendRow, status: false }).status).toBe(0);
+	});
+});
+
+describe('mapAdvertisingListPage', () => {
+	it('items는 행 매퍼로 변환하고 total은 그대로 둔다', () => {
+		const page = { items: [{ id: 78, name: '반려의고수 (AOS)', image: null, status: false, campaign: 0 }], total: 120 };
+		expect(mapAdvertisingListPage(page)).toEqual({ items: [mapAdvertisingListItem(page.items[0])], total: 120 });
 	});
 });
 

@@ -1,7 +1,7 @@
 // Prisma로 advertising CRUD를 처리하는 repository 구현체
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@infra/prisma/prisma.service';
-import { Advertising, AdvertisingInfo, AdvertisingListItem } from '@advertising/domain/advertising.entity';
+import { Advertising, AdvertisingInfo, AdvertisingListPage } from '@advertising/domain/advertising.entity';
 import { AdvertisingRepository, CreateAdvertisingProps, ListAdvertisingParams, UpdateAdvertisingProps } from '@advertising/domain/advertising.repository';
 
 @Injectable()
@@ -40,20 +40,25 @@ export class PrismaAdvertisingRepository implements AdvertisingRepository {
 		await this.prismaService.advertising.delete({ where: { id } });
 	}
 
-	async list(params: ListAdvertisingParams): Promise<AdvertisingListItem[]> {
+	async list(params: ListAdvertisingParams): Promise<AdvertisingListPage> {
 		// 이름 검색 + 페이징. tracker명을 함께 싣고, 각 advertising의 활성 campaign 개수를 세어 1개 이상이면 status=true(파생).
-		const rows = await this.prismaService.advertising.findMany({
-			where: { name: { contains: params.search } },
-			orderBy: { id: 'desc' },
-			skip: params.offset,
-			take: params.limit,
-			include: {
-				tracker: { select: { name: true } },
-				_count: { select: { campaign: { where: { is_active: true } } } },
-			},
-		});
+		// 프론트 페이지네이션이 전체 페이지 수를 알아야 하므로 같은 검색 조건의 전체 건수를 함께 센다.
+		const where = { name: { contains: params.search } };
+		const [rows, total] = await Promise.all([
+			this.prismaService.advertising.findMany({
+				where,
+				orderBy: { id: 'desc' },
+				skip: params.offset,
+				take: params.limit,
+				include: {
+					tracker: { select: { name: true } },
+					_count: { select: { campaign: { where: { is_active: true } } } },
+				},
+			}),
+			this.prismaService.advertising.count({ where }),
+		]);
 
-		return rows.map((row) => ({
+		const items = rows.map((row) => ({
 			id: row.id,
 			name: row.name,
 			image: row.image,
@@ -63,6 +68,7 @@ export class PrismaAdvertisingRepository implements AdvertisingRepository {
 			campaign: row._count.campaign,
 			status: row._count.campaign > 0,
 		}));
+		return { items, total };
 	}
 
 	async get(id: number): Promise<AdvertisingInfo | null> {

@@ -14,6 +14,12 @@ export interface AdvertisingListItem extends Advertising {
 	status: boolean;
 }
 
+// 목록 페이지: 현재 페이지 항목과 검색 조건 전체 건수(페이지네이션 계산용)
+export interface AdvertisingListPage {
+	items: AdvertisingListItem[];
+	total: number;
+}
+
 // 정보 조회(admin getAdvertisingInfo): advertiser·tracker·연결된 media 목록
 export interface AdvertisingInfo {
 	advertiser: string;

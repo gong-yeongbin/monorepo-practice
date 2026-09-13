@@ -1,4 +1,4 @@
-### advertising 목록 조회 — search·offset·limit 모두 선택 (기본 offset=0, limit=20)
+### advertising 목록 조회 — search·offset·limit 모두 선택 (기본 offset=0, limit=20). 응답 data는 { items, total }
 GET {{host}}/advertising?search=&offset=0&limit=20
 Authorization: Bearer {{access_token}}
 

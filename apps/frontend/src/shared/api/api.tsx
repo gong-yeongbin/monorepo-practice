@@ -193,6 +193,12 @@ export const mapAdvertisingListItem = (row: {
 	updatedAt: '',
 });
 
+// 목록 페이지 응답: 현재 페이지 항목 + 검색 조건 전체 건수(페이지네이션용)
+export const mapAdvertisingListPage = (page: { items: Parameters<typeof mapAdvertisingListItem>[0][]; total: number }) => ({
+	items: page.items.map(mapAdvertisingListItem),
+	total: page.total,
+});
+
 export const mapCampaignListItem = (row: {
 	campaign_id: number;
 	token: string;
@@ -473,12 +479,15 @@ const getReservations = async (paramId?: string) => {
 	return res.data.data.map(mapReservationRow);
 };
 
+// 서버 페이징. page는 1부터, 응답은 { items, total }
 const getAdvertising = async (obj: {
 	searchWords?: string;
+	page: number;
+	pageSize: number;
 }) => {
-	const { searchWords } = obj;
-	const res = await axiosInstance.get(`/advertising?search=${searchWords}&offset=0&limit=100`);
-	return res.data.data.map(mapAdvertisingListItem);
+	const { searchWords, page, pageSize } = obj;
+	const res = await axiosInstance.get(`/advertising?search=${searchWords}&offset=${(page - 1) * pageSize}&limit=${pageSize}`);
+	return mapAdvertisingListPage(res.data.data);
 };
 
 // 승인 대기 목록은 approved=false로 조회한다(생략하면 전체)

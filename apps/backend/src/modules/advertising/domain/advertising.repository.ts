@@ -1,5 +1,5 @@
 // advertising 조회·생성·수정·삭제 repository 인터페이스와 DI 토큰
-import { Advertising, AdvertisingInfo, AdvertisingListItem } from '@advertising/domain/advertising.entity';
+import { Advertising, AdvertisingInfo, AdvertisingListPage } from '@advertising/domain/advertising.entity';
 
 export const ADVERTISING_REPOSITORY = Symbol('ADVERTISING_REPOSITORY');
 
@@ -27,7 +27,7 @@ export interface AdvertisingRepository {
 	update(id: number, props: UpdateAdvertisingProps): Promise<Advertising>;
 	updateImage(id: number, image: string): Promise<void>;
 	delete(id: number): Promise<void>;
-	list(params: ListAdvertisingParams): Promise<AdvertisingListItem[]>;
+	list(params: ListAdvertisingParams): Promise<AdvertisingListPage>;
 	get(id: number): Promise<AdvertisingInfo | null>;
 	countCampaign(advertising_id: number): Promise<number>;
 }
