@@ -1,5 +1,5 @@
 // 회원가입(2단계 이메일 인증)·로그인·토큰 재발급을 처리하는 컨트롤러
-import { Body, Controller, Get, HttpCode, Post, Query, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Headers, HttpCode, Ip, Post, Query, UseInterceptors } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { EmailAvailabilityDto } from '@auth/application/dto/email-availability.dto';
 import { RefreshDto } from '@auth/application/dto/refresh.dto';
@@ -60,7 +60,7 @@ export class AuthController {
 		await this.verifyUseCase.execute(body.email, body.code);
 	}
 
-	// 로그인 — 검증 통과 시 access·refresh token을 발급한다
+	// 로그인 — 검증 통과 시 access·refresh token을 발급한다. 성공·실패 모두 login_history에 남긴다(보안 감사)
 	@Post('signin')
 	@HttpCode(200)
 	@ApiOperation({ summary: '로그인 — access·refresh token 발급' })
@@ -68,8 +68,8 @@ export class AuthController {
 	@ApiResponse({ status: 400, description: '요청 값 검증 실패' })
 	@ApiResponse({ status: 401, description: 'email 없음 또는 비밀번호 불일치' })
 	@ApiResponse({ status: 403, description: '미승인 계정' })
-	async signin(@Body() body: SigninDto): Promise<SigninResult> {
-		return this.signinUseCase.execute(body.email, body.password);
+	async signin(@Body() body: SigninDto, @Ip() ip: string, @Headers('user-agent') userAgent?: string): Promise<SigninResult> {
+		return this.signinUseCase.execute(body.email, body.password, { ip, user_agent: userAgent ?? null });
 	}
 
 	// refresh token으로 access token을 재발급한다

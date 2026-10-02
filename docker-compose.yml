@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: "1234"
       POSTGRES_DB: mecross
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -19,7 +19,7 @@ services:
     image: redis:alpine
     container_name: monorepo-redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
     healthcheck:

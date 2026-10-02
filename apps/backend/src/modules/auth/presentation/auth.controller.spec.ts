@@ -33,12 +33,19 @@ describe('AuthController', () => {
 		expect(verifyUseCase.execute).toHaveBeenCalledWith('new@example.com', '123456');
 	});
 
-	it('signin은 로그인 use-case에 email·password를 위임하고 토큰 응답을 반환한다', async () => {
+	it('signin은 로그인 use-case에 email·password와 요청의 ip·user-agent를 위임하고 토큰 응답을 반환한다', async () => {
 		const tokens = { access_token: 'access-token', refresh_token: 'refresh-token' };
 		(signinUseCase.execute as jest.Mock).mockResolvedValue(tokens);
 
-		expect(await controller.signin({ email: 'user@example.com', password: 'password123' })).toEqual(tokens);
-		expect(signinUseCase.execute).toHaveBeenCalledWith('user@example.com', 'password123');
+		expect(await controller.signin({ email: 'user@example.com', password: 'password123' }, '203.0.113.10', 'Mozilla/5.0')).toEqual(tokens);
+		expect(signinUseCase.execute).toHaveBeenCalledWith('user@example.com', 'password123', { ip: '203.0.113.10', user_agent: 'Mozilla/5.0' });
+	});
+
+	it('signin은 user-agent 헤더가 없으면 user_agent를 null로 넘긴다', async () => {
+		(signinUseCase.execute as jest.Mock).mockResolvedValue({});
+
+		await controller.signin({ email: 'user@example.com', password: 'password123' }, '203.0.113.10', undefined);
+		expect(signinUseCase.execute).toHaveBeenCalledWith('user@example.com', 'password123', { ip: '203.0.113.10', user_agent: null });
 	});
 
 	it('refresh는 재발급 use-case에 refresh_token을 위임하고 access 응답을 반환한다', async () => {

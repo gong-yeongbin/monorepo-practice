@@ -200,8 +200,8 @@ pnpm docker:down
 
 이 명령으로 시작되는 서비스는 다음과 같습니다.
 
-- **PostgreSQL 17**: `localhost:5432` (DB명 `mecross`)
-- **Redis**: `localhost:6379`
+- **PostgreSQL 17**: `localhost:5433` (DB명 `mecross`)
+- **Redis**: `localhost:6380`
 
 > ⚠️ `docker:down`은 `-v`가 붙어 있어 컨테이너와 함께 named volume(`postgres_data`, `redis_data`)까지 제거합니다. **dev를 종료할 때마다(Ctrl+C·실패 포함) DB와 Redis 데이터가 사라지므로, 화면에서 만든 광고주·캠페인 같은 작업 데이터는 유지되지 않습니다.** 매번 깨끗한 시드 상태로 시작하는 것을 의도한 설정입니다. 데이터를 남기고 내리려면 `docker compose -f ./docker-compose.yml down`을 직접 실행하세요.
 
@@ -213,14 +213,14 @@ pnpm docker:down
 
 ```env
 # 데이터베이스
-DATABASE_URL="postgresql://postgres:1234@localhost:5432/mecross"
+DATABASE_URL="postgresql://postgres:1234@localhost:5433/mecross"
 
 # 서버 (어드민 API 포트 / 트래킹·포스트백 포트, 후자는 미설정 시 3002)
 PORT=3001
 TRACKING_PORT=3002
 
 # Redis (캐시·스트림 공용) — 컨슈머 이름은 미설정 시 consumer-<호스트명>-<PID>로 자동 생성
-VALKEY="redis://localhost:6379"
+VALKEY="redis://localhost:6380"
 REDIS_STREAM_GROUP="mecross-system"
 
 # JWT — signin·refresh 토큰 서명 키

@@ -22,6 +22,7 @@ model user {
   updated_at DateTime @default(now()) @updatedAt @db.Timestamp(0)
 
   user_advertising user_advertising[]
+  login_history    login_history[]
 }
 
 // 유저가 볼 수 있는 광고 허용 목록(M:N). 행이 없으면 아무 광고도 보이지 않는다(전체 허용 아님).
@@ -36,6 +37,24 @@ model user_advertising {
   // 복합 PK 인덱스는 선두 컬럼(user_id)만 커버하고 PostgreSQL은 FK 인덱스를 자동 생성하지 않는다.
   // advertising 삭제 시 cascade가 이 인덱스를 탄다.
   @@index([advertising_id])
+}
+
+// 로그인 시도 기록(보안 감사용). 성공·실패를 모두 남긴다.
+// email은 입력값 그대로 저장한다 — 없는 계정에 대한 시도도 추적되고(user_id null), user를 삭제해도 기록은 남는다(SetNull).
+// user_agent는 원문만 저장하고 브라우저·OS 해석은 조회 시점에 한다(파서가 좋아지면 과거 기록도 다시 해석된다).
+model login_history {
+  id         Int         @id @default(autoincrement())
+  user       user?       @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  user_id    Int?        @db.Integer
+  email      String      @db.VarChar(255)
+  result     LoginResult
+  ip         String      @db.VarChar(45)
+  user_agent String?     @db.VarChar(512)
+  created_at DateTime    @default(now()) @db.Timestamp(0)
+
+  // 사용자별 최근 기록 조회와 "이 email로 실패가 몇 번" 집계를 각각 커버한다
+  @@index([user_id, created_at])
+  @@index([email, created_at])
 }
 
 model advertiser {
@@ -202,6 +221,13 @@ enum Role {
   DEVELOPER
   ADMIN
   USER
+}
+
+// signin의 세 출구와 1:1 — 401(email 없음·비밀번호 불일치는 구분하지 않는다), 403
+enum LoginResult {
+  SUCCESS
+  INVALID_CREDENTIALS
+  NOT_APPROVED
 }
 
 enum Type {

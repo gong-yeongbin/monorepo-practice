@@ -76,10 +76,10 @@ pnpm start:prod
 
 ```env
 # 데이터베이스 (docker-compose 기본값 기준)
-DATABASE_URL="postgresql://postgres:1234@localhost:5432/mecross"
+DATABASE_URL="postgresql://postgres:1234@localhost:5433/mecross"
 
 # Redis 접속 URL (캐시·스트림 공용, 미설정 시 redis://localhost:6379)
-VALKEY="redis://localhost:6379"
+VALKEY="redis://localhost:6380"
 
 # Redis Stream 컨슈머 (미설정 시 mecross-system / consumer-<호스트명>-<PID>)
 REDIS_STREAM_GROUP="mecross-system"
@@ -166,7 +166,7 @@ CORS_ORIGIN="http://localhost:3000"
 | GET | `/auth/email-availability` | 가입 전 이메일 사용 가능 여부 조회 |
 | POST | `/auth/signup` | 가입 신청 — 이메일로 6자리 인증 코드 발송 (user 미생성, 200) |
 | POST | `/auth/signup/verify` | 코드 검증 통과 시 가입 확정 (201, `role=USER`·`approved=false`) |
-| POST | `/auth/signin` | 로그인 — access(15분)·refresh(7일) 토큰 발급 (미승인 user는 403) |
+| POST | `/auth/signin` | 로그인 — access(15분)·refresh(7일) 토큰 발급 (미승인 user는 403). 성공·실패 모두 `login_history`에 IP·user-agent와 함께 기록 |
 | POST | `/auth/refresh` | refresh token으로 access token 재발급 |
 
 ### 트래킹·포스트백 — 공개 (`@Public()`)
@@ -184,6 +184,7 @@ CORS_ORIGIN="http://localhost:3000"
 | 리소스 | 접근 | 라우트 |
 |---|---|---|
 | user | DEVELOPER | GET `/users`(`?approved=false`로 승인 대기 목록), GET `/users/:id`, PATCH `/users/:id`(role·approved·advertising_ids 수정 = 가입 승인 + 허용 광고 지정), DELETE `/users/:id` |
+| login-history | DEVELOPER | GET `/login-histories`(`?user_id=&offset=&limit=`, 최신순, `total` 포함) — 로그인 시도 기록(보안 감사). 실패 시도도 남고 없는 email 시도는 `user_id`가 null. `user_agent` 원문과 함께 해석한 `browser`·`os`·`device_type`을 돌려준다 |
 | advertiser | ADMIN 이상 | GET, POST `/advertisers`, GET, PATCH, DELETE `/advertisers/:id` |
 | advertising | ADMIN 이상<br>(`GET /advertising/:id`만 USER 이상) | GET, POST `/advertising`, GET, PUT, DELETE `/advertising/:id`, POST `/advertising/:id/image`. 단건 조회는 대시보드 상세 화면의 InfoCard가 쓰므로 USER에게도 열려 있다 |
 | media | ADMIN 이상 | GET, POST `/media`, GET, PATCH, DELETE `/media/:id` |
