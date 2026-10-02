@@ -269,8 +269,8 @@ pnpm db:reset      # DB 초기화 후 seed 자동 실행 (데이터 삭제됨, �
 ```bash
 cd apps/backend
 pnpm migrate       # prisma migrate dev --create-only (SQL 생성만)
-# 생성된 migration.sql 검토 후
-pnpm deploy
+# 생성된 migration.sql 검토 후 (deploy는 pnpm 내장 명령과 이름이 겹쳐 run 필수)
+pnpm run deploy
 ```
 
 ### 개발 서버 실행
@@ -279,14 +279,14 @@ pnpm deploy
 # 전체 앱 개발 모드 (인프라·스키마 준비 후 backend·frontend 동시 기동)
 pnpm dev
 
-# 특정 앱만 실행 (준비 단계를 건너뛰고 해당 앱만 바로 실행)
-pnpm dev --filter=backend
-pnpm dev --filter=frontend
+# 특정 앱만 실행 (준비 단계를 건너뛰고 해당 앱만 바로 실행) — 필터는 스크립트 이름 앞에
+pnpm --filter=backend dev
+pnpm --filter=frontend dev
 ```
 
-`pnpm dev`는 backend(`:3001`)와 frontend(`:3000`)를 함께 띄우고, 종료하면 Docker 컨테이너까지 정리합니다. 준비 단계가 하나라도 실패하면 앱이 기동되지 않으므로, DB 문제로 막혔지만 frontend만 작업해야 한다면 `pnpm dev --filter=frontend`를 쓰면 됩니다(MSW 목 서버로 동작).
+`pnpm dev`는 backend(`:3001`)와 frontend(`:3000`)를 함께 띄우고, 종료하면 Docker 컨테이너까지 정리합니다. 준비 단계가 하나라도 실패하면 앱이 기동되지 않으므로, DB 문제로 막혔지만 frontend만 작업해야 한다면 `pnpm --filter=frontend dev`를 쓰면 됩니다(MSW 목 서버로 동작). `pnpm dev --filter=frontend`처럼 필터를 뒤에 붙이면 루트 `dev` 스크립트에 인자로 넘어갈 뿐이라 준비 단계와 종료 시 컨테이너 정리가 그대로 실행되니 주의하세요.
 
-> 터미널 두 개로 backend·frontend를 따로 돌리면 한쪽을 종료할 때 컨테이너가 내려가 다른 쪽 DB 연결이 끊어집니다. 이럴 때는 `pnpm docker:up`으로 인프라를 먼저 띄우고 각 앱을 `pnpm dev --filter=...`로 실행하세요.
+> 터미널 두 개로 backend·frontend를 따로 돌리면 한쪽을 종료할 때 컨테이너가 내려가 다른 쪽 DB 연결이 끊어집니다. 이럴 때는 `pnpm docker:up`으로 인프라를 먼저 띄우고 각 앱을 `pnpm --filter=... dev`로 실행하세요.
 
 개별 애플리케이션 디렉토리에서도 실행 가능합니다.
 
@@ -436,8 +436,8 @@ cd apps/backend
 # 새 마이그레이션 생성 (--create-only)
 pnpm migrate
 
-# 마이그레이션 적용
-pnpm deploy
+# 마이그레이션 적용 (deploy는 pnpm 내장 명령과 겹쳐 run 필수)
+pnpm run deploy
 
 # 데이터베이스 초기화 (주의: 데이터 삭제, 초기화 후 seed 자동 실행)
 pnpm reset

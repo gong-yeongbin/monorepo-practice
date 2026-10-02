@@ -53,7 +53,7 @@ src/
 ```bash
 # 루트에서
 pnpm install
-pnpm dev --filter=frontend   # 개발 서버 (:3000)
+pnpm --filter=frontend dev   # 개발 서버 (:3000)
 
 # apps/frontend에서
 pnpm dev                     # 개발 서버 (:3000)
@@ -98,7 +98,7 @@ VITE_API_URL=http://localhost:3001
 | `/advertising/:id/events/:campaignIdx` | 캠페인 이벤트 설정 | DEVELOPER·ADMIN |
 | `/media` | 매체 목록 | DEVELOPER·ADMIN |
 | `/tracker` | 트래커 목록 | DEVELOPER·ADMIN |
-| `/developer` | 개발자 메뉴 (가입 승인·허용 광고 지정) | DEVELOPER |
+| `/developer` | 개발자 메뉴 (전체 사용자·가입 승인·허용 광고 지정·로그인 기록·트래킹 제어) | DEVELOPER |
 
 ## 상태 관리
 

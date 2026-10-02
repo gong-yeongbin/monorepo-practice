@@ -6,7 +6,7 @@
 
 ## 명령어
 
-루트에서 turbo로 실행(`pnpm dev --filter=frontend`) 하거나 이 디렉터리에서 직접 실행한다.
+루트에서 실행(`pnpm --filter=frontend dev` — 필터는 스크립트 이름 앞에, 뒤에 붙이면 루트 `dev`의 docker·시드·종료 트랩이 그대로 돈다) 하거나 이 디렉터리에서 직접 실행한다.
 - `pnpm dev` — Vite 개발 서버, **포트 3000**.
 - `pnpm build` / `pnpm build:staging` / `pnpm build:prod` — 모드별 빌드.
 - `pnpm preview` — 빌드 결과 미리보기.

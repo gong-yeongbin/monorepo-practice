@@ -4,8 +4,8 @@
 
 ## 명령어 (`apps/backend`에서 실행)
 
-- `pnpm migrate` — `prisma migrate dev --create-only`. **SQL만 생성하고 적용은 하지 않는다.** 생성된 migration.sql을 검토한 뒤 `pnpm deploy`로 적용한다.
-- `pnpm deploy` — `prisma migrate deploy`. 미적용 마이그레이션을 순서대로 적용.
+- `pnpm migrate` — `prisma migrate dev --create-only`. **SQL만 생성하고 적용은 하지 않는다.** 생성된 migration.sql을 검토한 뒤 `pnpm run deploy`로 적용한다.
+- `pnpm run deploy` — `prisma migrate deploy`. 미적용 마이그레이션을 순서대로 적용. **`deploy`는 pnpm 내장 명령과 이름이 겹쳐 `run`을 빼면 `ERR_PNPM_NOTHING_TO_DEPLOY`가 난다.** 루트 래퍼 `pnpm db:deploy`도 같은 일을 한다.
 - `pnpm generate` — Prisma Client 재생성. **스키마를 바꾸면 반드시 실행**해야 타입이 맞는다(빌드/타입체크 전 필수).
 - `pnpm reset` — DB 초기화. **데이터가 삭제되므로** 로컬에서만. 초기화 후 seed가 자동 실행된다.
 - `pnpm seed` — `seed.ts` 실행(로컬 테스트 데이터 생성). upsert 기반이라 재실행해도 안전. 역할별 유저 4개(`admin`=DEVELOPER·`ops`=ADMIN·`viewer`=USER는 `approved: true`, `pending`=USER는 승인 대기. 전부 `@test.com` / `test1234!`)와 advertiser→tracker→media→advertising→campaign→campaign_config 그래프, daily_report 7일치, 포스트백 로그 모달용 postback 7일치(인스톨·가입·구매는 daily_report 건수와 일치, 미등록 이벤트 1건/일, `click_id`가 `seed_click_` 접두사)를 만든다.
@@ -27,7 +27,7 @@
 
 - 모델명·컬럼명은 **snake_case**(예: `daily_report`, `tracker_name`, `created_date`). domain 타입이 이 이름을 그대로 쓰므로 어긴 뒤 매핑을 손으로 맞추지 말 것.
 - 컬럼 타입은 `@db.VarChar(n)`, `@db.Text`, `@db.Date`, `@db.Timestamp(0)` 등으로 **명시**한다.
-- enum은 파일 하단에 모아 둔다(`Role`, `Type`). enum 값은 대문자.
+- enum은 파일 하단에 모아 둔다(`Role`, `Type`, `LoginResult`). enum 값은 대문자.
 - 집계 카운터(`daily_report`의 click/install/…)는 `Int @default(0)`. upsert의 `increment`로 누산한다(`prisma-daily-report.repository.ts`).
 - 복합 unique는 `@@unique([...])`. 예: `daily_report`의 `[view_code, created_date]`(일자별 유일), `campaign_config`의 `[campaign_id, admin_event_name]`.
 - M:N 조인 테이블은 **명시적 모델 + 복합 PK**(`@@id([a_id, b_id])`)로 만든다. 예: `user_advertising`. Prisma 암묵적 M:N(`@relation`만 선언)은 테이블·컬럼명을 Prisma가 정해 이 저장소의 snake_case 규칙과 어긋난다. 복합 PK는 선두 컬럼만 인덱스를 커버하므로 반대편 FK에는 `@@index`를 따로 붙인다.
@@ -39,6 +39,7 @@
 - **`postback`은 삽입 위주** — 트래킹 파이프라인은 `createMany`만 한다. 어드민 로그 조회 API(`/postbacks/install·event·unregistered`)를 위해 조회 인덱스를 뒀다. 조회 일자 기준이 트래커 시각(`installed_at`·`evented_at`)에서 **수신 시각(`created_at`)** 으로 바뀌면서 인덱스 두 개를 `[token, created_at]` 하나로 대체했고(`20260906000000`), `[view_code]`가 남아 있다. daily_report 카운트와 로그 건수를 맞추려면 두 집계가 같은 시각 기준이어야 한다.
 - **`daily_report`의 인덱스가 unique 하나로 부족했다** — `@@unique([view_code, created_date])`는 선두가 `view_code`라 `created_date`·`token`으로 들어오는 조회 4개(dashboard·daily·dailyDetail·detail)를 커버하지 못한다. `@@index([created_date])`와 `@@index([token, created_date])`를 따로 둔 이유다(`20260830000000`). `token`은 FK지만 PostgreSQL이 FK 인덱스를 자동 생성하지 않는다.
 - 두 테이블 모두 데이터가 크게 쌓이면 보존 기간 정책·날짜 파티셔닝은 별도 설계 사안.
+- **`login_history`는 보안 감사용이라 삭제·정규화하지 않는다** — `email`은 입력값 원문(없는 계정 시도도 남고 `user_id`는 null), `user`는 `onDelete: SetNull`(사용자를 지워도 기록 유지), `user_agent`는 원문만 저장하고 브라우저·OS 해석은 조회 시점에 한다(파서가 좋아지면 과거 기록도 다시 해석됨). `created_at`이 초 단위라 같은 초의 기록은 `id`로 정렬한다. 보존 기간은 아직 없다.
 
 ## 마이그레이션 규칙
 

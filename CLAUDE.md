@@ -7,12 +7,12 @@ pnpm@9 + Turborepo 모노레포. 광고 관리 플랫폼(광고주/캠페인/매
 ## 명령어
 
 루트에서 turbo로 실행:
-- `pnpm dev` — `docker:up` → `db:deploy` → `db:generate` → `db:seed`를 거쳐 backend·frontend를 함께 watch 모드로 띄운다. **`trap ... EXIT`가 걸려 있어 dev가 끝나면(Ctrl+C·실패 포함) `docker:down`이 자동 실행되고, `docker:down`이 볼륨까지 지우므로 매 기동이 빈 DB에서 시작한다**(마이그레이션·시드가 매번 처음부터 돈다). `--filter=backend` / `--filter=frontend`를 붙이면 pnpm이 해당 워크스페이스의 `dev`를 직접 실행하므로 준비 단계와 정리 단계를 모두 건너뛴다.
+- `pnpm dev` — `docker:up` → `db:deploy` → `db:generate` → `db:seed`를 거쳐 backend·frontend를 함께 watch 모드로 띄운다. **`trap ... EXIT`가 걸려 있어 dev가 끝나면(Ctrl+C·실패 포함) `docker:down`이 자동 실행되고, `docker:down`이 볼륨까지 지우므로 매 기동이 빈 DB에서 시작한다**(마이그레이션·시드가 매번 처음부터 돈다). 앱 하나만 띄우려면 **필터를 스크립트 이름 앞에** 둔다 — `pnpm --filter=frontend dev` / `pnpm --filter=backend dev`. 그래야 pnpm이 해당 워크스페이스의 `dev`를 직접 실행해 준비 단계와 정리 단계를 모두 건너뛴다. **`pnpm dev --filter=frontend`처럼 뒤에 붙이면 플래그가 루트 `dev` 스크립트에 인자로 전달될 뿐이라 `docker:up`·시드·종료 시 `docker:down -v`가 그대로 돈다.**
 - `pnpm build` / `pnpm lint` / `pnpm check-types` / `pnpm test`
 - `pnpm docker:up` / `pnpm docker:down` — PostgreSQL + Redis 컨테이너. `docker:up`은 `-d --wait`이라 백그라운드로 띄우고 healthcheck 통과까지 기다린다. **`docker:down`은 `-v`라 named volume(`postgres_data`·`redis_data`)까지 지운다 — DB와 Redis 데이터가 함께 사라진다.** 로컬에서 만든 데이터를 남기려면 `docker compose -f ./docker-compose.yml down`을 직접 실행할 것.
 - `pnpm db:deploy` / `pnpm db:generate` / `pnpm db:seed` / `pnpm db:reset` — `apps/backend`의 Prisma 스크립트를 루트에서 실행하는 래퍼.
 
-마이그레이션 **생성**은 SQL 검토가 필요한 2단계 작업이라 래퍼를 두지 않았다. `apps/backend`에서 `pnpm migrate`(--create-only)로 생성한 뒤 `pnpm deploy`로 적용한다.
+마이그레이션 **생성**은 SQL 검토가 필요한 2단계 작업이라 래퍼를 두지 않았다. `apps/backend`에서 `pnpm migrate`(--create-only)로 생성한 뒤 `pnpm run deploy`로 적용한다. **`deploy`는 pnpm 내장 명령(워크스페이스 배포)과 이름이 겹쳐 `run`을 빼면 `ERR_PNPM_NOTHING_TO_DEPLOY`가 난다** — 루트 래퍼 `pnpm db:deploy`를 써도 된다.
 
 backend(NestJS) 테스트는 Jest: `pnpm test`, `pnpm test:e2e`(`./test/jest-e2e.json`). 단일 테스트는 `pnpm test -- -t "테스트명"`.
 

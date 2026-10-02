@@ -30,6 +30,7 @@
 - `@Public()`은 토큰 없이 호출되는 엔드포인트에만 쓴다 — 헬스체크, 트래킹·포스트백(외부가 호출), auth(토큰 발급 전). 포스트백은 인증 대신 `ThrottlerGuard`로 보호한다. **트래킹에는 rate limit이 없다** — `@nestjs/throttler`의 기본 인메모리 저장소가 IP 키를 지우지 않아 카디널리티가 무한한 이 경로에서 메모리·CPU를 무한히 먹기 때문이다(근거는 `tracking/presentation/tracking.controller.ts` 주석). 되살리려면 공유 저장소(Valkey) 기반이어야 한다. 트래킹에 붙은 `TrackingModeGuard`는 rate limit이 아니라 **점검·긴급 차단 스위치**다(`open`/`half`/`closed`, 차단 시 503) — 요청자를 구분하지 않으므로 어뷰징 방어로 쓰지 말 것.
 - `JwtAuthGuard`가 `request.user`에 `AccessTokenPayload`를 싣는다. 가드는 인터셉터보다 먼저 실행되므로 401·403 응답은 `ResponseInterceptor`로 감싸지지 않는다.
 - 핸들러에서 payload가 필요하면 `@CurrentUser()`(`auth/presentation/current-user.decorator.ts`)로 꺼낸다. `@Public` 라우트에는 payload가 없으므로 `@Roles`가 붙은 라우트에서만 쓴다.
+- **`POST /auth/signin`은 성공·401·403 세 출구 모두 `login_history`에 기록한다**(`SigninUseCase`가 `LOGIN_HISTORY_REPOSITORY`를 주입받아 예외를 던지기 전에 쓴다 — use-case 테스트는 이 repository도 목킹해야 한다). 컨트롤러가 `@Ip()`·`@Headers('user-agent')`를 넘기며, ip는 `TRUST_PROXY`가 켜졌을 때 X-Forwarded-For 기준이다(`main.ts`). 기록 INSERT가 실패하면 로그인도 500으로 실패한다(감사 누락보다 낫다는 선택). 조회는 `GET /login-histories`(`login-history.controller.ts`, DEVELOPER 전용)이며 `user_agent`를 `ua-parser-js`로 해석한 `browser`·`os`·`device_type`을 덧붙인다(`application/user-agent.parser.ts`). auth 모듈의 `domain/`·`infrastructure/`는 이 기능이 처음 만들었다.
 
 ## 광고 스코프 (USER 데이터 제한, 주의)
 

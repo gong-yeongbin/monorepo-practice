@@ -10,6 +10,7 @@
 - **Database**: PostgreSQL 17 — Prisma 7 (`@prisma/adapter-pg` driver adapter)
 - **Messaging**: Redis Stream (ioredis) — 트래킹·포스트백 비동기 처리
 - **Cache**: Redis (ioredis) — 가입 대기 정보·refresh token 저장
+- **UA 해석**: ua-parser-js — 로그인 기록 조회 시 `user_agent` 원문을 브라우저·OS·기기 종류로 해석
 - **Mail**: AWS SES — 회원가입 인증 코드 발송
 - **Auth**: JWT (`@nestjs/jwt`) — access/refresh 토큰
 - **Language**: TypeScript (strict)
@@ -58,12 +59,12 @@ src/
 pnpm install
 pnpm docker:up          # postgres:17 (DB: mecross) + redis:alpine
 
-# apps/backend에서 — Prisma 마이그레이션 적용·클라이언트 생성
-pnpm deploy
+# apps/backend에서 — Prisma 마이그레이션 적용·클라이언트 생성 (deploy는 pnpm 내장 명령과 겹쳐 run 필수)
+pnpm run deploy
 pnpm generate
 
 # 개발 모드 (watch)
-pnpm dev                # 루트에서는 pnpm dev --filter=backend
+pnpm dev                # 루트에서는 pnpm --filter=backend dev
 
 # 빌드 / 프로덕션
 pnpm build
@@ -214,7 +215,7 @@ CORS_ORIGIN="http://localhost:3000"
 
 ```bash
 pnpm migrate     # 마이그레이션 생성 (--create-only)
-pnpm deploy      # 마이그레이션 적용
+pnpm run deploy  # 마이그레이션 적용 (deploy는 pnpm 내장 명령과 겹쳐 run 필수)
 pnpm generate    # 클라이언트 생성
 pnpm reset       # DB 초기화 (초기화 후 seed 자동 실행)
 pnpm seed        # 로컬 테스트 데이터 생성 (prisma/seed.ts, 재실행해도 안전)
