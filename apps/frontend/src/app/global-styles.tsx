@@ -108,6 +108,11 @@ ${normalize}
       color: #fff;
       background: #1890ff;
     }
+    #login-form,
+    #signup-form,
+    #verify-form {
+      width: 100%;
+    }
     #login-form .ant-btn-primary,
     #signup-form .ant-btn-primary,
     #verify-form .ant-btn-primary {
