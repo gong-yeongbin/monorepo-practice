@@ -295,6 +295,34 @@ export const mapAdvertiserRow = (row: { id: number; name: string }) => ({
 	name: row.name,
 });
 
+// 로그인 기록(보안 감사). browser·os·device_type은 백엔드가 조회 시점에 user_agent를 해석한 값이다
+export const mapLoginHistoryRow = (row: {
+	id: number;
+	user_id: number | null;
+	email: string;
+	result: string;
+	ip: string;
+	user_agent: string | null;
+	created_at: string;
+	browser: string | null;
+	os: string | null;
+	device_type: string;
+}) => ({
+	idx: String(row.id),
+	email: row.email,
+	result: row.result,
+	ip: row.ip,
+	browser: row.browser,
+	os: row.os,
+	deviceType: row.device_type,
+	createdAt: row.created_at,
+});
+
+export const mapLoginHistoryPage = (page: { items: Parameters<typeof mapLoginHistoryRow>[0][]; total: number }) => ({
+	items: page.items.map(mapLoginHistoryRow),
+	total: page.total,
+});
+
 export const mapUserRow = (row: {
 	id: number;
 	email: string;
@@ -511,6 +539,13 @@ const deleteUser = async (idx: string) => {
 	await axiosInstance.delete(`/users/${idx}`);
 };
 
+// 로그인 기록 — 서버 페이징(최신순). advertising 목록과 같은 offset/limit 규약
+const getLoginHistories = async (obj: { page: number; pageSize: number }) => {
+	const { page, pageSize } = obj;
+	const res = await axiosInstance.get(`/login-histories?offset=${(page - 1) * pageSize}&limit=${pageSize}`);
+	return mapLoginHistoryPage(res.data.data);
+};
+
 const getCampaigns = async (paramId?: string) => {
 	const res = await axiosInstance.get(`/campaigns?advertisingId=${paramId}`);
 	return res.data.data.map(mapCampaignListItem);
@@ -545,6 +580,7 @@ export const api = {
 	getReservations,
 	getAdvertising,
 	getUsers,
+	getLoginHistories,
 	updateUser,
 	deleteUser,
 	getCampaigns,

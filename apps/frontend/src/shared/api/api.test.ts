@@ -21,6 +21,8 @@ import {
 	mapTrackerRow,
 	mapAdvertiserRow,
 	mapUserRow,
+	mapLoginHistoryRow,
+	mapLoginHistoryPage,
 	mapAdvertisingInfo,
 	mapCampaignInfo,
 } from '@/shared/api/api';
@@ -538,5 +540,58 @@ describe('mapCampaignInfo', () => {
 
 	it('is_active가 false면 status 0으로 매핑한다', () => {
 		expect(mapCampaignInfo({ ...backendCampaign, is_active: false }).status).toBe(0);
+	});
+});
+
+describe('mapLoginHistoryRow', () => {
+	const backendRow = {
+		id: 7,
+		user_id: 1,
+		email: 'admin@test.com',
+		result: 'SUCCESS',
+		ip: '203.0.113.10',
+		user_agent: 'Mozilla/5.0',
+		created_at: '2026-10-02T13:04:29.000Z',
+		browser: 'Chrome',
+		os: 'macOS',
+		device_type: 'desktop',
+	};
+
+	it('id를 idx 문자열로, 해석된 UA 필드를 camelCase로 매핑한다', () => {
+		expect(mapLoginHistoryRow(backendRow)).toEqual({
+			idx: '7',
+			email: 'admin@test.com',
+			result: 'SUCCESS',
+			ip: '203.0.113.10',
+			browser: 'Chrome',
+			os: 'macOS',
+			deviceType: 'desktop',
+			createdAt: '2026-10-02T13:04:29.000Z',
+		});
+	});
+
+	it('UA가 없어 browser·os가 null이면 null 그대로 둔다', () => {
+		const mapped = mapLoginHistoryRow({ ...backendRow, user_agent: null, browser: null, os: null, device_type: 'unknown' });
+		expect(mapped.browser).toBeNull();
+		expect(mapped.os).toBeNull();
+		expect(mapped.deviceType).toBe('unknown');
+	});
+});
+
+describe('mapLoginHistoryPage', () => {
+	it('items를 행 단위로 매핑하고 total을 그대로 둔다', () => {
+		const row = {
+			id: 1,
+			user_id: null,
+			email: 'nobody@test.com',
+			result: 'INVALID_CREDENTIALS',
+			ip: '::1',
+			user_agent: null,
+			created_at: '2026-10-02T13:04:28.000Z',
+			browser: null,
+			os: null,
+			device_type: 'unknown',
+		};
+		expect(mapLoginHistoryPage({ items: [row], total: 42 })).toEqual({ items: [mapLoginHistoryRow(row)], total: 42 });
 	});
 });
