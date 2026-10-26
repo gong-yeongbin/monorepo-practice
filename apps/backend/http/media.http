@@ -6,7 +6,7 @@ Authorization: Bearer {{access_token}}
 GET {{host}}/media/1
 Authorization: Bearer {{access_token}}
 
-### media 생성
+### media 생성 (DEVELOPER 토큰 필요 — ADMIN은 403)
 POST {{host}}/media
 Authorization: Bearer {{access_token}}
 Content-Type: application/json

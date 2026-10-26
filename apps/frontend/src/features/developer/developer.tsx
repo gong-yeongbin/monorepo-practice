@@ -8,6 +8,7 @@ import { useStore } from '@/app/store';
 import UserTable, { UserColumns } from '@/features/developer/user-table';
 import LoginHistoryTable from '@/features/developer/login-history-table';
 import TrackingModePanel from '@/features/developer/tracking-mode-panel';
+import MediaForm from '@/features/developer/media-form';
 import { api } from '@/shared/api/api';
 
 const Developer = observer(() => {
@@ -44,6 +45,7 @@ const Developer = observer(() => {
 						{ key: 'pending', label: `승인 대기 (${pending.length})`, children: renderTable(pending) },
 						// 탭을 열 때만 조회된다(antd Tabs는 비활성 탭 내용을 처음 열기 전까지 렌더하지 않는다)
 						{ key: 'login-history', label: '로그인 기록', children: <LoginHistoryTable /> },
+						{ key: 'media', label: '매체 추가', children: <MediaForm /> },
 						{ key: 'tracking', label: '트래킹 제어', children: <TrackingModePanel /> },
 					]}
 				/>

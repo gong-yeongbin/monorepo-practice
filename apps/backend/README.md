@@ -188,7 +188,7 @@ CORS_ORIGIN="http://localhost:3000"
 | login-history | DEVELOPER | GET `/login-histories`(`?user_id=&offset=&limit=`, 최신순, `total` 포함) — 로그인 시도 기록(보안 감사). 실패 시도도 남고 없는 email 시도는 `user_id`가 null. `user_agent` 원문과 함께 해석한 `browser`·`os`·`device_type`을 돌려준다 |
 | advertiser | ADMIN 이상 | GET, POST `/advertisers`, GET, PATCH, DELETE `/advertisers/:id` |
 | advertising | ADMIN 이상<br>(`GET /advertising/:id`만 USER 이상) | GET, POST `/advertising`, GET, PUT, DELETE `/advertising/:id`, POST `/advertising/:id/image`. 단건 조회는 대시보드 상세 화면의 InfoCard가 쓰므로 USER에게도 열려 있다 |
-| media | ADMIN 이상 | GET, POST `/media`, GET, PATCH, DELETE `/media/:id` |
+| media | ADMIN 이상<br>(`POST /media`만 DEVELOPER) | GET, POST `/media`, GET, PATCH, DELETE `/media/:id`. 매체 등록은 프론트 개발자 메뉴에서만 하므로 생성만 DEVELOPER로 좁혔다 |
 | tracker | ADMIN 이상 | GET, POST `/trackers`, GET, PATCH, DELETE `/trackers/:id` |
 | campaign | ADMIN 이상 | GET, POST `/campaigns`, GET, PATCH, DELETE `/campaigns/:id` |
 | config | ADMIN 이상 | GET, PATCH `/config/:campaignId` |

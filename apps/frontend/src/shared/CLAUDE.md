@@ -14,6 +14,7 @@
 - `get-total.tsx` — `getTotal`. 컬럼 합계 계산(`useMemo` 기반).
 - `auth.ts` — access token payload에서 로그인 사용자(email·role·advertising_ids)를 읽는다. 레이아웃 셸과 `PrivateRoute`가 공유한다. 판정값을 sessionStorage에 따로 저장하지 않는다(부모 effect보다 자식이 먼저 도는 순서 문제).
 - `postback-workbook.ts` — 포스트백 로그 엑셀(`write-excel-file`) 시트 조립.
+- `media-postback-template.ts` — 매체 포스트백 URL의 `{플레이스홀더}` 추출·치환. 키 목록과 정규식은 backend `media-postback.ts`와 같아야 한다.
 
 ## ui
 

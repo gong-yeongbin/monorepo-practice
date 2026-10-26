@@ -42,7 +42,9 @@ export class MediaController {
 		return this.getMediaUseCase.execute(param.id);
 	}
 
+	// 매체 등록은 개발자 메뉴에서만 하므로 DEVELOPER로 좁힌다(클래스 레벨 @Roles를 메서드 레벨이 덮는다)
 	@Post()
+	@Roles('DEVELOPER')
 	@ApiOperation({ summary: 'media 생성' })
 	@ApiWrappedResponse({ status: 201, description: '생성 성공', type: MediaResponse })
 	@ApiResponse({ status: 400, description: '요청 값 검증 실패' })

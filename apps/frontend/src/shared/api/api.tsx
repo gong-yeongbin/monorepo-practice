@@ -397,6 +397,10 @@ const getMedia = async () => {
 	return res.data.data.map(mapMediaRow);
 };
 
+const createMedia = async (body: { name: string; install_postback_url: string; event_postback_url: string }) => {
+	await axiosInstance.post('/media', body);
+};
+
 const getTrackers = async () => {
 	const res = await axiosInstance.get(`/trackers`);
 	return res.data.data.map(mapTrackerRow);
@@ -569,6 +573,7 @@ export const api = {
 	getDashboardData,
 	getDetail,
 	getMedia,
+	createMedia,
 	getTrackers,
 	getAdvertisers,
 	getDaily,

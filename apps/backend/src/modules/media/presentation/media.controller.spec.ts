@@ -5,6 +5,7 @@ import { GetMediaUseCase } from '@media/application/get-media.use-case';
 import { CreateMediaUseCase } from '@media/application/create-media.use-case';
 import { UpdateMediaUseCase } from '@media/application/update-media.use-case';
 import { DeleteMediaUseCase } from '@media/application/delete-media.use-case';
+import { ROLES_KEY } from '@auth/presentation/roles.decorator';
 
 describe('MediaController', () => {
 	const listMediaUseCase = { execute: jest.fn() } as unknown as ListMediaUseCase;
@@ -37,6 +38,10 @@ describe('MediaController', () => {
 
 		expect(await controller.create(body)).toEqual({ id: 1, ...body });
 		expect(createMediaUseCase.execute).toHaveBeenCalledWith(body);
+	});
+
+	it('create는 DEVELOPER만 호출할 수 있다(클래스 기본값 ADMIN 이상을 메서드 레벨이 덮는다)', () => {
+		expect(Reflect.getMetadata(ROLES_KEY, MediaController.prototype.create)).toEqual(['DEVELOPER']);
 	});
 
 	it('update는 수정 use-case에 id와 body를 위임한다', async () => {
